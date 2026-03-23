@@ -16,15 +16,27 @@
         name="OpenStreetMap"
       />
       <LControl position="topleft">
-        <ZoomControl
+        <ControleZoom
           @zoom-in="map.leafletObject.zoomIn()"
           @zoom-out="map.leafletObject.zoomOut()"
         />
-        <MarkerInfo
-          class="mt-2.5"
-        />
+        <div class="flex flex-col items-center justify-center">
+          <Credits
+            class="mt-2.5"
+          />
+          <DemandeElectrique
+            class="mt-2.5"
+          />
+          <SourceProduction
+            class="mt-2.5"
+          />
+        </div>
       </LControl>
     </LMap>
+    <InfosInstallation
+      v-model="infosInstallationOpen"
+      :data="infosInstallationData"
+    />
   </div>
 </template>
 
@@ -34,6 +46,10 @@
     MapPin,
     createElement,
   } from "lucide";
+  import SourceProduction from "~/components/SourceProduction.vue";
+
+  const infosInstallationOpen = ref(false),
+        infosInstallationData = ref({});
 
   const mapPinSvg = createElement(MapPin, {
     width: 32,
@@ -61,18 +77,10 @@
             iconAnchor: [12, 32],
             popupAnchor: [0, -32],
           }),
+        }).on("click", function () {
+          infosInstallationOpen.value = true;
+          infosInstallationData.value = feature.properties;
         });
-      },
-      onEachFeature: function (feature, layer) {
-        if (feature.properties) {
-          const htmlContent = `
-              <div class="modern-popup">
-                <h3>${feature.properties.nom || "Inconnu"}</h3>
-                <p>${feature.properties.sport || ""}</p>
-              </div>
-            `;
-          layer.bindPopup(htmlContent, { maxWidth: 300 });
-        }
       },
     }).addTo(map.value.leafletObject);
   };
