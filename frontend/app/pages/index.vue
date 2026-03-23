@@ -2,8 +2,8 @@
   <div style="height:100vh; width:100vw">
     <LMap
       ref="map"
-      :zoom="zoom"
-      :center="[50.0, -73.0]"
+      :zoom="5"
+      :center="[53.5, -71.5]"
       :options="{
         zoomControl: false,
       }"
@@ -16,7 +16,13 @@
         name="OpenStreetMap"
       />
       <LControl position="topleft">
-        test
+        <ZoomControl
+          @zoom-in="map.leafletObject.zoomIn()"
+          @zoom-out="map.leafletObject.zoomOut()"
+        />
+        <MarkerInfo
+          class="mt-2.5"
+        />
       </LControl>
     </LMap>
   </div>
@@ -36,8 +42,7 @@
     fill: "royalblue",
   }).outerHTML;
 
-  const zoom = ref(6),
-        map = ref(null);
+  const map = ref(null);
 
   const {
     data: geojson,
