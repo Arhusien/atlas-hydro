@@ -20,16 +20,11 @@
           @zoom-in="map.leafletObject.zoomIn()"
           @zoom-out="map.leafletObject.zoomOut()"
         />
-        <div class="flex flex-col items-center justify-center">
-          <Credits
-            class="mt-2.5"
-          />
-          <DemandeElectrique
-            class="mt-2.5"
-          />
-          <SourceProduction
-            class="mt-2.5"
-          />
+        <div class="flex flex-col items-center justify-center gap-2.5 mt-2.5">
+          <SourceProductionElectricite />
+          <DemandeElectricite />
+          <ExportationElectricite />
+          <Credits />
         </div>
       </LControl>
     </LMap>
@@ -46,7 +41,6 @@
     MapPin,
     createElement,
   } from "lucide";
-  import SourceProduction from "~/components/SourceProduction.vue";
 
   const infosInstallationOpen = ref(false),
         infosInstallationData = ref({});
@@ -54,8 +48,8 @@
   const mapPinSvg = createElement(MapPin, {
     width: 32,
     height: 32,
-    stroke: "white",
-    fill: "royalblue",
+    stroke: "var(--ui-bg-inverted)",
+    fill: "var(--ui-bg)",
   }).outerHTML;
 
   const map = ref(null);

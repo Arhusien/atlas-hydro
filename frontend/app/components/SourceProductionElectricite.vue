@@ -1,7 +1,7 @@
 <template>
   <UTooltip
     :delay-duration="0"
-    text="Crédits"
+    text="Sources de production d'électricité"
     :content="{
       side: 'left',
       sideOffset: 10,
@@ -9,14 +9,14 @@
     }"
   >
     <UButton
-      icon="lucide-info"
+      icon="lucide-zap"
       color="neutral"
       variant="solid"
       size="lg"
       square
       class="cursor-pointer"
     >
-      <span class="sr-only">Crédits</span>
+      <span class="sr-only">Sources de production d'électricité</span>
     </UButton>
   </UTooltip>
 </template>

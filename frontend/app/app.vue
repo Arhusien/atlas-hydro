@@ -1,5 +1,13 @@
 <template>
   <div>
-    <NuxtPage />
+    <TooltipProvider>
+      <NuxtPage />
+    </TooltipProvider>
   </div>
 </template>
+
+<script setup>
+  import {
+    TooltipProvider,
+  } from "reka-ui";
+</script>
