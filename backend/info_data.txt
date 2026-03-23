@@ -1,0 +1,160 @@
+** Débits fluviaux, niveaux d’eau et données météorologiques d’Hydro‑Québec
+** Par central
+Route API :
+https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/donnees-hydrometeorologiques/records?where=startswith(date%2C%20%222026%2F03%2F23T14%22)&order_by=coderegionqc&lang=fr&timezone=America%2FToronto
+
+code_region (coderegionqc): int
+nom_region (regionqc) : str
+id (identifiant) : str
+type (AJOUTER PAR NOUS : Sonde/Central) : str
+nom (nom) : str
+x (xcoord) : float
+y (ycoord) : float
+z (zcoord) : float
+unite_mesure (composition_depil_nom_unite_mesure) : str
+type_donne (composition_depil_type_point_donnee) : str
+date (date) : str
+valeur (valeur) : float
+
+{
+    "coderegionqc": "01",
+    "regionqc": "Bas-Saint-Laurent",
+    "date_debut": "1992-06-30",
+    "date_fin": null,
+    "identifiant": "1-3040",
+    "nom": "Mitis Barrage aval",
+    "xcoord": -67.91,
+    "ycoord": 48.33,
+    "zcoord": null,
+    "composition_donnees": null,
+    "composition_nom_unite_mesure": null,
+    "composition_pas_temps": null,
+    "composition_type_mesure": null,
+    "composition_type_point_donnee": null,
+    "composition_depil_nom_unite_mesure": "m",
+    "composition_depil_pas_temps": "Horaire",
+    "composition_depil_type_mesure": "Moyenne",
+    "composition_depil_type_point_donnee": "Niveau",
+    "date": "2026/03/23T14:00:00Z",
+    "valeur": "253.78"
+}
+
+
+** Demande d’électricité au Québec
+** Données concernant le Québec tout entier
+Route API :
+https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/demande-electricite-quebec/records?where=date%20%3E%3D%20date%272026-03-19T15%27%20and%20valeurs_demandetotal%20is%20not%20null&limit=100&lang=fr&timezone=America%2FToronto
+
+date (date) : str
+valeur (valeurs_demandetotal) : int
+
+{
+    "date": "2026-03-22T00:15:00-04:00",
+    "valeurs_demandetotal": 23530
+}
+
+
+** Sources de l’électricité produite au Québec
+** Données concernant le Québec tout entier
+Route API :
+https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/production-electricite-quebec/records?limit=20
+
+date (date) : str
+total (valeurs_total) : int
+hydrolique (valeurs_hydraulique) : int
+eolien (valeurs_eolien) : int
+autres (valeurs_autres) : int
+solaire (valeurs_solaire) : int
+thermique (valeurs_thermique) : int
+
+{
+    "date": "2026-03-22T05:30:00+00:00",
+    "valeurs_total": 22566,
+    "valeurs_hydraulique": 20838,
+    "valeurs_eolien": 879,
+    "valeurs_autres": 849,
+    "valeurs_solaire": 0,
+    "valeurs_thermique": 0
+}
+
+
+** Importations et exportations d’électricité par marché (avec transits de passage)
+** Données concernant le Québec tout entier
+Route API :
+
+date (date) : str
+total (exportations_total) : float
+newengland (exportations_newengland) : float
+newbrunswick (exportations_newbrunswick) : float
+newyork (exportations_newyork) : float
+ontario (exportations_ontario) : float
+ 
+{
+    "date": "2026-03-22T04:00:00+00:00",
+    "exportations_total": 1324.5,
+    "exportations_newengland": 0.3,
+    "exportations_newbrunswick": 0,
+    "exportations_newyork": -985,
+    "exportations_ontario": 1324.2,
+    "importations_sources_ontario_total": 0,
+    "importations_sources_ontario_gas": null,
+    "importations_sources_ontario_nuclear": null,
+    "importations_sources_ontario_unknow": null,
+    "importations_sources_ontario_wind": null,
+    "importations_sources_ontario_hydro": null,
+    "importations_sources_newyork_total": 985,
+    "importations_sources_newyork_gas": 533.8,
+    "importations_sources_newyork_nuclear": 165.2,
+    "importations_sources_newyork_unknown": 14.4,
+    "importations_sources_newyork_wind": 94.9,
+    "importations_sources_newyork_hydro": 176.7,
+    "importations_sources_newengland_total": 0,
+    "importations_sources_newengland_gas": null,
+    "importations_sources_newengland_nuclear": null,
+    "importations_sources_newengland_unknown": null,
+    "importations_sources_newengland_wind": null,
+    "importations_sources_newengland_hydro": null,
+    "importations_sources_newbrunswick_total": 0,
+    "importations_sources_newbrunswick_gas": null,
+    "importations_sources_newbrunswick_nuclear": null,
+    "importations_sources_newbrunswick_unknown": null,
+    "importations_sources_newbrunswick_wind": null,
+    "importations_sources_newbrunswick_hydro": null
+}
+
+
+** Débits et apports naturels aux installations d’Hydro‑Québec
+** Par central 
+Route API :
+https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/donnees-hydrometriques/records?limit=20
+
+code_region (coderegionqc) : int
+nom_region (regionqc) : str
+id (identifiant) : str
+type (AJOUTER PAR NOUS : Sonde/Central) : str
+nom (nom) : str
+x (xcoord) : float
+y (ycoord) : float
+z (zcoord) : float
+unite_mesure (depil_json_nom_unite_mesure) : str
+type_donne (depil_json_type_point_donnee) : str
+date (split_date) : str
+value (split_value) : float
+ 
+{
+    "coderegionqc": "09",
+    "regionqc": "Côte-Nord",
+    "date_debut": "2005-02-11",
+    "date_fin": null,
+    "identifiant": "3-152",
+    "nom": "Toulnustouc",
+    "xcoord": -68.1593,
+    "ycoord": 49.9706,
+    "zcoord": null,
+    "depil_json_nom_unite_mesure": "m³/s",
+    "depil_json_pas_temps": "Horaire",
+    "depil_json_type_mesure": "Moyenne",
+    "depil_json_type_point_donnee": "Débit total",
+    "split_date": "2026/03/17T05:00:00Z",
+    "split_value": "116.74"
+}
