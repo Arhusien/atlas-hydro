@@ -6,8 +6,6 @@ export default defineNuxtConfig({
         "@nuxt/eslint",
         "@nuxt/a11y",
         "@nuxt/hints",
-        "@nuxt/scripts",
-        "@nuxt/image",
         "@nuxt/ui",
         "@nuxtjs/leaflet",
         "@nuxtjs/i18n",

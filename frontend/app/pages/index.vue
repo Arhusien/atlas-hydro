@@ -3,10 +3,8 @@
     <LMap
       ref="map"
       :zoom="5"
-      :center="[53.5, -71.5]"
-      :options="{
-        zoomControl: false,
-      }"
+      :center="[0, 0]"
+      :options="mapOptions"
       @ready="onMapReady"
     >
       <LTileLayer
@@ -14,6 +12,7 @@
         attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/&quot;>OpenStreetMap</a> contributors"
         layer-type="base"
         name="OpenStreetMap"
+        no-wrap
       />
       <LControl position="topleft">
         <ControleZoom
@@ -26,6 +25,11 @@
           <ExportationElectricite />
           <Credits />
         </div>
+      </LControl>
+      <LControl position="bottomleft">
+        <CentrerQuebec
+          @center="centerOnQuebec()"
+        />
       </LControl>
     </LMap>
     <InfosInstallation
@@ -60,6 +64,22 @@
     popupAnchor: [0, -32],
   });
 
+  const quebecBounds = L.latLngBounds(
+          L.latLng(45.0, -80.0), // Gatineau/Abitibi
+          L.latLng(62.5, -57.0), // Nunavik/Blanc-Sablon
+        ),
+        worldBounds = L.latLngBounds(
+          L.latLng(-90, -180), // Sud-Ouest
+          L.latLng(90, 180), // Nord-Est
+        );
+
+  const mapOptions = {
+    zoomControl: false,
+    minZoom: 3,
+    maxBounds: worldBounds,
+    maxBoundsViscosity: 1.0,
+  };
+
   const map = ref(null);
 
   const {
@@ -70,6 +90,8 @@
   });
 
   const onMapReady = () => {
+    centerOnQuebec();
+
     // Ajouter le GeoJSON à la carte
     L.geoJSON(geojson.value, {
       pointToLayer: function (feature, latlng) {
@@ -79,16 +101,15 @@
         }).on("click", function () {
           infosInstallationOpen.value = true;
           infosInstallationData.value = feature.properties;
-
-          const zoom = map.value.leafletObject.getZoom(),
-                animationDuration = zoom < 15 ? (zoom > 10 ? 1 : 1.5) : 0.5;
-
-          map.value.leafletObject.flyTo(latlng, 15, {
-            animate: true,
-            duration: animationDuration,
-          });
         });
       },
     }).addTo(map.value.leafletObject);
+  };
+
+  const centerOnQuebec = () => {
+    map.value.leafletObject.flyToBounds(quebecBounds, {
+      animate: false,
+      padding: [50, 50],
+    });
   };
 </script>
