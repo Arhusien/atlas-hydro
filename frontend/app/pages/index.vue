@@ -1,5 +1,5 @@
 <template>
-  <div style="height:100vh; width:100vw">
+  <div style="height:100vh; width:100vw; position: relative;">
     <LMap
       ref="map"
       :zoom="5"
@@ -52,11 +52,22 @@
     fill: "var(--ui-bg)",
   }).outerHTML;
 
+  const markerIcon = L.divIcon({
+    html: mapPinSvg,
+    className: "marker-icon",
+    iconSize: [32, 32],
+    iconAnchor: [16, 32],
+    popupAnchor: [0, -32],
+  });
+
   const map = ref(null);
 
   const {
     data: geojson,
-  } = await useFetch("https://cartes.shawinigan.ca/server/rest/services/Infrastructures_sportives/FeatureServer/0/query?where=1=1&outFields=*&returnGeometry=true&f=geojson");
+  } = await useFetch("https://cartes.shawinigan.ca/server/rest/services/Infrastructures_sportives/FeatureServer/0/query?where=1=1&outFields=*&returnGeometry=true&f=geojson", {
+    // Empêcher la réactivité du GeoJSON et ainsi éviter les problèmes de performance
+    transform: rawData => markRaw(rawData),
+  });
 
   const onMapReady = () => {
     // Ajouter le GeoJSON à la carte
@@ -64,16 +75,18 @@
       pointToLayer: function (feature, latlng) {
         return L.marker(latlng, {
           title: feature.properties.nom || "Inconnu",
-          icon: L.divIcon({
-            html: mapPinSvg,
-            className: "marker-icon",
-            iconSize: [32, 32],
-            iconAnchor: [12, 32],
-            popupAnchor: [0, -32],
-          }),
+          icon: markerIcon,
         }).on("click", function () {
           infosInstallationOpen.value = true;
           infosInstallationData.value = feature.properties;
+
+          const zoom = map.value.leafletObject.getZoom(),
+                animationDuration = zoom < 15 ? (zoom > 10 ? 1 : 1.5) : 0.5;
+
+          map.value.leafletObject.flyTo(latlng, 15, {
+            animate: true,
+            duration: animationDuration,
+          });
         });
       },
     }).addTo(map.value.leafletObject);

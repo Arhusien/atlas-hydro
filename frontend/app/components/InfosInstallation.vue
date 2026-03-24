@@ -4,6 +4,7 @@
     side="right"
     inset
     :overlay="false"
+    close-icon="lucide-x"
     title="Slideover with inset"
   >
     <template #body>
