@@ -9,7 +9,7 @@
     }"
   >
     <UButton
-      icon="lucide-dollar-sign"
+      icon="lucide-antenna"
       color="neutral"
       variant="solid"
       size="lg"
