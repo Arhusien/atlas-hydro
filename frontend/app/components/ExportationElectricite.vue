@@ -9,7 +9,7 @@
     }"
   >
     <UButton
-      icon="lucide-truck-electric"
+      icon="lucide-dollar-sign"
       color="neutral"
       variant="solid"
       size="lg"
