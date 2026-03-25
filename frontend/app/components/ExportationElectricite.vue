@@ -9,7 +9,7 @@
     }"
   >
     <UButton
-      icon="lucide-antenna"
+      icon="lucide-utility-pole"
       color="neutral"
       variant="solid"
       size="lg"
