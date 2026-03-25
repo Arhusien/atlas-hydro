@@ -1,9 +1,11 @@
 <template>
-  <div>
+  <UApp>
     <TooltipProvider>
-      <NuxtPage />
+      <UMain>
+        <NuxtPage />
+      </UMain>
     </TooltipProvider>
-  </div>
+  </UApp>
 </template>
 
 <script setup>
