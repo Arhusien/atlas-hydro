@@ -12,3 +12,19 @@
 .leaflet-control-attribution {
     user-select: none;
 }
+
+.leaflet-top .leaflet-control {
+    margin-top: 16px !important;
+}
+
+.leaflet-bottom .leaflet-control {
+    margin-bottom: 16px !important;
+}
+
+.leaflet-left .leaflet-control {
+    margin-left: 16px !important;
+}
+
+.leaflet-right .leaflet-control {
+    margin-right: 16px !important;
+}
