@@ -81,6 +81,7 @@ thermique (valeurs_thermique) : int
 ** Importations et exportations d’électricité par marché (avec transits de passage)
 ** Données concernant le Québec tout entier
 Route API :
+ https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/importations-exportations-avec-transits/records?limit=20
 
 date (date) : str
 total (exportations_total) : float

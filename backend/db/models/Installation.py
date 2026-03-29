@@ -1,4 +1,4 @@
-from db.db import db
+from db import db
 from enums import TypeInstallation
 
 
@@ -17,6 +17,11 @@ class Installation(db.Model):
     z = db.Column(db.Float)
 
     releves = db.relationship("Releve", backref="installation", lazy=True)
+
+    # Baser l'héritage des modèles sur le type de l'installation
+    __mapper_args__ = {
+        "polymorphic_on": type,
+    }
 
     def serialiser(self) -> dict:
         return {
