@@ -51,9 +51,9 @@ def synchroniser_installations(app: Flask) -> dict:
                     continue
 
                 type_installation = TypeInstallation.SONDE
-                # Si la liste des donnees comprend une donnee "Debit turbine", il s'agit d'une centrale.
+                # Si la liste des donnees comprend une donnee "Débit turbiné", il s'agit d'une centrale.
                 if any(
-                    simplifier_texte("Debit turbine") in simplifier_texte(donnee.get("type_point_donnee", ""))
+                    simplifier_texte("Débit turbiné") in simplifier_texte(donnee.get("type_point_donnee", ""))
                     for donnee in donnees_installation.get("Composition", [])
                 ):
                     type_installation = TypeInstallation.CENTRALE
