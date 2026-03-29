@@ -33,4 +33,5 @@ class Installation(db.Model):
             "x": self.x,
             "y": self.y,
             "z": self.z,
+            "releves": self.releves,
         }

@@ -6,7 +6,7 @@ from flask import Flask
 from db import db
 from db.models import Installation
 from pipeline import demarrer_cron_etl, executer_etl
-from services.installations_service import associer_sondes_aux_centrales, synchroniser_installations
+from services.installations_service import associer_sondes_centrales, synchroniser_installations
 
 app = Flask(__name__)
 app.config.from_object("config.Config")
@@ -31,12 +31,8 @@ if (os.environ.get("WERKZEUG_RUN_MAIN") == "true") or (not app.config["DEBUG"]):
 # Définir la commande "sync_installations" à utiliser avec le module flask
 @app.cli.command("sync_installations")
 def sync_installations_cmd():
-    """
-    Synchronise en base de données les installations d'Hydro-Québec.
-    """
-
     resultat = synchroniser_installations(app)
-    nb_associations = associer_sondes_aux_centrales(app)
+    nb_associations = associer_sondes_centrales(app)
 
     print(
         f"Installations créées : {resultat['creees']}\n"
@@ -48,10 +44,6 @@ def sync_installations_cmd():
 
 @app.cli.command("executer_etl")
 def executer_etl_cmd():
-    """
-    Exécute la pipeline ETL.
-    """
-
     executer_etl(app)
 
 

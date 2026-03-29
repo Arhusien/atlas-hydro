@@ -1,10 +1,11 @@
 from db import db
+from utils import generer_snowflake
 
 
 class Releve(db.Model):
     __tablename__ = "releves"
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.BigInteger, primary_key=True, default=generer_snowflake)
 
     installation_id = db.Column(db.String(20), db.ForeignKey("installations.id"), nullable=False)
 
@@ -12,7 +13,9 @@ class Releve(db.Model):
 
     type_mesure = db.Column(db.String)
     unite = db.Column(db.String)
-    donnee = db.Column(db.Float)
+    donnee = db.Column(db.String)
+
+    valeur = db.Column(db.Float)
 
     def serialiser(self) -> dict:
         return {
@@ -22,4 +25,5 @@ class Releve(db.Model):
             "type_mesure": self.type_mesure,
             "unite": self.unite,
             "donnee": self.donnee,
+            "valeur": self.valeur,
         }

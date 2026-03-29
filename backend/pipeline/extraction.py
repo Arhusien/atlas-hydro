@@ -21,6 +21,13 @@ FUSEAU_HORAIRE = ZoneInfo(constantes.FUSEAU_HORAIRE)
 
 
 def extraire_donnees() -> dict[str, list[dict]]:
+    """
+    Extrait les relevés hydrométéorologiques ainsi qu'hydrométriques des jeux de données d'Hydro-Québec.
+
+    Returns:
+        (dict[str, list[dict]]]): Un dictionnaire contenant, pour chaque jeu de données, les données extraites de celui-ci.
+    """  # noqa: E501
+
     donnees_extraites = {}
 
     session = requests.Session()

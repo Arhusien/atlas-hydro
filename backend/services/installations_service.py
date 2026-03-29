@@ -10,7 +10,17 @@ from enums import TypeInstallation
 from utils import constantes, simplifier_texte
 
 
-def synchroniser_installations(app: Flask) -> dict:
+def synchroniser_installations(app: Flask) -> dict[str, int | float]:
+    """
+    Synchronise les installations d'Hydro-Québec avec celles connues d'Atlas Hydro.
+
+    Parameters:
+        app (Flask): L'application Flask.
+
+    Returns:
+        (dict[str, int | float]): Un dictionnaire contenant les statistiques de la synchronisation.
+    """
+
     debut_execution = time.perf_counter()
 
     session = requests.Session()
@@ -37,8 +47,8 @@ def synchroniser_installations(app: Flask) -> dict:
     donnees_centrales = reponse_centrales.json()
     donnees_sondes = reponse_sondes.json()
 
-    creees = 0
-    mises_a_jour = 0
+    nb_creees = 0
+    nb_mises_a_jour = 0
 
     with app.app_context():
         try:
@@ -72,13 +82,16 @@ def synchroniser_installations(app: Flask) -> dict:
                 installation_existante = db.session.get(Installation, id_installation)
                 if not installation_existante:
                     db.session.add(Installation(**installation))
-                    creees += 1
+
+                    nb_creees += 1
                 else:
                     for cle, valeur in installation.items():
                         setattr(installation_existante, cle, valeur)
-                    mises_a_jour += 1
+
+                    nb_mises_a_jour += 1
 
             db.session.commit()
+
         except Exception:
             db.session.rollback()
             raise
@@ -87,17 +100,27 @@ def synchroniser_installations(app: Flask) -> dict:
     temps_execution = fin_execution - debut_execution
 
     return {
-        "creees": creees,
-        "mises_a_jour": mises_a_jour,
+        "creees": nb_creees,
+        "mises_a_jour": nb_mises_a_jour,
         "temps": temps_execution,
     }
 
 
-def associer_sondes_aux_centrales(app: Flask) -> int:
+def associer_sondes_centrales(app: Flask) -> int:
+    """
+    Associe les sondes à proximité d'une centrale à cette même centrale.
+
+    Parameters:
+        app (Flask): L'application Flask.
+
+    Returns:
+        (int): Le nombre d'associations créées.
+    """
+
     with app.app_context():
         lst_centrales: list[Centrale] = Centrale.query.all()
 
-        liens_crees = 0
+        associations_creees = 0
 
         for centrale in lst_centrales:
             if (centrale.y is None) or (centrale.x is None):
@@ -122,8 +145,8 @@ def associer_sondes_aux_centrales(app: Flask) -> int:
 
             for sonde in sondes_a_proximite:
                 sonde.centrale_id = centrale.id
-                liens_crees += 1
+                associations_creees += 1
 
         db.session.commit()
 
-        return liens_crees
+        return associations_creees
