@@ -1,4 +1,5 @@
 from db import db
+from db.models import Releve
 from enums import TypeInstallation
 
 
@@ -23,8 +24,18 @@ class Installation(db.Model):
         "polymorphic_on": type,
     }
 
-    def serialiser(self) -> dict:
-        return {
+    def serialiser(self, avec_releves: bool | None = False) -> dict:
+        """
+        Transforme les données de l'installation en objet JSON.
+
+        Parameters:
+            avec_releves (bool, optionel): Si l'objet doit inclure tous les relevés de l'installation.
+
+        Returns:
+            (dict): Les données de l'installation en objet JSON.
+        """
+
+        donnees = {
             "id": self.id,
             "nom": self.nom,
             "type": self.type.value,
@@ -33,5 +44,13 @@ class Installation(db.Model):
             "x": self.x,
             "y": self.y,
             "z": self.z,
-            "releves": self.releves,
         }
+
+        if avec_releves:
+            donnees.update(
+                {
+                    "releves": [releve.serialiser() for releve in self.releves],
+                }
+            )
+
+        return donnees

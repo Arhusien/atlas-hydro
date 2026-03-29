@@ -15,3 +15,9 @@ class Centrale(Installation):
         foreign_keys="Sonde.centrale_id",
         lazy=True,
     )
+
+    def serialiser(self, avec_releves: bool | None = False):
+        return {
+            **super().serialiser(avec_releves),
+            "sondes": [sonde.serialiser(avec_releves) for sonde in self.sondes],
+        }
