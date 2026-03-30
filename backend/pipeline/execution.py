@@ -4,11 +4,11 @@ from flask import Flask
 from enums import JeuxDonnees, TypeReleve
 from utils import constantes
 
-from .extraction import extraire_donnees
+from .extraction import extraire_releves
 from .traitement import supprimer_anciens_releves, traiter_releves
 
 
-def executer_etl(app: Flask):
+def executer_pipeline(app: Flask):
     """
     Exécute la pipeline ETL (Extract-transform-load).
 
@@ -22,7 +22,7 @@ def executer_etl(app: Flask):
 
     supprimer_anciens_releves(app)
 
-    donnees_extraites = extraire_donnees()
+    donnees_extraites = extraire_releves()
     for jeu_donnees, donnees in donnees_extraites.items():
         jeu_donnees = JeuxDonnees(jeu_donnees)
 
@@ -35,7 +35,7 @@ def executer_etl(app: Flask):
     print("Pipeline ETL exécutée. Exécution à suivre dans 1 heure.")
 
 
-def demarrer_cron_etl(app: Flask):
+def demarrer_cron_pipeline(app: Flask):
     """
     Démarre la cron job de la pipeline ETL.
 
@@ -48,7 +48,7 @@ def demarrer_cron_etl(app: Flask):
     scheduler = BackgroundScheduler(timezone=constantes.FUSEAU_HORAIRE)
 
     scheduler.add_job(
-        func=executer_etl,
+        func=executer_pipeline,
         trigger="cron",
         minute=10,
         hour="*",

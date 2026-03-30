@@ -3,30 +3,9 @@ from datetime import datetime, timedelta, timezone
 from flask import Flask
 
 from db import db
-from db.models import Releve
 from enums import TypeReleve
+from models import Releve
 from utils import convertir_valeur
-
-
-def supprimer_anciens_releves(app: Flask) -> int:
-    """
-    Supprime tous les relevés vieux de plus de 24 heures.
-
-    Parameters:
-        app (Flask): L'application Flask.
-
-    Returns:
-        (int): Le nombre de relevés supprimés.
-    """
-
-    nb_releves_supprimes = 0
-
-    with app.app_context():
-        date_jour_precedent = datetime.now(timezone.utc) - timedelta(hours=24)
-
-        nb_releves_supprimes = db.session.query(Releve).filter(Releve.date < date_jour_precedent).delete()
-
-    return nb_releves_supprimes
 
 
 def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeReleve) -> int:
@@ -108,3 +87,24 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
             raise
 
     return nb_releves_crees
+
+
+def supprimer_anciens_releves(app: Flask) -> int:
+    """
+    Supprime tous les relevés vieux de plus de 24 heures.
+
+    Parameters:
+        app (Flask): L'application Flask.
+
+    Returns:
+        (int): Le nombre de relevés supprimés.
+    """
+
+    nb_releves_supprimes = 0
+
+    with app.app_context():
+        date_jour_precedent = datetime.now(timezone.utc) - timedelta(hours=24)
+
+        nb_releves_supprimes = db.session.query(Releve).filter(Releve.date < date_jour_precedent).delete()
+
+    return nb_releves_supprimes

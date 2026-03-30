@@ -1,5 +1,4 @@
 from db import db
-from db.models import Releve
 from enums import TypeInstallation
 
 

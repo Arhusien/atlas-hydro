@@ -5,14 +5,14 @@ from flask import Flask
 from geopy.distance import geodesic
 
 from db import db
-from db.models import Centrale, Installation, Sonde
 from enums import TypeInstallation
+from models import Centrale, Installation, Sonde
 from utils import constantes, simplifier_texte
 
 
 def synchroniser_installations(app: Flask) -> dict[str, int | float]:
     """
-    Synchronise les installations d'Hydro-Québec avec celles connues d'Atlas Hydro.
+    Extrait et charge en base de données les installations d'Hydro-Québec.
 
     Parameters:
         app (Flask): L'application Flask.
@@ -81,7 +81,12 @@ def synchroniser_installations(app: Flask) -> dict[str, int | float]:
 
                 installation_existante = db.session.get(Installation, id_installation)
                 if not installation_existante:
-                    db.session.add(Installation(**installation))
+                    if type_installation == TypeInstallation.CENTRALE:
+                        nouvelle_installation = Centrale(**installation)
+                    elif type_installation == TypeInstallation.SONDE:
+                        nouvelle_installation = Sonde(**installation)
+
+                    db.session.add(nouvelle_installation)
 
                     nb_creees += 1
                 else:
