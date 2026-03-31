@@ -44,15 +44,14 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
                 date = None
                 if type_releves == TypeReleve.HYDROMETEOROLOGIQUE:
                     date = donees_releve.get("date")
-                    if date:
-                        date = datetime.strptime(date, "%Y/%m/%d %H:%M:%SZ")
                 elif type_releves == TypeReleve.HYDROMETRIQUE:
                     date = donees_releve.get("split_date")
-                    if date:
-                        date = datetime.strptime(date, "%Y/%m/%dT%H:%M:%SZ")
 
                 if not date:
                     continue
+
+                date = date.replace(" ", "T")
+                date = datetime.strptime(date, "%Y/%m/%dT%H:%M:%SZ")
 
                 releve = {
                     "installation_id": id_installation,
