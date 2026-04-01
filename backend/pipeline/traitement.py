@@ -3,9 +3,34 @@ from datetime import datetime, timedelta, timezone
 from flask import Flask
 
 from db import db
-from enums import TypeReleve
+from enums import TypeDonnee, TypeReleve
 from models import Releve
-from utils import convertir_valeur
+from utils import convertir_valeur, simplifier_texte
+
+
+def _determiner_type_donnee(donnee: str, type_releve: TypeReleve) -> TypeDonnee:
+    """
+    Détermine le type de la donnée d'un relevé.
+
+    Parameters:
+        donnee (str): Le nom de la donnée.
+        type_releve (TypeReleve): Le type du relevé.
+
+    Returns:
+        (TypeDonnee): Le type de la donnée du relevé.
+    """
+
+    if not donnee:
+        return TypeDonnee.INCONNU
+
+    # Filtrer la liste des types de données pour n'y inclure que ceux du type du relevé
+    types_donnees_releve = list(filter(lambda t: t.type_releve == type_releve, TypeDonnee))
+
+    for type_donnee in types_donnees_releve:
+        if simplifier_texte(type_donnee.value) in simplifier_texte(donnee):
+            return type_donnee
+
+    return TypeDonnee.INCONNU
 
 
 def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeReleve) -> int:
@@ -56,22 +81,29 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
                 releve = {
                     "installation_id": id_installation,
                     "date": date,
-                    "valeur": valeur,
+                    "valeur_donnee": valeur,
+                    "type_releve": type_releves,
                 }
                 if type_releves == TypeReleve.HYDROMETEOROLOGIQUE:
+                    donnee = donees_releve.get("composition_depil_type_point_donnee")
+
                     releve.update(
                         {
-                            "type_mesure": donees_releve.get("composition_depil_type_mesure"),
-                            "unite": donees_releve.get("composition_depil_nom_unite_mesure"),
-                            "donnee": donees_releve.get("composition_depil_type_point_donnee"),
+                            "methode_mesure": donees_releve.get("composition_depil_type_mesure"),
+                            "unite_donnee": donees_releve.get("composition_depil_nom_unite_mesure"),
+                            "nom_donnee": donnee,
+                            "type_donnee": _determiner_type_donnee(donnee, type_releve=type_releves),
                         }
                     )
                 elif type_releves == TypeReleve.HYDROMETRIQUE:
+                    donnee = donees_releve.get("depil_json_type_point_donnee")
+
                     releve.update(
                         {
-                            "type_mesure": donees_releve.get("depil_json_type_mesure"),
-                            "unite": donees_releve.get("depil_json_nom_unite_mesure"),
-                            "donnee": donees_releve.get("depil_json_type_point_donnee"),
+                            "methode_mesure": donees_releve.get("depil_json_type_mesure"),
+                            "unite_donnee": donees_releve.get("depil_json_nom_unite_mesure"),
+                            "nom_donnee": donees_releve.get("depil_json_type_point_donnee"),
+                            "type_donnee": _determiner_type_donnee(donnee, type_releve=type_releves),
                         }
                     )
 

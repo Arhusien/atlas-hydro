@@ -4,8 +4,11 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 import requests
+from flask import Flask
 
-from enums import JeuxDonnees
+from db import db
+from enums import JeuxDonnees, TypeReleve
+from models import Releve
 from utils import constantes
 
 QUERY_PAR_DEFAUT = (
@@ -20,9 +23,48 @@ JEUX_DONNEES = [
 FUSEAU_HORAIRE = ZoneInfo(constantes.FUSEAU_HORAIRE)
 
 
-def extraire_releves() -> dict[str, list[dict]]:
+def _construire_filtre_date(cle_date: str, date_limite: datetime, date_fin: datetime) -> str:
+    """
+    Construit un filtre par rapport à un intervalle de temps.
+
+    Parameters:
+        cle_date (str): La clé JSON de la valeur de la date.
+        date_limite (datetime): La borne inférieure de l'intervalle de temps (exclue).
+        date_fin (datetime): La borne supérieure de l'intervalle de temps (incluse).
+
+    Returns:
+        (str): Le filtre de l'intervalle de temps.
+    """
+
+    nb_heures = int((date_fin - date_limite).total_seconds() / 3600)
+
+    # Si le nombre d'heures est supérieur à 6
+    if nb_heures > 6:
+        nb_heures = 6
+        # Avancer la date de début à la date de fin moins 6 heures
+        date_limite = date_fin - timedelta(hours=6)
+
+    conditions_date = []
+    # La date de début n'est pas incluse dans l'itération
+    for i in range(nb_heures):
+        date_iteration = date_fin - timedelta(hours=i)
+
+        conditions_date.extend(
+            [
+                f"startsWith({cle_date}, '{date_iteration.strftime('%Y/%m/%d %H')}')",
+                f"startsWith({cle_date}, '{date_iteration.strftime('%Y/%m/%dT%H')}')",
+            ]
+        )
+
+    return " OR ".join(conditions_date)
+
+
+def extraire_releves(app: Flask) -> dict[str, list[dict]]:
     """
     Extrait les relevés hydrométéorologiques ainsi qu'hydrométriques des jeux de données d'Hydro-Québec.
+
+    Parameters:
+        app (Flask): L'application Flask.
 
     Returns:
         (dict[str, list[dict]]]): Un dictionnaire contenant, pour chaque jeu de données, les données extraites de celui-ci.
@@ -34,26 +76,40 @@ def extraire_releves() -> dict[str, list[dict]]:
     session.headers.update({**constantes.HEADERS})
 
     date = datetime.now(FUSEAU_HORAIRE).replace(minute=0, second=0, microsecond=0)
-    date_avancee = date + timedelta(hours=1)
-
-    date_format_standard = date.strftime("%Y/%m/%d %H")
-    date_format_iso = date.strftime("%Y/%m/%dT%H")
 
     for jeu_donnees in JEUX_DONNEES:
-        # Filtrer à l'aide de "startsWith" car la date est une chaîne de caractères
-        if jeu_donnees == JeuxDonnees.HYDROMETEOROLOGIQUES:
-            filtre = f"startsWith(date, '{date_format_standard}') OR startsWith(date, '{date_format_iso}')"
-        elif jeu_donnees == JeuxDonnees.HYDROMETRIQUES:
-            filtre = f"startsWith(split_date, '{date_format_standard}') OR startsWith(split_date, '{date_format_iso}')"
-        # Filtrer à l'aide d'opérateurs car la date est un objet
-        else:
-            filtre = f"date >= '{date.isoformat()}' AND date < '{date_avancee.isoformat()}'"
+        type_releve = (
+            TypeReleve.HYDROMETEOROLOGIQUE
+            if jeu_donnees == JeuxDonnees.HYDROMETEOROLOGIQUES
+            else TypeReleve.HYDROMETRIQUE
+        )
 
-        url_api = f"{constantes.URL_API_DONNEES_HQ}/{jeu_donnees.value}/records{QUERY_PAR_DEFAUT}&where={urllib.parse.quote(filtre)}"  # noqa: E501
+        with app.app_context():
+            derniere_date = (
+                db.session.query(db.func.max(Releve.date)).filter(Releve.type_releve == type_releve).scalar()
+            )
+
+        if derniere_date:
+            derniere_date = derniere_date.replace(tzinfo=FUSEAU_HORAIRE)
+        else:
+            derniere_date = date - timedelta(hours=6)
+
+        if jeu_donnees == JeuxDonnees.HYDROMETEOROLOGIQUES:
+            filtre_date = _construire_filtre_date("date", derniere_date, date)
+        elif jeu_donnees == JeuxDonnees.HYDROMETRIQUES:
+            filtre_date = _construire_filtre_date("split_date", derniere_date, date)
+
+        # S'il n'y a pas de filtre par rapport à la date, alors tous les relevés sont à jour en base de données
+        if not filtre_date:
+            continue
+
+        url_api = f"{constantes.URL_API_DONNEES_HQ}/{jeu_donnees.value}/records{QUERY_PAR_DEFAUT}&where={urllib.parse.quote(filtre_date)}"  # noqa: E501
 
         releves_jeu_donnees = []
         decalage = 0
         total_elements = float("inf")  # Utiliser "inf" pour forcer la première itération
+
+        print(f"Extraction des données dans l'intervalle de temps : ]{derniere_date.isoformat()}; {date.isoformat()}].")
 
         while decalage < total_elements:
             print(f"Extraction des données du jeu {jeu_donnees.value} (decalage={decalage})")

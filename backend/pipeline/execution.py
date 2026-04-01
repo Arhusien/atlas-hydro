@@ -22,7 +22,7 @@ def executer_pipeline(app: Flask):
 
     supprimer_anciens_releves(app)
 
-    donnees_extraites = extraire_releves()
+    donnees_extraites = extraire_releves(app)
     for jeu_donnees, donnees in donnees_extraites.items():
         jeu_donnees = JeuxDonnees(jeu_donnees)
 

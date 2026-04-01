@@ -1,4 +1,5 @@
 from db import db
+from enums import TypeDonnee, TypeReleve
 from utils import generer_snowflake
 
 
@@ -11,19 +12,23 @@ class Releve(db.Model):
 
     date = db.Column(db.DateTime, nullable=False)
 
-    type_mesure = db.Column(db.String)
-    unite = db.Column(db.String)
-    donnee = db.Column(db.String)
+    type_releve = db.Column(db.Enum(TypeReleve), nullable=False)
 
-    valeur = db.Column(db.Float)
+    methode_mesure = db.Column(db.String)
+    unite_donnee = db.Column(db.String)
+    nom_donnee = db.Column(db.String)
+    type_donnee = db.Column(db.Enum(TypeDonnee), nullable=False)
+
+    valeur_donnee = db.Column(db.Float)
 
     def serialiser(self) -> dict:
         return {
             "id": self.id,
             "installation_id": self.installation_id,
             "date": self.date.isoformat(),
-            "type_mesure": self.type_mesure,
-            "unite": self.unite,
-            "donnee": self.donnee,
-            "valeur": self.valeur,
+            "methode_mesure": self.methode_mesure,
+            "unite_donnee": self.unite_donnee,
+            "nom_donnee": self.nom_donnee,
+            "type_donnee": self.type_donnee,
+            "valeur_donnee": self.valeur_donnee,
         }
