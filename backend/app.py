@@ -15,7 +15,7 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
-    # Si le fichier est chargé depuis la commande "synchroniser_installations"
+    # Si le fichier n'est pas chargé depuis la commande "synchroniser_installations"
     # et que la base de données est vide
     if ("synchroniser_installations" not in sys.argv) and (Installation.query.count() == 0):
         raise RuntimeError(
