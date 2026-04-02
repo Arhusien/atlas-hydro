@@ -1,11 +1,14 @@
 from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from flask import Flask
 
 from db import db
 from enums import TypeDonnee, TypeReleve
 from models import Releve
-from utils import convertir_valeur, simplifier_texte
+from utils import constantes, convertir_valeur, simplifier_texte
+
+FUSEAU_HORAIRE = ZoneInfo(constantes.FUSEAU_HORAIRE)
 
 
 def _determiner_type_donnee(donnee: str, type_releve: TypeReleve) -> TypeDonnee:
@@ -134,8 +137,15 @@ def supprimer_anciens_releves(app: Flask) -> int:
     nb_releves_supprimes = 0
 
     with app.app_context():
-        date_jour_precedent = datetime.now(timezone.utc) - timedelta(hours=24)
+        date_jour_precedent = datetime.now(FUSEAU_HORAIRE) - timedelta(hours=24)
 
-        nb_releves_supprimes = db.session.query(Releve).filter(Releve.date < date_jour_precedent).delete()
+        try:
+            nb_releves_supprimes = db.session.query(Releve).filter(Releve.date < date_jour_precedent).delete()
+
+            db.session.commit()
+
+        except Exception:
+            db.session.rollback()
+            raise
 
     return nb_releves_supprimes
