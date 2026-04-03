@@ -30,7 +30,7 @@ with app.app_context():
 
 # Définir la commande "synchroniser_installations" à utiliser avec le module flask
 @app.cli.command("synchroniser_installations")
-def synchroniser_installations_cmd():
+def synchroniser_installations_commande():
     stats_synchronisation = synchroniser_installations(app)
     nb_associations = associer_sondes_centrales(app)
 
@@ -43,7 +43,7 @@ def synchroniser_installations_cmd():
 
 
 @app.cli.command("executer_pipeline")
-def executer_pipeline_cmd():
+def executer_pipeline_commande():
     executer_pipeline(app)
 
 
