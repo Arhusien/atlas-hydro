@@ -84,8 +84,8 @@
 
   const {
     data: geojson,
-  } = await useFetch("https://cartes.shawinigan.ca/server/rest/services/Infrastructures_sportives/FeatureServer/0/query?where=1=1&outFields=*&returnGeometry=true&f=geojson", {
-    // Empêcher la réactivité du GeoJSON et ainsi éviter les problèmes de performance
+  } = await useFetch("/api/carte/installations", {
+    // Empêcher la réactivité du GeoJSON et ainsi éviter des problèmes de performance
     transform: rawData => markRaw(rawData),
   });
 

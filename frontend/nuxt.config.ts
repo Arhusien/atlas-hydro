@@ -1,6 +1,5 @@
 import tailwindcss from "@tailwindcss/vite";
 
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
     modules: [
         "@nuxt/eslint",
@@ -20,6 +19,11 @@ export default defineNuxtConfig({
     css: [
         "./app/assets/css/main.css",
     ],
+    routeRules: {
+        "/api/**": {
+            proxy: `${process.env.NUXT_BACKEND_API_BASE}/api/**`,
+        },
+    },
     compatibilityDate: "2025-07-15",
     vite: {
         plugins: [
@@ -40,5 +44,12 @@ export default defineNuxtConfig({
                 semi: true,
             },
         },
+    },
+    i18n: {
+        strategy: "no_prefix",
+        defaultLocale: "fr",
+        locales: [
+            "fr",
+        ],
     },
 });

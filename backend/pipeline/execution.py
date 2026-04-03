@@ -43,11 +43,14 @@ def demarrer_cron_pipeline(app: Flask):
 
     Parameters:
         app (Flask): L'application Flask.
+
+    Returns:
+        (BackgroundScheduler): Le planificateur de la cron job.
     """
 
-    scheduler = BackgroundScheduler(timezone=constantes.FUSEAU_HORAIRE)
+    planificateur = BackgroundScheduler(timezone=constantes.FUSEAU_HORAIRE)
 
-    scheduler.add_job(
+    planificateur.add_job(
         func=executer_pipeline,
         trigger="cron",
         minute=10,
@@ -57,4 +60,8 @@ def demarrer_cron_pipeline(app: Flask):
         replace_existing=True,
     )
 
-    scheduler.start()
+    print("La pipeline ETL s'exécutera automatiquement toutes les heures à la 10ème minute.")
+
+    planificateur.start()
+
+    return planificateur
