@@ -35,6 +35,7 @@ def generer_geojson_installations() -> dict:
                         "code": donnees_installation["code_region"],
                         "nom": donnees_installation["nom_region"],
                     },
+                    "centrale_id": donnees_installation.get("centrale_id", None),
                 },
             },
         )

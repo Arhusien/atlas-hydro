@@ -27,42 +27,35 @@
         </div>
       </LControl>
       <LControl position="bottomleft">
-        <CentrerQuebec
-          @center="centerOnQuebec()"
-        />
+        <div class="flex flex-col items-center justify-center gap-2.5 mt-2.5">
+          <Parametres />
+          <CentrerQuebec
+            @center="centerOnQuebec()"
+          />
+        </div>
       </LControl>
     </LMap>
     <InfosInstallation
       v-model="infosInstallationOpen"
-      :data="infosInstallationData"
+      :default-data="infosInstallationData"
     />
   </div>
 </template>
 
 <script setup>
   import L from "leaflet";
-  import {
-    MapPin,
-    createElement,
-  } from "lucide";
+  import satellitePin from "~/assets/img/satellitePin.svg?raw";
+  import factoryPin from "~/assets/img/factoryPin.svg?raw";
 
   const infosInstallationOpen = ref(false),
         infosInstallationData = ref({});
 
-  const mapPinSvg = createElement(MapPin, {
-    width: 32,
-    height: 32,
-    stroke: "var(--ui-bg-inverted)",
-    fill: "var(--ui-bg)",
-  }).outerHTML;
-
-  const markerIcon = L.divIcon({
-    html: mapPinSvg,
+  const markerIconOptions = {
     className: "marker-icon",
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
-  });
+  };
 
   const quebecBounds = L.latLngBounds(
           L.latLng(45.0, -80.0), // Gatineau/Abitibi
@@ -93,11 +86,16 @@
     centerOnQuebec();
 
     // Ajouter le GeoJSON à la carte
-    L.geoJSON(geojson.value, {
+    L.geoJSON(geojson.value.data, {
       pointToLayer: function (feature, latlng) {
+        if (feature.properties.centrale_id) return;
+
         return L.marker(latlng, {
           title: feature.properties.nom || "Inconnu",
-          icon: markerIcon,
+          icon: L.divIcon({
+            ...markerIconOptions,
+            html: feature.properties.type === "centrale" ? factoryPin : satellitePin,
+          }),
         }).on("click", function () {
           infosInstallationOpen.value = true;
           infosInstallationData.value = feature.properties;

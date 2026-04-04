@@ -32,7 +32,8 @@ export default defineNuxtConfig({
         optimizeDeps: {
             include: [
                 "leaflet",
-                "lucide",
+                "geolib",
+                "@lucide/vue",
             ],
         },
     },

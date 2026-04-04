@@ -23,12 +23,13 @@ class Releve(db.Model):
 
     def serialiser(self) -> dict:
         return {
-            "id": self.id,
+            "id": str(self.id),
             "installation_id": self.installation_id,
             "date": self.date.isoformat(),
+            "type_releve": self.type_releve.value,
             "methode_mesure": self.methode_mesure,
             "unite_donnee": self.unite_donnee,
             "nom_donnee": self.nom_donnee,
-            "type_donnee": self.type_donnee,
+            "type_donnee": self.type_donnee.value,
             "valeur_donnee": self.valeur_donnee,
         }

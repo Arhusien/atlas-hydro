@@ -61,7 +61,7 @@ def synchroniser_installations(app: Flask) -> dict[str, int | float]:
                     continue
 
                 type_installation = TypeInstallation.SONDE
-                # Si la liste des donnees comprend une donnee "Débit turbiné", il s'agit d'une centrale.
+                # Si la liste des donnees comprend une donnee "Débit turbiné", il s'agit d'une centrale
                 if any(
                     simplifier_texte("Débit turbiné") in simplifier_texte(donnee.get("type_point_donnee", ""))
                     for donnee in donnees_installation.get("Composition", [])
@@ -142,10 +142,10 @@ def associer_sondes_centrales(app: Flask) -> int:
 
             sondes_a_proximite: list[Sonde] = Sonde.query.filter(
                 Sonde.centrale_id == None,  # noqa: E711
-                Sonde.y >= sud,  # Plus grand (ou egal) que 10 km au sud de la centrale
-                Sonde.y <= nord,  # Plus petit (ou egal) que 10 km au nord de la centrale
-                Sonde.x >= ouest,  # Plus grand (ou egal) que 10 km a l'ouest de la centrale
-                Sonde.x <= est,  # Plus petit (ou egal) que 10 km a l'est de la centrale
+                Sonde.y >= sud,  # Plus grand (ou egal) que 5 km au sud de la centrale
+                Sonde.y <= nord,  # Plus petit (ou egal) que 5 km au nord de la centrale
+                Sonde.x >= ouest,  # Plus grand (ou egal) que 5 km a l'ouest de la centrale
+                Sonde.x <= est,  # Plus petit (ou egal) que 5 km a l'est de la centrale
             ).all()
 
             for sonde in sondes_a_proximite:

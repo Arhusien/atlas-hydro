@@ -20,9 +20,15 @@ def executer_pipeline(app: Flask):
 
     print("Exécution de la pipeline ETL.")
 
-    supprimer_anciens_releves(app)
-
     donnees_extraites = extraire_releves(app)
+
+    # Si des données ont été extraites de chaque jeu de données, alors l'extraction est valide
+    # et les relevés vieux de plus de 24 heures peuvent être supprimer
+    extraction_valide = all(len(donnees) > 0 for donnees in donnees_extraites.values())
+    if extraction_valide:
+        nb_releves_supprimes = supprimer_anciens_releves(app)
+        print(f"{nb_releves_supprimes} aciens relevés supprimés.")
+
     for jeu_donnees, donnees in donnees_extraites.items():
         jeu_donnees = JeuxDonnees(jeu_donnees)
 

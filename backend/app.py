@@ -6,7 +6,7 @@ from db import db
 from extentions import cache
 from models import Installation
 from pipeline import executer_pipeline
-from routes import bp_carte
+from routes import bp_carte, bp_installations
 from services.synchronisation_service import associer_sondes_centrales, synchroniser_installations
 
 app = Flask(__name__)
@@ -16,6 +16,7 @@ db.init_app(app)
 cache.init_app(app)
 
 app.register_blueprint(bp_carte)
+app.register_blueprint(bp_installations)
 
 with app.app_context():
     db.create_all()

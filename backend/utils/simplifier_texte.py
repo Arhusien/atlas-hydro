@@ -1,10 +1,11 @@
 import re
 import unicodedata
+from typing import Optional
 
 REGEX_ALPHANUMERIQUES = re.compile(r"[^a-z0-9]")
 
 
-def simplifier_texte(texte: str) -> str | None:
+def simplifier_texte(texte: str) -> Optional[str]:
     """
     Simplfie une chaîne de caractères.
 
@@ -12,7 +13,7 @@ def simplifier_texte(texte: str) -> str | None:
         texte (str): La chaîne de caractères à simplifier.
 
     Returns:
-        (str | None): La chaîne de caractères simplifiée ou une valeur nulle.
+        (Optional[str]): La chaîne de caractères simplifiée ou une valeur nulle.
     """
 
     if not isinstance(texte, str):
