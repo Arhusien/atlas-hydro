@@ -31,7 +31,7 @@ class TypeDonnee(Enum):
     DEBIT_FLUVIAL = "Débit"
     NIVEAU_EAU = "Niveau"
 
-    INCONNU = "INCONNU"
+    INCONNU = "Inconnu"
 
     @property
     def type_releve(self):
@@ -50,7 +50,25 @@ class TypeDonnee(Enum):
 
         return TypeReleve.HYDROMETEOROLOGIQUE
 
+    @classmethod
+    def _missing_(cls, valeur):
+        return cls.INCONNU
 
-class JeuxDonnees(Enum):
+
+class TypeValeur(Enum):
+    INSTANTANE = "Instantanée"
+    MAXIMUM = "Maximum"
+    MINIMUM = "Minimum"
+    MOYENNE = "Moyenne"
+    SOMME = "Somme"
+
+    INCONNU = "Inconnu"
+
+    @classmethod
+    def _missing_(cls, valeur):
+        return cls.INCONNU
+
+
+class JeuDonnees(Enum):
     HYDROMETEOROLOGIQUES = "donnees-hydrometeorologiques"
     HYDROMETRIQUES = "donnees-hydrometriques"

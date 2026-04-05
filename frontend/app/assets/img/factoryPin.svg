@@ -1,4 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="3 4 30 32" preserveAspectRatio="xMidYMid meet" overflow="visible">
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="32"
+  height="32"
+  fill="none"
+  viewBox="3 4 30 32"
+  preserveAspectRatio="xMidYMid meet"
+  overflow="visible"
+  style="--ui-marker: var(--ui-bg)"
+>
   <ellipse
     filter="url(#a)"
     cx="17.923"
@@ -16,8 +25,9 @@
     clip-rule="evenodd"
   />
   <path
-    fill="var(--ui-bg)"
+    fill="var(--ui-marker)"
     d="M28.385 16.923c0-5.778-4.684-10.461-10.462-10.461S7.462 11.145 7.462 16.923c0 5.778 4.683 10.462 10.461 10.462 5.778 0 10.462-4.684 10.462-10.462Z"
+    class="transition-colors"
   />
   <path
     stroke="var(--ui-bg-inverted)"

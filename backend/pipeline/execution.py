@@ -1,7 +1,7 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
 
-from enums import JeuxDonnees, TypeReleve
+from enums import JeuDonnees, TypeReleve
 from utils import constantes
 
 from .extraction import extraire_releves
@@ -30,12 +30,12 @@ def executer_pipeline(app: Flask):
         print(f"{nb_releves_supprimes} aciens relevés supprimés.")
 
     for jeu_donnees, donnees in donnees_extraites.items():
-        jeu_donnees = JeuxDonnees(jeu_donnees)
+        jeu_donnees = JeuDonnees(jeu_donnees)
 
         match jeu_donnees:
-            case JeuxDonnees.HYDROMETEOROLOGIQUES:
+            case JeuDonnees.HYDROMETEOROLOGIQUES:
                 traiter_releves(app, lst_releves=donnees, type_releves=TypeReleve.HYDROMETEOROLOGIQUE)
-            case JeuxDonnees.HYDROMETRIQUES:
+            case JeuDonnees.HYDROMETRIQUES:
                 traiter_releves(app, lst_releves=donnees, type_releves=TypeReleve.HYDROMETRIQUE)
 
     print("Pipeline ETL exécutée. Exécution à suivre dans 1 heure.")

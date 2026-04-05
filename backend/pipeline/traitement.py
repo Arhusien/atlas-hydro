@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 from flask import Flask
 
 from db import db
-from enums import TypeDonnee, TypeReleve
+from enums import TypeDonnee, TypeReleve, TypeValeur
 from models import Releve
 from utils import constantes, convertir_valeur, simplifier_texte
 
@@ -84,7 +84,7 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
                 releve = {
                     "installation_id": id_installation,
                     "date": date,
-                    "valeur_donnee": valeur,
+                    "valeur": valeur,
                     "type_releve": type_releves,
                 }
                 if type_releves == TypeReleve.HYDROMETEOROLOGIQUE:
@@ -92,8 +92,8 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
 
                     releve.update(
                         {
-                            "methode_mesure": donees_releve.get("composition_depil_type_mesure"),
-                            "unite_donnee": donees_releve.get("composition_depil_nom_unite_mesure"),
+                            "type_valeur": TypeValeur(donees_releve.get("composition_depil_type_mesure")),
+                            "unite_valeur": donees_releve.get("composition_depil_nom_unite_mesure"),
                             "nom_donnee": donnee,
                             "type_donnee": _determiner_type_donnee(donnee, type_releve=type_releves),
                         }
@@ -103,8 +103,8 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
 
                     releve.update(
                         {
-                            "methode_mesure": donees_releve.get("depil_json_type_mesure"),
-                            "unite_donnee": donees_releve.get("depil_json_nom_unite_mesure"),
+                            "type_valeur": TypeValeur(donees_releve.get("depil_json_type_mesure")),
+                            "unite_valeur": donees_releve.get("depil_json_nom_unite_mesure"),
                             "nom_donnee": donees_releve.get("depil_json_type_point_donnee"),
                             "type_donnee": _determiner_type_donnee(donnee, type_releve=type_releves),
                         }

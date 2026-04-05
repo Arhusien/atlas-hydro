@@ -29,6 +29,9 @@
       <LControl position="bottomleft">
         <div class="flex flex-col items-center justify-center gap-2.5 mt-2.5">
           <Parametres />
+          <LocaliserPosition
+            @locate="null"
+          />
           <CentrerQuebec
             @center="centerOnQuebec()"
           />
@@ -49,6 +52,8 @@
 
   const infosInstallationOpen = ref(false),
         infosInstallationData = ref({});
+
+  const activeMarkers = ref([]);
 
   const markerIconOptions = {
     className: "marker-icon",
@@ -94,11 +99,19 @@
           title: feature.properties.nom || "Inconnu",
           icon: L.divIcon({
             ...markerIconOptions,
-            html: feature.properties.type === "centrale" ? factoryPin : satellitePin,
+            html: feature.properties.type === "CENTRALE" ? factoryPin : satellitePin,
           }),
-        }).on("click", function () {
+          zIndexOffset: feature.properties.type === "CENTRALE" ? 1000 : 0,
+        }).on("click", function (event) {
           infosInstallationOpen.value = true;
           infosInstallationData.value = feature.properties;
+
+          const target = event.originalEvent.target,
+                svgMarkerIcon = target.closest("svg");
+
+          svgMarkerIcon.style.setProperty("--ui-marker", "var(--ui-color-error-600)");
+
+          activeMarkers.value.push(svgMarkerIcon);
         });
       },
     }).addTo(map.value.leafletObject);
@@ -110,4 +123,13 @@
       padding: [50, 50],
     });
   };
+
+  watch(infosInstallationOpen, (newValue) => {
+    if (newValue === false) {
+      activeMarkers.value.forEach((marker) => {
+        marker.style.setProperty("--ui-marker", "var(--ui-bg)");
+      });
+      activeMarkers.value = [];
+    }
+  });
 </script>

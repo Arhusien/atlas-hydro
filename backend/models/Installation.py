@@ -37,7 +37,7 @@ class Installation(db.Model):
         donnees = {
             "id": self.id,
             "nom": self.nom,
-            "type": self.type.value,
+            "type": self.type.name,
             "code_region": self.code_region,
             "nom_region": self.nom_region,
             "x": self.x,

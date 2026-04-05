@@ -1,7 +1,7 @@
 <template>
   <UTooltip
     :delay-duration="0"
-    text="Centrer sur le Québec"
+    text="Localiser ma position"
     :content="{
       side: 'left',
       sideOffset: 10,
@@ -9,16 +9,16 @@
     }"
   >
     <UButton
-      icon="lucide-house"
+      icon="lucide-locate-fixed"
       color="neutral"
       variant="solid"
       size="lg"
       square
       :disabled="disabled"
       class="cursor-pointer"
-      @click="emit('center')"
+      @click="emit('locate')"
     >
-      <span class="sr-only">Centrer sur le Québec</span>
+      <span class="sr-only">Localiser ma position</span>
     </UButton>
   </UTooltip>
 </template>
@@ -32,6 +32,6 @@
   });
 
   const emit = defineEmits([
-    "center",
+    "locate",
   ]);
 </script>

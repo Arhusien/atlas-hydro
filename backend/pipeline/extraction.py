@@ -7,7 +7,7 @@ import requests
 from flask import Flask
 
 from db import db
-from enums import JeuxDonnees, TypeReleve
+from enums import JeuDonnees, TypeReleve
 from models import Releve
 from utils import constantes
 
@@ -16,8 +16,8 @@ QUERY_PAR_DEFAUT = (
 )
 
 JEUX_DONNEES = [
-    JeuxDonnees.HYDROMETEOROLOGIQUES,
-    JeuxDonnees.HYDROMETRIQUES,
+    JeuDonnees.HYDROMETEOROLOGIQUES,
+    JeuDonnees.HYDROMETRIQUES,
 ]
 
 FUSEAU_HORAIRE = ZoneInfo(constantes.FUSEAU_HORAIRE)
@@ -74,7 +74,7 @@ def extraire_releves(app: Flask) -> dict[str, list[dict]]:
     for jeu_donnees in JEUX_DONNEES:
         type_releve = (
             TypeReleve.HYDROMETEOROLOGIQUE
-            if jeu_donnees == JeuxDonnees.HYDROMETEOROLOGIQUES
+            if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES
             else TypeReleve.HYDROMETRIQUE
         )
 
@@ -101,7 +101,7 @@ def extraire_releves(app: Flask) -> dict[str, list[dict]]:
             date_debut_intervalle = date_dernier_releve + timedelta(hours=i)
             date_fin_intervalle = date_debut_intervalle + timedelta(hours=nb_heures_intervalle)
 
-            cle_date = "date" if jeu_donnees == JeuxDonnees.HYDROMETEOROLOGIQUES else "split_date"
+            cle_date = "date" if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES else "split_date"
 
             filtre_date = _construire_filtre_date(
                 cle_date,
