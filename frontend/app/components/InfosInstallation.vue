@@ -18,6 +18,7 @@
         <UBadge
           color="neutral"
           variant="soft"
+          class="rounded"
         >
           {{ installationTypeMapping[installationData?.type || defaultData.type] || 'Inconnu' }}
         </UBadge>

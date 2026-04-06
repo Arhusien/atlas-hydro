@@ -109,7 +109,8 @@
           const target = event.originalEvent.target,
                 svgMarkerIcon = target.closest("svg");
 
-          svgMarkerIcon.style.setProperty("--ui-marker", "var(--ui-color-error-600)");
+          svgMarkerIcon.style.setProperty("--ui-marker", "var(--ui-bg-inverted)");
+          svgMarkerIcon.style.setProperty("--ui-marker-inverted", "var(--ui-bg)");
 
           activeMarkers.value.push(svgMarkerIcon);
         });
@@ -128,6 +129,7 @@
     if (newValue === false) {
       activeMarkers.value.forEach((marker) => {
         marker.style.setProperty("--ui-marker", "var(--ui-bg)");
+        marker.style.setProperty("--ui-marker-inverted", "var(--ui-bg-inverted)");
       });
       activeMarkers.value = [];
     }
