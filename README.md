@@ -1,7 +1,5 @@
 # Atlas Hydro
 
-[English version](README.en.md)
-
 Au Québec, la production d'électricité est gérée par Hydro-Québec. En tant que société d'État, elle met à disposition de nombreux jeux de données sur ses installations, la production d'hydroélectricité, les importations et exportations d'électricité, et bien plus encore !
 
 Atlas Hydro est une carte interactive répertoriant les installations d'Hydro-Québec à travers le Québec. Chaque installation possède diverses données qui peuvent également être consultées sur le site. En plus des infrastructures, Atlas Hydro permet de visualiser d'autres données, tels que la production, l'exportation et la consommation d'électricité au Québec.
