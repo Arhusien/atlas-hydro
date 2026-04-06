@@ -373,10 +373,9 @@
       id: "difference",
       header: "Différence",
       cell: ({ row }) => {
-        if (
-          excludedDataTypesForDifference.includes(row.original.type_donnee)
-          || caclculateDifference(row.original) === null
-        ) {
+        const delta = caclculateDifference(row.original);
+
+        if (excludedDataTypesForDifference.includes(row.original.type_donnee) || delta === null) {
           return h("div", {
             class: "flex items-center gap-2",
           }, [
@@ -388,8 +387,6 @@
             }, "S. O."),
           ]);
         }
-
-        const delta = caclculateDifference(row.original);
 
         return h("div", {
           class: "flex items-center gap-2",
