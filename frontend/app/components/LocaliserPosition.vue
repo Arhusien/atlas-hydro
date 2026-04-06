@@ -1,7 +1,7 @@
 <template>
   <UTooltip
     :delay-duration="0"
-    text="Localiser ma position"
+    text="Utiliser la localisation"
     :content="{
       side: 'left',
       sideOffset: 10,
@@ -18,7 +18,7 @@
       class="cursor-pointer"
       @click="emit('locate')"
     >
-      <span class="sr-only">Localiser ma position</span>
+      <span class="sr-only">Utiliser la localisation</span>
     </UButton>
   </UTooltip>
 </template>

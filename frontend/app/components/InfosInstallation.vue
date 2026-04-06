@@ -117,29 +117,23 @@
                   Sondes à proximité
                 </h2>
                 <div class="flex flex-col gap-2 sm:gap-3">
-                  <UPageCard
+                  <UCard
                     v-for="(sonde, index) in installationData.sondes"
                     :key="index"
                     as="button"
                     variant="soft"
                     :ui="{
-                      root: 'rounded-md has-focus-visible:ring-inverted cursor-pointer',
-                      container: 'p-4 sm:p-4',
-                      body: 'w-full',
-                      description: 'text-sm font-normal',
+                      root: 'rounded-md cursor-pointer bg-elevated/50 has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
+                      body: 'sm:p-4 text-sm font-normal flex items-center justify-between w-full',
                     }"
                     @click="updateData(sonde);"
                   >
-                    <template #description>
-                      <div class="flex items-center justify-between w-full">
-                        <span class="text-left text-default">{{ sonde.nom || 'Inconnu' }}</span>
-                        <span class="text-muted text-right">{{ getDistance(
-                          { latitude: installationData.y, longitude: installationData.x },
-                          { latitude: sonde.y, longitude: sonde.x },
-                        ) }} mètres</span>
-                      </div>
-                    </template>
-                  </UPageCard>
+                    <span class="text-left text-default">{{ sonde.nom || 'Inconnu' }}</span>
+                    <span class="text-muted text-right">{{ getDistance(
+                      { latitude: installationData.y, longitude: installationData.x },
+                      { latitude: sonde.y, longitude: sonde.x },
+                    ) }} mètres</span>
+                  </UCard>
                 </div>
               </div>
             </div>
@@ -186,47 +180,20 @@
                   </UTooltip>
                 </template>
                 <template #content="{ item }">
-                  <!-- ajouter une table!!! -->
-                  <div class="flex flex-col justify-center items-center">
-                    <div
-                      v-for="(releve, index) in item.content"
-                      :key="index"
-                      class="px-4 w-full even:bg-elevated py-1"
-                    >
-                      <div class="flex items-center justify-between w-full text-sm text-pretty">
-                        <span class="text-muted text-left">
-                          {{ releve.date ? Intl.DateTimeFormat("fr-FR", { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(releve.date)) : 'Inconnu' }}
-                        </span>
-                        <span class="text-right">
-                          {{ releve.valeur?.toFixed(2) ?? 'Inconnu' }} {{ releve.unite_valeur ?? 'Inconnu' }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-                <!-- <h2 class="text-highlighted font-medium">
-                  {{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}
-                </h2>
-                <div class="flex flex-col gap-2 sm:gap-3">
-                  <UPageCard
-                    v-for="(releve, index) in releves"
-                    :key="index"
-                    variant="soft"
+                  <UTable
+                    :data="item.content"
+                    :columns="tableColumns"
                     :ui="{
-                      root: 'rounded-md',
-                      container: 'p-2 sm:p-4',
-                      body: 'w-full',
-                      description: 'text-sm text-highlighted font-normal',
+                      thead: 'hidden',
                     }"
                   >
-                    <template #description>
-                      <div class="flex items-center justify-between w-full">
-                        <span class="text-left">{{ releve.valeur ?? 'Inconnu' }}</span>
-                        <span class="text-muted text-right">{{ releve.date ? new Date(releve.date).toLocaleString() : 'Inconnu' }}</span>
+                    <template #body-top>
+                      <div class="h-px w-full">
+                        <div class="absolute left-0 w-full h-px bg-(--ui-border-accented)" />
                       </div>
                     </template>
-                  </UPageCard>
-                </div> -->
+                  </UTable>
+                </template>
               </UAccordion>
             </div>
           </template>
@@ -256,6 +223,9 @@
 <script setup>
   import {
     LoaderCircle,
+    TrendingUp,
+    TrendingDown,
+    Minus,
   } from "@lucide/vue";
   import {
     decimalToSexagesimal,
@@ -277,6 +247,10 @@
       required: true,
     },
   });
+
+  const excludedDataTypesForDifference = [
+    "DIRECTION_VENT",
+  ];
 
   const emit = defineEmits([
     "update:modelValue",
@@ -383,6 +357,90 @@
 
     return processReleves(installationData.value.releves);
   });
+
+  const tableColumns = [
+    {
+      id: "date",
+      accessorKey: "date",
+      header: "Date",
+      cell: ({ row }) => {
+        return row.getValue("date")
+          ? Intl.DateTimeFormat("fr-FR", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(row.getValue("date")))
+          : "Inconnu";
+      },
+    },
+    {
+      id: "difference",
+      header: "Différence",
+      cell: ({ row }) => {
+        if (excludedDataTypesForDifference.includes(row.original.type_donnee)) {
+          return h(Minus, {
+            class: "size-4.5 text-toned",
+          });
+        }
+
+        const delta = caclculateDifference(row.original);
+        if (delta === null) {
+          return h(Minus, {
+            class: "size-4.5 text-toned",
+          });
+        }
+
+        return h("div", {
+          class: "flex items-center gap-2",
+        }, [
+          delta > 0 && h(TrendingUp, {
+            class: "size-4.5 text-green-500",
+          }),
+          delta < 0 && h(TrendingDown, {
+            class: "size-4.5 text-red-500",
+          }),
+          delta === 0 && h(Minus, {
+            class: "size-4.5 text-toned",
+          }),
+          h("span", {
+            class: "text-toned",
+          }, `${Math.abs(delta).toFixed(2)} ${row.original.unite_valeur || ""}`),
+        ]);
+      },
+    },
+    {
+      id: "valeur",
+      accessorKey: "valeur",
+      header: "Valeur",
+      cell: ({ row }) => {
+        return row.getValue("valeur") !== null
+          ? `${row.getValue("valeur").toFixed(2)} ${row.original.unite_valeur || ""}`
+          : "Inconnu";
+      },
+      meta: {
+        class: {
+          td: "text-toned",
+        },
+      },
+    },
+  ];
+
+  function caclculateDifference(currentReleve) {
+    const releves = relevesByDataType.value[currentReleve.type_donnee].toReversed(),
+          indexReleve = releves.findIndex(r => r.id === currentReleve.id);
+
+    if (indexReleve <= 0) {
+      return null;
+    }
+
+    const currentValue = currentReleve.valeur,
+          previousValue = releves[indexReleve - 1].valeur;
+
+    let delta = currentValue - previousValue;
+    delta = Math.round(delta * 100) / 100;
+
+    if (!isFinite(delta) || isNaN(delta)) {
+      return null;
+    }
+
+    return delta;
+  }
 </script>
 
 <style>
