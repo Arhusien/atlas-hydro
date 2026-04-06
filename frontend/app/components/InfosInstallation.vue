@@ -373,18 +373,23 @@
       id: "difference",
       header: "Différence",
       cell: ({ row }) => {
-        if (excludedDataTypesForDifference.includes(row.original.type_donnee)) {
-          return h(Minus, {
-            class: "size-4.5 text-toned",
-          });
+        if (
+          excludedDataTypesForDifference.includes(row.original.type_donnee)
+          || caclculateDifference(row.original) === null
+        ) {
+          return h("div", {
+            class: "flex items-center gap-2",
+          }, [
+            h(Minus, {
+              class: "size-4.5 text-toned",
+            }),
+            h("span", {
+              class: "text-toned",
+            }, "S. O."),
+          ]);
         }
 
         const delta = caclculateDifference(row.original);
-        if (delta === null) {
-          return h(Minus, {
-            class: "size-4.5 text-toned",
-          });
-        }
 
         return h("div", {
           class: "flex items-center gap-2",
