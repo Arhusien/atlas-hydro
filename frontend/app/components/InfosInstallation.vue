@@ -402,7 +402,7 @@
           }),
           h("span", {
             class: "text-toned",
-          }, `${Math.abs(delta).toFixed(2)} ${row.original.unite_valeur || ""}`),
+          }, `${Math.abs(delta).toFixed(2)} ${row.original.unite_valeur}`),
         ]);
       },
     },
@@ -411,9 +411,7 @@
       accessorKey: "valeur",
       header: "Valeur",
       cell: ({ row }) => {
-        return row.getValue("valeur") !== null
-          ? `${row.getValue("valeur").toFixed(2)} ${row.original.unite_valeur || ""}`
-          : "Inconnu";
+        return `${row.getValue("valeur").toFixed(2)} ${row.original.unite_valeur}`;
       },
       meta: {
         class: {
