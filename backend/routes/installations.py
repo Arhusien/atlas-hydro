@@ -1,4 +1,4 @@
-from flask import Blueprint, abort, jsonify
+from flask import Blueprint
 
 from extentions import cache
 from services.installations_service import obtenir_installation

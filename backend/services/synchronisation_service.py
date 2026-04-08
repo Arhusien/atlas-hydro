@@ -142,10 +142,10 @@ def associer_sondes_centrales(app: Flask) -> int:
 
             sondes_a_proximite: list[Sonde] = Sonde.query.filter(
                 Sonde.centrale_id == None,  # noqa: E711
-                Sonde.y >= sud,  # Plus grand (ou egal) que 5 km au sud de la centrale
-                Sonde.y <= nord,  # Plus petit (ou egal) que 5 km au nord de la centrale
-                Sonde.x >= ouest,  # Plus grand (ou egal) que 5 km a l'ouest de la centrale
-                Sonde.x <= est,  # Plus petit (ou egal) que 5 km a l'est de la centrale
+                Sonde.y >= sud,  # Plus grand (ou égal) que 5 km au sud de la centrale
+                Sonde.y <= nord,  # Plus petit (ou égal) que 5 km au nord de la centrale
+                Sonde.x >= ouest,  # Plus grand (ou égal) que 5 km a l'ouest de la centrale
+                Sonde.x <= est,  # Plus petit (ou égal) que 5 km a l'est de la centrale
             ).all()
 
             for sonde in sondes_a_proximite:

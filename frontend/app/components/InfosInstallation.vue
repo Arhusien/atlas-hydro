@@ -103,12 +103,26 @@
                 </div>
               </div>
               <div
+                v-if="Object.keys(relevesByDataType)?.length > 0"
                 class="flex flex-col gap-2 sm:gap-3"
               >
                 <h2 class="text-highlighted font-medium">
                   En direct
-                  <!-- pour les trucs pas à jour mettre un triangle warning à côté du label de la data -->
                 </h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                  <UCard
+                    v-for="([type_releves, releves]) in Object.entries(relevesByDataType)"
+                    :key="type_releves"
+                    variant="soft"
+                    :ui="{
+                      root: 'rounded-md cursor-pointer has-focus-visible:ring-2 has-focus-visible:ring-inverted',
+                      body: 'sm:p-4 text-sm font-normal flex flex-col items-center justify-center w-full h-full',
+                    }"
+                  >
+                    <span class="text-lg font-medium text-highlighted text-center">{{ releves[0]?.valeur }} {{ releves[0]?.unite_valeur || '' }}</span>
+                    <span class="text-sm text-muted text-center">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
+                  </UCard>
+                </div>
               </div>
               <div
                 v-if="installationData.type === 'CENTRALE' && installationData?.sondes?.length > 0"
@@ -124,7 +138,7 @@
                     as="button"
                     variant="soft"
                     :ui="{
-                      root: 'rounded-md cursor-pointer bg-elevated/50 has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
+                      root: 'rounded-md cursor-pointer has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
                       body: 'sm:p-4 text-sm font-normal flex items-center justify-between w-full',
                     }"
                     @click="updateData(sonde);"
