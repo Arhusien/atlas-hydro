@@ -33,7 +33,7 @@ export default defineNuxtConfig({
             include: [
                 "leaflet",
                 "geolib",
-                "@lucide/vue",
+                "luxon",
             ],
         },
     },

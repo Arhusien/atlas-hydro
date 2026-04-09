@@ -115,11 +115,30 @@
                     :key="type_releves"
                     variant="soft"
                     :ui="{
-                      root: 'rounded-md cursor-pointer has-focus-visible:ring-2 has-focus-visible:ring-inverted',
+                      root: 'rounded-md ',
                       body: 'sm:p-4 text-sm font-normal flex flex-col items-center justify-center w-full h-full',
                     }"
                   >
-                    <span class="text-lg font-medium text-highlighted text-center">{{ releves[0]?.valeur }} {{ releves[0]?.unite_valeur || '' }}</span>
+                    <div class="flex items-center justify-center gap-1.5">
+                      <UTooltip
+                        :delay-duration="0"
+                        text="Donnée obsolète"
+                        :content="{
+                          side: 'top',
+                          sideOffset: 10,
+                          updatePositionStrategy: 'always',
+                        }"
+                      >
+                        <UIcon
+                          v-if="releves[0].date.split(':')[0] !== DateTime.now().setZone('America/Toronto').toISO().split(':')[0]"
+                          name="i-lucide-triangle-alert"
+                          class="size-4.5 text-warning-500 cursor-pointer"
+                        />
+                      </UTooltip>
+                      <span class="text-lg font-medium text-highlighted text-center">
+                        {{ `${releves[0].valeur.toFixed(2)} ${releves[0]?.unite_valeur || ''}` }}
+                      </span>
+                    </div>
                     <span class="text-sm text-muted text-center">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
                   </UCard>
                 </div>
@@ -176,7 +195,7 @@
                 }"
               >
                 <template
-                  v-if="(releves[0]?.type_valeur !== 'INCONNU') && valueTypeMapping[releves[0].type_valeur]"
+                  v-if="valueTypeMapping[releves[0].type_valeur]"
                   #leading
                 >
                   <UTooltip
@@ -241,11 +260,15 @@
     TrendingUp,
     TrendingDown,
     Minus,
+    TriangleAlert,
   } from "@lucide/vue";
   import {
     decimalToSexagesimal,
     getDistance,
   } from "geolib";
+  import {
+    DateTime,
+  } from "luxon";
   import {
     installationTypeMapping,
     dataTypeReleveMapping,
