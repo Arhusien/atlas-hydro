@@ -39,27 +39,56 @@
       </LControl>
     </LMap>
     <PanelInstallation
-      v-model="PanelInstallationOpen"
-      :default-data="PanelInstallationData"
+      v-model="panelInstallationOpen"
+      :default-data="panelInstallationData"
     />
   </div>
 </template>
 
 <script setup>
   import L from "leaflet";
-  import satellitePin from "~/assets/img/satellitePin.svg?raw";
-  import factoryPin from "~/assets/img/factoryPin.svg?raw";
+  import satellitePin from "~/assets/img/satellitePin.svg?url";
+  import satellitePinActive from "~/assets/img/satellitePinActive.svg?url";
+  import factoryPin from "~/assets/img/factoryPin.svg?url";
+  import factoryPinActive from "~/assets/img/factoryPinActive.svg?url";
+  import pinShadow from "~/assets/img/pinShadow.svg?url";
 
-  const PanelInstallationOpen = ref(false),
-        PanelInstallationData = ref({});
+  const panelInstallationOpen = ref(false),
+        panelInstallationData = ref({});
 
-  const activeMarkers = ref([]);
+  const activeMarker = ref(null);
 
   const markerIconOptions = {
     className: "marker-icon",
     iconSize: [32, 32],
     iconAnchor: [16, 32],
     popupAnchor: [0, -32],
+    shadowUrl: pinShadow,
+    shadowSize: [32, 36],
+    shadowAnchor: [16, 32],
+  };
+
+  const markerIcons = {
+    CENTRALE: {
+      default: L.icon({
+        ...markerIconOptions,
+        iconUrl: factoryPin,
+      }),
+      active: L.icon({
+        ...markerIconOptions,
+        iconUrl: factoryPinActive,
+      }),
+    },
+    SONDE: {
+      default: L.icon({
+        ...markerIconOptions,
+        iconUrl: satellitePin,
+      }),
+      active: L.icon({
+        ...markerIconOptions,
+        iconUrl: satellitePinActive,
+      }),
+    },
   };
 
   const quebecBounds = L.latLngBounds(
@@ -97,22 +126,19 @@
 
         return L.marker(latlng, {
           title: feature.properties.nom || "Inconnu",
-          icon: L.divIcon({
-            ...markerIconOptions,
-            html: feature.properties.type === "CENTRALE" ? factoryPin : satellitePin,
-          }),
+          icon: markerIcons[feature.properties.type]?.default || markerIcons.SONDE.default,
           zIndexOffset: feature.properties.type === "CENTRALE" ? 1000 : 0,
-        }).on("click", function (event) {
-          PanelInstallationOpen.value = true;
-          PanelInstallationData.value = feature.properties;
+        }).on("click", function () {
+          if (activeMarker.value) {
+            const previousType = activeMarker.value.feature.properties.type;
+            activeMarker.value.setIcon(markerIcons[previousType].default);
+          }
 
-          const target = event.originalEvent.target,
-                svgMarkerIcon = target.closest("svg");
+          this.setIcon(markerIcons[feature.properties.type].active);
+          activeMarker.value = this;
 
-          svgMarkerIcon.style.setProperty("--ui-marker", "var(--ui-bg-inverted)");
-          svgMarkerIcon.style.setProperty("--ui-marker-inverted", "var(--ui-bg)");
-
-          activeMarkers.value.push(svgMarkerIcon);
+          panelInstallationOpen.value = true;
+          panelInstallationData.value = feature.properties;
         });
       },
     }).addTo(map.value.leafletObject);
@@ -125,13 +151,13 @@
     });
   };
 
-  watch(PanelInstallationOpen, (newValue) => {
+  watch(panelInstallationOpen, (newValue) => {
     if (newValue === false) {
-      activeMarkers.value.forEach((marker) => {
-        marker.style.setProperty("--ui-marker", "var(--ui-bg)");
-        marker.style.setProperty("--ui-marker-inverted", "var(--ui-bg-inverted)");
-      });
-      activeMarkers.value = [];
+      if (activeMarker.value) {
+        const activeType = activeMarker.value.feature.properties.type;
+        activeMarker.value.setIcon(markerIcons[activeType].default);
+        activeMarker.value = null;
+      }
     }
   });
 </script>

@@ -1,0 +1,55 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="32"
+  height="36"
+  fill="none"
+  viewBox="3 4 30 36"
+  preserveAspectRatio="xMidYMid meet"
+  overflow="visible"
+>
+  <defs>
+    <filter id="a" width="12.615" height="7.077" x="11.615" y="30.923" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="1.2" />
+    </filter>
+    <filter id="b" width="35.846" height="40.154" x="0" y="0" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="0.6" result="shadowNearBlur" />
+      <feOffset in="shadowNearBlur" dy="0.35" result="shadowNearOffset" />
+      <feFlood flood-color="#171717" flood-opacity=".14" result="shadowNearFlood" />
+      <feComposite
+        in="shadowNearFlood"
+        in2="shadowNearOffset"
+        operator="in"
+        result="shadowNear"
+      />
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2.35" result="shadowFarBlur" />
+      <feOffset in="shadowFarBlur" dy="1.1" result="shadowFarOffset" />
+      <feFlood flood-color="#171717" flood-opacity=".06" result="shadowFarFlood" />
+      <feComposite
+        in="shadowFarFlood"
+        in2="shadowFarOffset"
+        operator="in"
+        result="shadowFar"
+      />
+      <feMerge>
+        <feMergeNode in="shadowFar" />
+        <feMergeNode in="shadowNear" />
+      </feMerge>
+    </filter>
+  </defs>
+  <ellipse
+    filter="url(#a)"
+    cx="17.923"
+    cy="34.462"
+    fill="#171717"
+    fill-opacity=".16"
+    rx="4.308"
+    ry="1.538"
+  />
+  <path
+    filter="url(#b)"
+    fill="#171717"
+    fill-rule="evenodd"
+    d="M30.846 16.923C30.846 9.786 25.06 4 17.923 4 10.786 4 5 9.786 5 16.923c0 1.767.355 3.45.996 4.985 2.663 7.269 11.995 12.246 11.995 12.246s11.464-6.114 12.605-14.686c.164-.823.25-1.674.25-2.545Z"
+    clip-rule="evenodd"
+  />
+</svg>

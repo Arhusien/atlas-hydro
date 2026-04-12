@@ -1,18 +1,17 @@
 // @ts-nocheck
-export function calculateDifference(releves: Array<object>, currentReleve: object, isChart: boolean = false): number | null {
+export function calculateDifference(releve: object, releves: Array<object>): number | null {
     if (!releves || releves.length === 0) {
         return null;
     }
 
-    const relevesOfSameType = isChart ? releves.toReversed() : releves[currentReleve.type_donnee].toReversed(),
-        indexReleve = relevesOfSameType.findIndex(r => r.id === currentReleve.id);
+    const indexReleve = releves.findIndex(r => r.id === releve.id);
 
     if (indexReleve <= 0) {
         return null;
     }
 
-    const currentValue = currentReleve.valeur,
-        previousValue = relevesOfSameType[indexReleve - 1].valeur;
+    const currentValue = releve.valeur,
+        previousValue = releves[indexReleve - 1].valeur;
 
     let delta = currentValue - previousValue;
     delta = Math.round(delta * 100) / 100;
@@ -24,8 +23,8 @@ export function calculateDifference(releves: Array<object>, currentReleve: objec
     return delta;
 }
 
-export function calculateChartStats(data: Array<object>, localTimezone: string) {
-    if (!data || data.length === 0) {
+export function calculateChartStats(chartPoints: Array<object>, localTimezone: string) {
+    if (!chartPoints || chartPoints.length === 0) {
         return {
             minimum: 0,
             maximum: 0,
@@ -36,7 +35,7 @@ export function calculateChartStats(data: Array<object>, localTimezone: string) 
     }
 
     // Calcul des statistiques de base
-    const values = data.map(r => r.valeur),
+    const values = chartPoints.map(p => p.y),
         average = values.reduce((a, b) => a + b, 0) / values.length,
         minimum = Math.min(...values),
         maximum = Math.max(...values);
@@ -46,7 +45,7 @@ export function calculateChartStats(data: Array<object>, localTimezone: string) 
         variance = squaredDifferences.reduce((a, b) => a + b, 0) / (values.length - 1),
         standardDeviation = Math.sqrt(variance);
 
-    const dates = data.map(r => new Date(r.date)).sort((a, b) => a - b),
+    const dates = chartPoints.map(p => new Date(p.x)).sort((a, b) => a - b),
         dateRange = [
             formatToLocalDate(dates[0].toISOString(), localTimezone, {
                 month: "2-digit",

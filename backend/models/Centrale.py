@@ -16,8 +16,12 @@ class Centrale(Installation):
         lazy=True,
     )
 
-    def serialiser(self, avec_releves: bool | None = False):
+    def serialiser(
+        self,
+        avec_releves: bool | None = False,
+        avec_releves_sondes: bool | None = False,
+    ):
         return {
             **super().serialiser(avec_releves),
-            "sondes": [sonde.serialiser(avec_releves) for sonde in self.sondes],
+            "sondes": [sonde.serialiser(avec_releves_sondes) for sonde in self.sondes],
         }

@@ -91,7 +91,7 @@
                 </div>
               </div>
               <div
-                v-if="Object.keys(relevesByDataType)?.length > 0"
+                v-if="relevesEntries.length > 0"
                 class="flex flex-col gap-2 sm:gap-3"
               >
                 <h2 class="text-highlighted font-medium">
@@ -99,11 +99,11 @@
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   <UCard
-                    v-for="([type_releves, releves]) in Object.entries(relevesByDataType)"
+                    v-for="({ type_releves, releves }) in relevesEntries"
                     :key="type_releves"
                     variant="soft"
                     :ui="{
-                      root: 'rounded-md ',
+                      root: 'rounded-md',
                       body: 'sm:p-4 text-sm font-normal flex flex-col items-center justify-center w-full h-full gap-0.25',
                     }"
                   >
@@ -114,7 +114,6 @@
                         :content="{
                           side: 'top',
                           sideOffset: 5,
-                          updatePositionStrategy: 'always',
                         }"
                       >
                         <UIcon
@@ -132,7 +131,7 @@
                 </div>
               </div>
               <div
-                v-if="installationData.type === 'CENTRALE' && installationData?.sondes?.length > 0"
+                v-if="installationData?.type === 'CENTRALE' && installationData?.sondes?.length > 0"
                 class="flex flex-col gap-2 sm:gap-3"
               >
                 <h2 class="text-highlighted font-medium">
@@ -162,14 +161,14 @@
           </template>
           <template #data>
             <div
-              v-if="Object.keys(relevesByDataType)?.length > 0"
+              v-if="relevesEntries.length > 0"
               class="flex flex-col gap-2 sm:gap-3"
             >
               <h2 class="text-highlighted font-medium">
                 Mesures
               </h2>
               <UAccordion
-                v-for="([type_releves, releves]) in Object.entries(relevesByDataType)"
+                v-for="({ type_releves, releves }) in relevesEntries"
                 :key="type_releves"
                 :items="[
                   {
@@ -192,7 +191,6 @@
                     :content="{
                       side: 'top',
                       sideOffset: 5,
-                      updatePositionStrategy: 'always',
                     }"
                   >
                     <UIcon
@@ -221,7 +219,7 @@
           </template>
           <template #stats>
             <div
-              v-if="Object.keys(relevesByDataType)?.length > 0"
+              v-if="relevesEntries.length > 0"
               class="flex flex-col gap-2 sm:gap-3"
             >
               <h2 class="text-highlighted font-medium">
@@ -229,11 +227,11 @@
               </h2>
               <div class="flex flex-col gap-2 sm:gap-3">
                 <UCard
-                  v-for="([type_releves, releves]) in Object.entries(relevesByDataType).filter(([type, _]) => !excludedDataTypesForDifference.includes(type))"
+                  v-for="({ type_releves, chartPoints, relevesAscending }) in relevesEntries.filter((e) => !excludedDataTypesForDifference.includes(e.type_releves))"
                   :key="type_releves"
                   variant="soft"
                   :ui="{
-                    root: 'rounded-md ',
+                    root: 'rounded-md',
                     body: 'sm:p-4 p-4 text-sm font-normal flex flex-col justify-center w-full h-full gap-4',
                   }"
                 >
@@ -245,13 +243,12 @@
                       :content="{
                         side: 'top',
                         sideOffset: 5,
-                        updatePositionStrategy: 'always',
                       }"
                     >
                       <UIcon
                         name="i-lucide-zoom-in"
                         class="size-4.5 cursor-pointer"
-                        @click="zoomInChart(type_releves, releves)"
+                        @click="zoomInChart(type_releves, chartPoints)"
                       />
                     </UTooltip>
                   </div>
@@ -259,78 +256,44 @@
                     :data="{
                       datasets: [
                         {
+                          ...chartDefaultOptionsDataset,
                           label: dataTypeReleveMapping[type_releves] || 'Inconnu',
-                          data: releves.toReversed().map(r => ({
-                            x: new Date(r.date),
-                            y: r.valeur,
-                          })),
-                          fill: false,
-                          borderColor: 'rgb(161 161 161)',
-                          tension: 0.1,
+                          data: chartPoints,
                         },
                       ],
                     }"
                     :options="{
+                      ...chartDefaultOptions,
                       plugins: {
-                        legend: {
-                          display: false,
-                        },
+                        ...chartDefaultOptions.plugins,
                         tooltip: {
-                          backgroundColor: 'rgba(23, 23, 23, 0.95)',
-                          displayColors: false,
-                          caretPadding: 4,
-                          titleFont: {
-                            weight: '500',
-                          },
-                          bodyFont: {
-                            weight: '400',
-                          },
+                          ...chartDefaultOptions.plugins.tooltip,
                           callbacks: {
-                            title: function(context) {
-                              const index = context[0].dataIndex,
-                                    releve = releves.toReversed()[index];
+                            title: (context) => {
+                              const releve = relevesAscending[context[0].dataIndex];
 
-                              return formatToLocalDate(releve.date, localTimezone);
+                              return releve ? formatToLocalDate(releve.date, localTimezone) : '';
                             },
-                            label: function(context) {
-                              const index = context.dataIndex,
-                                    releve = releves.toReversed()[index];
+                            label: (context) => {
+                              const releve = relevesAscending[context.dataIndex];
 
-                              return `${context.parsed.y} ${releve.unite_valeur || ''}`;
+                              return releve ? `${context.parsed.y} ${releve.unite_valeur || ''}` : '';
                             },
                           },
                         },
                       },
                       scales: {
+                        ...chartDefaultOptions.scales,
                         x: {
+                          ...chartDefaultOptions.scales.x,
                           ticks: {
+                            ...chartDefaultOptions.scales.x.ticks,
                             display: false,
-                            autoSkip: true,
-                            maxTicksLimit: 10,
                           },
-                          grid: {
-                            color: 'rgba(38, 38, 38)',
-                            drawTicks: false,
-                          },
-                          type: 'time',
                           adapters: {
                             date: {
                               locale: fr,
                             },
-                          },
-                          time: {
-                            unit: 'day',
-                            displayFormats: {
-                              day: 'd MMM',
-                            },
-                          },
-                        },
-                        y: {
-                          ticks: {
-                            color: 'rgba(115 115 115)',
-                          },
-                          grid: {
-                            color: 'rgba(38, 38, 38)',
                           },
                         },
                       },
@@ -363,19 +326,19 @@
     :title="dataTypeReleveMapping[bigChartType] || 'Inconnu'"
     close-icon="i-lucide-x"
     :ui="{
-      content: 'w-[calc(100vw-2rem)] max-w-xl data-[state=open]:animate-[slide-in-from-bottom-and-fade_200ms_ease-out] data-[state=closed]:animate-[slide-out-to-bottom-and-fade_200ms_ease-in]',
+      content: 'w-[calc(100vw-2rem)] max-w-xl',
       close: 'cursor-pointer',
     }"
   >
     <template #body>
       <div
-        v-if="bigChartData.length > 0"
+        v-if="bigChartPoints.length > 0"
         class="flex flex-col gap-2 sm:gap-3"
       >
         <UCard
           variant="soft"
           :ui="{
-            root: 'rounded-md ',
+            root: 'rounded-md',
             body: 'sm:p-4 p-4 text-sm font-normal flex flex-col justify-center w-full h-full gap-4',
           }"
         >
@@ -383,62 +346,48 @@
             :data="{
               datasets: [
                 {
+                  ...chartDefaultOptionsDataset,
                   label: dataTypeReleveMapping[bigChartType] || 'Inconnu',
-                  data: bigChartData.toReversed().map(r => ({
-                    x: new Date(r.date),
-                    y: r.valeur,
-                  })),
-                  fill: false,
-                  borderColor: 'rgb(161 161 161)',
-                  tension: 0.1,
+                  data: bigChartPoints,
                 },
               ],
             }"
             :options="{
-              animation: {
-                duration: 0,
-              },
+              ...chartDefaultOptions,
               plugins: {
-                legend: {
-                  display: false,
-                },
+                ...chartDefaultOptions.plugins,
                 tooltip: {
-                  backgroundColor: 'rgba(23, 23, 23, 0.95)',
-                  displayColors: false,
-                  caretPadding: 4,
-                  titleFont: {
-                    weight: '500',
-                  },
-                  bodyFont: {
-                    weight: '400',
-                  },
+                  ...chartDefaultOptions.plugins.tooltip,
                   callbacks: {
-                    title: function(context) {
-                      const index = context[0].dataIndex,
-                            releve = bigChartData.toReversed()[index];
+                    title: (context) => {
+                      const relevesAscending = relevesEntries.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
+                            releve = relevesAscending[context[0].dataIndex];
 
-                      return formatToLocalDate(releve.date, localTimezone, {
-                        year: 'numeric',
-                        month: 'long',
-                      });
+                      return releve
+                        ? formatToLocalDate(releve.date, localTimezone, {
+                          year: 'numeric',
+                          month: 'long',
+                        }) : '';
                     },
-                    label: function(context) {
-                      const index = context.dataIndex,
-                            releve = bigChartData.toReversed()[index];
+                    label: (context) => {
+                      const relevesAscending = relevesEntries.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
+                            releve = relevesAscending[context.dataIndex];
 
-                      return `${context.parsed.y.toFixed(2)} ${releve.unite_valeur || ''}`;
+                      return releve ? `${context.parsed.y.toFixed(2)} ${releve.unite_valeur || ''}` : '';
                     },
-                    afterLabel: function(context) {
-                      const index = context.dataIndex,
-                            releve = bigChartData.toReversed()[index],
-                            difference = calculateDifference(bigChartData, releve, true),
+                    afterLabel: (context) => {
+                      const relevesAscending = relevesEntries.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
+                            releve = relevesAscending[context.dataIndex];
+                      if (!releve) return '';
+
+                      const difference = calculateDifference(releve, relevesAscending),
                             zScore = (releve.valeur - chartStats.average) / (chartStats.standardDeviation || 1);
 
                       let labels = [];
                       if (difference !== null) {
                         labels.push(`Différence : ${difference === 0 ? '' : difference > 0 ? '+' : '-'}${Math.abs(difference).toFixed(2)} ${releve.unite_valeur || ''}`);
                       }
-                      if (zScore !== null && isFinite(zScore)) {
+                      if (isFinite(zScore)) {
                         labels.push(`Cote Z : ${zScore === 0 ? '' : zScore > 0 ? '+' : '-'}${Math.abs(zScore).toFixed(2)}`);
                       }
 
@@ -448,34 +397,13 @@
                 },
               },
               scales: {
+                ...chartDefaultOptions.scales,
                 x: {
-                  ticks: {
-                    autoSkip: true,
-                    maxTicksLimit: 12,
-                  },
-                  grid: {
-                    color: 'rgba(38, 38, 38)',
-                    drawTicks: false,
-                  },
-                  type: 'time',
+                  ...chartDefaultOptions.scales.x,
                   adapters: {
                     date: {
                       locale: fr,
                     },
-                  },
-                  time: {
-                    unit: 'day',
-                    displayFormats: {
-                      day: 'd MMM',
-                    },
-                  },
-                },
-                y: {
-                  ticks: {
-                    color: 'rgba(115 115 115)',
-                  },
-                  grid: {
-                    color: 'rgba(38, 38, 38)',
                   },
                 },
               },
@@ -494,11 +422,11 @@
           >
             <span class="text-muted text-xs">{{ bigChartStatsMapping[key] || key }}</span>
             <span class="text-lg font-medium text-default text-center">{{ value.toFixed(2) }}</span>
-            <span class="text-xs text-muted text-center">{{ bigChartData[0]?.unite_valeur || '' }}</span>
+            <span class="text-xs text-muted text-center">{{ bigChartPoints[0]?.unite_valeur || '' }}</span>
           </UCard>
         </div>
         <div class="flex items-center justify-between text-[13px] text-muted leading-none">
-          <span class="text-left">Sur {{ bigChartData.length }} mesures</span>
+          <span class="text-left">Sur {{ bigChartPoints.length }} mesures</span>
           <span class="text-right">Du {{ chartStats.dateRange[0] }} au {{ chartStats.dateRange[1] }}</span>
         </div>
       </div>
@@ -507,6 +435,8 @@
 </template>
 
 <script setup>
+  import chartDefaultOptionsDataset from "~/utils/chartDefaultOptionsDataset.json";
+  import chartDefaultOptions from "~/utils/chartDefaultOptions.json";
   import {
     LoaderCircle,
     TrendingUp,
@@ -564,13 +494,42 @@
         installationHistoryData = ref([]),
         activeTab = ref("0"),
         bigChartType = ref(null),
-        bigChartData = ref([]),
+        bigChartPoints = ref([]),
         bigChartModalOpen = ref(false);
 
   const excludedDataTypesForDifference = [
           "DIRECTION_VENT",
         ],
-        localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+        installationCache = new Map();
+
+  async function fetchInstallationData(id) {
+    if (installationCache.has(id)) {
+      return installationCache.get(id);
+    }
+
+    const response = await $fetch(`/api/installations/${id}`),
+          installationData = markRaw(response.data);
+
+    installationCache.set(id, installationData);
+
+    return installationData;
+  }
+
+  async function openInstallation(id) {
+    pendingData.value = true;
+    bigChartModalOpen.value = false;
+    bigChartType.value = null;
+    bigChartPoints.value = [];
+
+    try {
+      installationData.value = await fetchInstallationData(id);
+      activeTab.value = "0";
+    }
+    finally {
+      pendingData.value = false;
+    }
+  }
 
   watch(() => props.modelValue, (newValue) => {
     open.value = newValue;
@@ -580,20 +539,17 @@
     emit("update:modelValue", newValue);
 
     if (newValue === true) {
+      installationHistoryData.value = [];
       installationData.value = null;
-      pendingData.value = true;
-      activeTab.value = "0";
 
-      const {
-        data,
-        pending,
-      } = await useFetch(`/api/installations/${props.defaultData.objectid}`);
-
-      installationData.value = data.value.data;
-      pendingData.value = pending.value;
+      await openInstallation(props.defaultData.objectid);
     }
     else {
       installationHistoryData.value = [];
+      bigChartModalOpen.value = false;
+      bigChartType.value = null;
+      bigChartPoints.value = [];
+      pendingData.value = false;
     }
   });
 
@@ -630,7 +586,8 @@
       id: "difference",
       header: "Différence",
       cell: ({ row }) => {
-        const delta = calculateDifference(relevesByDataType.value, row.original);
+        const relevesOfSameType = relevesEntries.value.find(e => e.type_releves === row.original.type_donnee)?.relevesAscending || [],
+              delta = calculateDifference(row.original, relevesOfSameType);
 
         if (excludedDataTypesForDifference.includes(row.original.type_donnee) || delta === null) {
           return h("div", {
@@ -679,23 +636,49 @@
   ];
 
   const relevesByDataType = computed(() => {
-    if (!installationData.value || !installationData.value.releves) return [];
+    if (!installationData.value || !installationData.value.releves) return {};
 
     return processReleves(installationData.value.releves);
   });
 
-  const chartStats = computed(() => {
-    return calculateChartStats(bigChartData.value);
+  const relevesEntries = computed(() => {
+    return Object.entries(relevesByDataType.value)
+      .map(([type_releves, releves]) => {
+        const relevesAscending = [...releves].reverse(),
+              points = relevesAscending.map(releve => ({
+                x: new Date(releve.date),
+                y: releve.valeur,
+              }));
+
+        return {
+          type_releves,
+          releves,
+          relevesAscending,
+          chartPoints: points,
+        };
+      });
   });
 
-  function updateData(sonde) {
-    installationHistoryData.value.push(installationData.value);
-    installationData.value = sonde;
+  const chartStats = computed(() => {
+    return calculateChartStats(bigChartPoints.value, localTimezone);
+  });
+
+  async function updateData(sonde) {
+    if (!sonde?.id || !installationData.value || pendingData.value) return;
+    if (installationData.value.id === sonde.id) return;
+
+    const previousInstallation = installationData.value;
+
+    await openInstallation(sonde.id);
+
+    if (installationData.value?.id === sonde.id) {
+      installationHistoryData.value.push(previousInstallation);
+    }
   }
 
   function zoomInChart(type_releves, releves) {
     bigChartType.value = type_releves;
-    bigChartData.value = releves;
+    bigChartPoints.value = releves;
 
     bigChartModalOpen.value = true;
   }
@@ -706,6 +689,9 @@
     installationData.value = installationHistoryData.value.pop();
 
     activeTab.value = "0";
+    bigChartModalOpen.value = false;
+    bigChartType.value = null;
+    bigChartPoints.value = [];
   }
 
   function shouldDisplayMeasureAlert(releveDate) {
