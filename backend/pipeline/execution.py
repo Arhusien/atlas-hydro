@@ -2,7 +2,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask
 
 from enums import JeuDonnees, TypeReleve
-from utils import constantes
 
 from .extraction import extraire_releves
 from .traitement import supprimer_anciens_releves, traiter_releves
@@ -23,7 +22,7 @@ def executer_pipeline(app: Flask):
     donnees_extraites = extraire_releves(app)
 
     # Si des données ont été extraites de chaque jeu de données, alors l'extraction est valide
-    # et les relevés vieux de plus de 24 heures peuvent être supprimer
+    # et les relevés vieux de plus d'une semaine peuvent être supprimer
     extraction_valide = all(len(donnees) > 0 for donnees in donnees_extraites.values())
     if extraction_valide:
         nb_releves_supprimes = supprimer_anciens_releves(app)
@@ -54,7 +53,7 @@ def demarrer_cron_pipeline(app: Flask):
         (BackgroundScheduler): Le planificateur de la cron job.
     """
 
-    planificateur = BackgroundScheduler(timezone=constantes.FUSEAU_HORAIRE)
+    planificateur = BackgroundScheduler(timezone="America/Toronto")
 
     planificateur.add_job(
         func=executer_pipeline,

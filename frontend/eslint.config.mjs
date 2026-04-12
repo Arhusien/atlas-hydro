@@ -1,6 +1,13 @@
+import tsParser from "@typescript-eslint/parser";
 import withNuxt from "./.nuxt/eslint.config.mjs";
 
 export default withNuxt({
+    files: [
+        "**/*.{js,mjs,cjs,ts,tsx,mts,cts}",
+    ],
+    languageOptions: {
+        parser: tsParser,
+    },
     rules: {
         "vue/multi-word-component-names": "off",
         "vue/singleline-html-element-content-newline": "error",

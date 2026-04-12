@@ -33,3 +33,10 @@ export const valueTypeMapping = {
     MOYENNE: "Valeurs moyennes",
     SOMME: "Sommations",
 };
+
+export const bigChartStatsMapping = {
+    average: "Moyenne",
+    minimum: "Minimum",
+    maximum: "Maximum",
+    standardDeviation: "Écart-type",
+};

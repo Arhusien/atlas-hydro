@@ -1,5 +1,3 @@
-import time
-import urllib
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -11,10 +9,6 @@ from enums import JeuDonnees, TypeReleve
 from models import Releve
 from utils import constantes
 
-QUERY_PAR_DEFAUT = (
-    f"?lang=fr&timezone={urllib.parse.quote(constantes.FUSEAU_HORAIRE)}" + f"&limit={constantes.LIMITE_ELEMENTS_API}"
-)
-
 JEUX_DONNEES = [
     JeuDonnees.HYDROMETEOROLOGIQUES,
     JeuDonnees.HYDROMETRIQUES,
@@ -23,34 +17,81 @@ JEUX_DONNEES = [
 FUSEAU_HORAIRE = ZoneInfo(constantes.FUSEAU_HORAIRE)
 
 
-def _construire_filtre_date(cle_date: str, date_inferieure: datetime, date_superieure: datetime) -> str:
+def _convertir_date(date_brute: str) -> datetime | None:
     """
-    Construit un filtre par rapport à un intervalle de temps.
+    Convertit une date brute en objet datetime.
 
     Parameters:
-        cle_date (str): La clé JSON de la valeur de la date.
-        date_inferieure (datetime): La borne inférieure de l'intervalle de temps (exclue).
-        date_superieure (datetime): La borne supérieure de l'intervalle de temps (incluse).
+        date_brute (str): La date brute.
 
     Returns:
-        (str): Le filtre de l'intervalle de temps.
+        (datetime | None): La date convertie ou une valeur nulle.
     """
 
-    nb_heures = int((date_superieure - date_inferieure).total_seconds() / 3600)
+    if not isinstance(date_brute, str):
+        return None
 
-    conditions_date = []
-    # La date de début n'est pas incluse dans l'itération
-    for i in range(nb_heures):
-        date_iteration = date_superieure - timedelta(hours=i)
+    # Pour chaque format de date possible
+    for format_date in constantes.FORMATS_DATE:
+        # Essayer de convertir (puis retourner) la date dans le format de l'itération
+        # Si la conversion échoue, passer à l'itération suivante
+        try:
+            return datetime.strptime(date_brute, format_date).replace(tzinfo=FUSEAU_HORAIRE)
 
-        conditions_date.extend(
-            [
-                f"startsWith({cle_date}, '{date_iteration.strftime('%Y/%m/%d %H')}')",
-                f"startsWith({cle_date}, '{date_iteration.strftime('%Y/%m/%dT%H')}')",
-            ]
-        )
+        except ValueError:
+            continue
 
-    return " OR ".join(conditions_date)
+    return None
+
+
+def _formatter_donnees_extraites(
+    donnees_extraites: dict,
+    jeu_donnees: JeuDonnees,
+    date_min: datetime,
+    date_max: datetime,
+):
+    """
+    Formatte les données d'un jeu pour les convertir en une liste de relevés.
+
+    Parameters:
+        donnees_extraites (dict): Les données extraites du jeu.
+        jeu_donnees (JeuDonnees): Le jeu de données extrait.
+        date_minimale (datetime): La date minimale de conservation des données.
+        date_maximale (datetime): La date maximale de conservation des données.
+
+    Returns:
+        (list[dict]): Une liste de relevés.
+    """
+
+    lst_releves: list[dict] = []
+
+    cle_installations = "Station" if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES else "Site"
+
+    for installation in donnees_extraites.get(cle_installations, []):
+        id_installation = installation.get("identifiant")
+        if not id_installation:
+            continue
+
+        for composition in installation.get("Composition", []):
+            donnees_releve = composition.get("Donnees", {})
+
+            for date_brute, valeur in donnees_releve.items():
+                date = _convertir_date(date_brute)
+                if (date is None) or (date <= date_min) or (date > date_max):
+                    continue
+
+                lst_releves.append(
+                    {
+                        "id": id_installation,
+                        "date": date.isoformat(),
+                        "type_valeur": composition.get("type_mesure"),
+                        "unite_valeur": composition.get("nom_unite_mesure"),
+                        "nom_donnee": composition.get("type_point_donnee"),
+                        "valeur": valeur,
+                    }
+                )
+
+    return lst_releves
 
 
 def extraire_releves(app: Flask) -> dict[str, list[dict]]:
@@ -67,9 +108,9 @@ def extraire_releves(app: Flask) -> dict[str, list[dict]]:
     releves_extraits = {}
 
     session = requests.Session()
-    session.headers.update({**constantes.HEADERS})
+    session.headers.update(constantes.HEADERS)
 
-    date = datetime.now(FUSEAU_HORAIRE).replace(minute=0, second=0, microsecond=0)
+    date = datetime.now(FUSEAU_HORAIRE).replace(minute=0, second=0, microsecond=0) - timedelta(hours=1)
 
     for jeu_donnees in JEUX_DONNEES:
         type_releve = (
@@ -84,71 +125,52 @@ def extraire_releves(app: Flask) -> dict[str, list[dict]]:
             )
 
         if not date_dernier_releve:
-            date_dernier_releve = date - timedelta(hours=24)
+            date_dernier_releve = date - timedelta(days=constantes.PERSISTANCE_RELEVES_JOURS)
 
         date_dernier_releve = date_dernier_releve.replace(tzinfo=FUSEAU_HORAIRE)
 
         nb_heures_retard = int((date - date_dernier_releve).total_seconds() / 3600)
-        if nb_heures_retard > 24:
-            nb_heures_retard = 24
-            date_dernier_releve = date - timedelta(hours=24)
+        if nb_heures_retard > constantes.PERSISTANCE_RELEVES_JOURS * 24:
+            nb_heures_retard = constantes.PERSISTANCE_RELEVES_JOURS * 24
+            date_dernier_releve = date - timedelta(days=constantes.PERSISTANCE_RELEVES_JOURS)
+
+        if nb_heures_retard <= 0:
+            releves_extraits[jeu_donnees.value] = []
+            continue
 
         releves_jeu_donnees = []
-
-        for i in range(0, nb_heures_retard, 3):
-            nb_heures_intervalle = min(3, nb_heures_retard - i)
-
-            date_debut_intervalle = date_dernier_releve + timedelta(hours=i)
-            date_fin_intervalle = date_debut_intervalle + timedelta(hours=nb_heures_intervalle)
-
-            cle_date = "date" if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES else "split_date"
-
-            filtre_date = _construire_filtre_date(
-                cle_date,
-                date_inferieure=date_debut_intervalle,
-                date_superieure=date_fin_intervalle,
-            )
-
-            url_api = f"{constantes.URL_API_DONNEES_HQ}/{jeu_donnees.value}/records{QUERY_PAR_DEFAUT}&where={urllib.parse.quote(filtre_date)}"  # noqa: E501
-
-            decalage = 0
-            total_elements = float("inf")  # Utiliser "inf" pour forcer la première itération
-
+        try:
             print(
-                "Extraction des données dans l'intervalle de temps :"
-                + f"]{date_debut_intervalle.isoformat()}; {date_fin_intervalle.isoformat()}]"
+                "Extraction des données dans l'intervalle de temps : "
+                + f"[{date_dernier_releve.isoformat()}; {date.isoformat()}]"
             )
 
-            while decalage < total_elements:
-                print(f"Extraction des données du jeu {jeu_donnees.value} (decalage={decalage})")
+            url_jeu_donnees = (
+                constantes.URL_SONDES_HQ
+                if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES
+                else constantes.URL_CENTRALES_HQ
+            )
 
-                url_api_paginee = f"{url_api}&offset={decalage}"
+            reponse = session.get(
+                url_jeu_donnees,
+                timeout=constantes.ATTENTE_REQUETE_SECONDES,
+            )
+            reponse.encoding = "UTF-8"
+            reponse.raise_for_status()
 
-                try:
-                    reponse = session.get(url_api_paginee, timeout=constantes.TIMEOUT_REQUETE_SECONDES)
-                    reponse.encoding = "UTF-8"
-                    reponse.raise_for_status()
+            donnees_jeu = reponse.json()
 
-                    corps_reponse = reponse.json()
+            releves_jeu_donnees = _formatter_donnees_extraites(
+                donnees_jeu,
+                jeu_donnees,
+                date_min=date_dernier_releve,
+                date_max=date,
+            )
 
-                    # Mettre à jour le nombre total de relevés à extraire lors de première itération
-                    if decalage == 0:
-                        total_elements = corps_reponse.get("total_count", 0)
-
-                    releves_jeu_donnees.extend(corps_reponse.get("results", []))
-
-                    decalage += constantes.LIMITE_ELEMENTS_API
-
-                    # Si une autre itération doit être faite, attendre 3 secondes
-                    if decalage < total_elements:
-                        time.sleep(constantes.PAUSE_ENTRE_REQUETES_SECONDES)
-
-                except requests.exceptions.RequestException:
-                    print(
-                        f"Échec de la récupération des relevés d'Hydro-Québec pour le jeu {jeu_donnees.value} (decalage={decalage})."  # noqa: E501
-                    )
-                    # Arrêter l'extraction des relevés pour le jeu de l'itération
-                    break
+        except requests.exceptions.RequestException:
+            print(f"Échec de la récupération des relevés d'Hydro-Québec pour le jeu {jeu_donnees.value}.")
+            # Arrêter l'extraction des relevés pour ce jeu
+            continue
 
         print(f"{len(releves_jeu_donnees)} relevés extraits du jeu {jeu_donnees.value}.")
 

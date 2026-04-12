@@ -1,11 +1,11 @@
 <template>
   <UModal
-    title="Crédits"
+    title="Informations et crédits"
     close-icon="i-lucide-x"
   >
     <UTooltip
       :delay-duration="0"
-      text="Crédits"
+      text="Informations et crédits"
       :content="{
         side: 'left',
         sideOffset: 10,
@@ -20,7 +20,7 @@
         square
         class="cursor-pointer"
       >
-        <span class="sr-only">Crédits</span>
+        <span class="sr-only">Informations et crédits</span>
       </UButton>
     </UTooltip>
     <template #body>

@@ -34,6 +34,8 @@ export default defineNuxtConfig({
                 "leaflet",
                 "geolib",
                 "luxon",
+                "chart.js",
+                "chartjs-adapter-date-fns",
             ],
         },
     },

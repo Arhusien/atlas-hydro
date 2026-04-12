@@ -29,14 +29,14 @@ def synchroniser_installations(app: Flask) -> dict[str, int | float]:
     try:
         reponse_centrales = session.get(
             constantes.URL_CENTRALES_HQ,
-            timeout=constantes.TIMEOUT_REQUETE_SECONDES,
+            timeout=constantes.ATTENTE_REQUETE_SECONDES,
         )
         reponse_centrales.encoding = "UTF-8"
         reponse_centrales.raise_for_status()
 
         reponse_sondes = session.get(
             constantes.URL_SONDES_HQ,
-            timeout=constantes.TIMEOUT_REQUETE_SECONDES,
+            timeout=constantes.ATTENTE_REQUETE_SECONDES,
         )
         reponse_sondes.encoding = "UTF-8"
         reponse_sondes.raise_for_status()

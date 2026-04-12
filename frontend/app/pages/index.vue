@@ -9,7 +9,7 @@
     >
       <LTileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/&quot;>OpenStreetMap</a> contributors"
+        attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/copyright&quot; target=&quot;_blank&quot;>OpenStreetMap</a> contributors &amp;copy; <a href=&quot;https://www.hydroquebec.com/documents-donnees/donnees-ouvertes/licence.html&quot; target=&quot;_blank&quot;>Hydro-Québec</a>"
         layer-type="base"
         name="OpenStreetMap"
         no-wrap
@@ -23,7 +23,7 @@
           <SourceProductionElectricite />
           <DemandeElectricite />
           <ExportationElectricite />
-          <Credits />
+          <InfosCredits />
         </div>
       </LControl>
       <LControl position="bottomleft">
@@ -38,9 +38,9 @@
         </div>
       </LControl>
     </LMap>
-    <InfosInstallation
-      v-model="infosInstallationOpen"
-      :default-data="infosInstallationData"
+    <PanelInstallation
+      v-model="PanelInstallationOpen"
+      :default-data="PanelInstallationData"
     />
   </div>
 </template>
@@ -50,8 +50,8 @@
   import satellitePin from "~/assets/img/satellitePin.svg?raw";
   import factoryPin from "~/assets/img/factoryPin.svg?raw";
 
-  const infosInstallationOpen = ref(false),
-        infosInstallationData = ref({});
+  const PanelInstallationOpen = ref(false),
+        PanelInstallationData = ref({});
 
   const activeMarkers = ref([]);
 
@@ -103,8 +103,8 @@
           }),
           zIndexOffset: feature.properties.type === "CENTRALE" ? 1000 : 0,
         }).on("click", function (event) {
-          infosInstallationOpen.value = true;
-          infosInstallationData.value = feature.properties;
+          PanelInstallationOpen.value = true;
+          PanelInstallationData.value = feature.properties;
 
           const target = event.originalEvent.target,
                 svgMarkerIcon = target.closest("svg");
@@ -125,7 +125,7 @@
     });
   };
 
-  watch(infosInstallationOpen, (newValue) => {
+  watch(PanelInstallationOpen, (newValue) => {
     if (newValue === false) {
       activeMarkers.value.forEach((marker) => {
         marker.style.setProperty("--ui-marker", "var(--ui-bg)");

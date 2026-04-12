@@ -6,7 +6,12 @@ HEADERS = {
     "Expires": "0",
 }
 
-URL_API_DONNEES_HQ = "https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets"
+FORMATS_DATE = [
+    "%Y/%m/%dT%H:%M:%SZ",
+    "%Y/%m/%d %H:%M:%SZ",
+    "%Y/%m/%dT%H:%M:%S",
+    "%Y/%m/%d %H:%M:%S",
+]
 
 URL_CENTRALES_HQ = (
     "https://www.hydroquebec.com/data/documents-donnees/donnees-ouvertes/json/Donnees_VUE_CENTRALES_ET_OUVRAGES.json"
@@ -15,9 +20,9 @@ URL_SONDES_HQ = (
     "https://www.hydroquebec.com/data/documents-donnees/donnees-ouvertes/json/Donnees_VUE_STATIONS_ET_TARAGES.json"
 )
 
-FUSEAU_HORAIRE = "America/Toronto"
-LIMITE_ELEMENTS_API = 100
-TIMEOUT_REQUETE_SECONDES = 10
+FUSEAU_HORAIRE = "UTC"
+PERSISTANCE_RELEVES_JOURS = 7
+ATTENTE_REQUETE_SECONDES = 10
 PAUSE_ENTRE_REQUETES_SECONDES = 3
 
 DISTANCE_ASSOCIATION_CENTRALE_KM = 5

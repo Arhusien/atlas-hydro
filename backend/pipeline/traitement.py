@@ -54,61 +54,39 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
     with app.app_context():
         try:
             for donees_releve in lst_releves:
-                id_installation = donees_releve.get("identifiant")
+                id_installation = donees_releve.get("id")
                 if not id_installation:
                     continue
 
-                valeur = None
-                if type_releves == TypeReleve.HYDROMETEOROLOGIQUE:
-                    valeur = donees_releve.get("valeur")
-                elif type_releves == TypeReleve.HYDROMETRIQUE:
-                    valeur = donees_releve.get("split_value")
+                valeur = donees_releve.get("valeur")
+                if not valeur:
+                    continue
 
                 valeur = convertir_valeur(valeur, type_cible=float)
                 # Si la valeur n'a pas pu être convertie
                 if valeur is None:
                     continue
 
-                date = None
-                if type_releves == TypeReleve.HYDROMETEOROLOGIQUE:
-                    date = donees_releve.get("date")
-                elif type_releves == TypeReleve.HYDROMETRIQUE:
-                    date = donees_releve.get("split_date")
-
+                date = donees_releve.get("date")
                 if not date:
                     continue
 
-                date = date.replace(" ", "T")
-                date = datetime.strptime(date, "%Y/%m/%dT%H:%M:%SZ")
+                date = datetime.fromisoformat(date)
+
+                nom_donnee = donees_releve.get("nom_donnee")
+                if not nom_donnee:
+                    continue
 
                 releve = {
                     "installation_id": id_installation,
                     "date": date,
                     "valeur": valeur,
                     "type_releve": type_releves,
+                    "type_valeur": TypeValeur(donees_releve.get("type_valeur")),
+                    "unite_valeur": donees_releve.get("unite_valeur"),
+                    "nom_donnee": nom_donnee,
+                    "type_donnee": _determiner_type_donnee(nom_donnee, type_releve=type_releves),
                 }
-                if type_releves == TypeReleve.HYDROMETEOROLOGIQUE:
-                    donnee = donees_releve.get("composition_depil_type_point_donnee")
-
-                    releve.update(
-                        {
-                            "type_valeur": TypeValeur(donees_releve.get("composition_depil_type_mesure")),
-                            "unite_valeur": donees_releve.get("composition_depil_nom_unite_mesure"),
-                            "nom_donnee": donnee,
-                            "type_donnee": _determiner_type_donnee(donnee, type_releve=type_releves),
-                        }
-                    )
-                elif type_releves == TypeReleve.HYDROMETRIQUE:
-                    donnee = donees_releve.get("depil_json_type_point_donnee")
-
-                    releve.update(
-                        {
-                            "type_valeur": TypeValeur(donees_releve.get("depil_json_type_mesure")),
-                            "unite_valeur": donees_releve.get("depil_json_nom_unite_mesure"),
-                            "nom_donnee": donees_releve.get("depil_json_type_point_donnee"),
-                            "type_donnee": _determiner_type_donnee(donnee, type_releve=type_releves),
-                        }
-                    )
 
                 db.session.add(Releve(**releve))
 
@@ -125,7 +103,7 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
 
 def supprimer_anciens_releves(app: Flask) -> int:
     """
-    Supprime tous les relevés vieux de plus de 24 heures.
+    Supprime tous les relevés vieux de plus d'une semaine.
 
     Parameters:
         app (Flask): L'application Flask.
@@ -137,10 +115,13 @@ def supprimer_anciens_releves(app: Flask) -> int:
     nb_releves_supprimes = 0
 
     with app.app_context():
-        date_jour_precedent = datetime.now(FUSEAU_HORAIRE) - timedelta(hours=24)
+        date_semaine_precedente = datetime.now(FUSEAU_HORAIRE) - timedelta(
+            days=constantes.PERSISTANCE_RELEVES_JOURS,
+            hours=1,
+        )
 
         try:
-            nb_releves_supprimes = db.session.query(Releve).filter(Releve.date < date_jour_precedent).delete()
+            nb_releves_supprimes = db.session.query(Releve).filter(Releve.date < date_semaine_precedente).delete()
 
             db.session.commit()
 
