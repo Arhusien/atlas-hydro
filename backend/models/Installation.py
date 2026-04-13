@@ -18,6 +18,13 @@ class Installation(db.Model):
 
     releves = db.relationship("Releve", backref="installation", lazy=True)
 
+    sondes = db.relationship(
+        "Sonde",
+        back_populates="ouvrage",
+        foreign_keys="Sonde.ouvrage_id",
+        lazy=True,
+    )
+
     # Baser l'héritage des modèles sur le type de l'installation
     __mapper_args__ = {
         "polymorphic_on": type,

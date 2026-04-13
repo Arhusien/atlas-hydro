@@ -9,10 +9,18 @@ class Sonde(Installation):
         "polymorphic_identity": TypeInstallation.SONDE,
     }
 
-    centrale_id = db.Column(db.String(20), db.ForeignKey("installations.id"), nullable=True)
+    ouvrage_id = db.Column(db.String(20), db.ForeignKey("installations.id"), nullable=True)
+
+    ouvrage = db.relationship(
+        "Installation",
+        remote_side=[Installation.id],
+        foreign_keys=[ouvrage_id],
+        back_populates="sondes",
+        lazy=True,
+    )
 
     def serialiser(self, avec_releves: bool | None = False) -> dict:
         return {
             **super().serialiser(avec_releves),
-            "centrale_id": self.centrale_id,
+            "ouvrage_id": self.ouvrage_id,
         }

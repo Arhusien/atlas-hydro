@@ -131,7 +131,7 @@
                 </div>
               </div>
               <div
-                v-if="installationData?.type === 'CENTRALE' && installationData?.sondes?.length > 0"
+                v-if="['CENTRALE', 'BARRAGE'].includes(installationData?.type) && installationData?.sondes?.length > 0"
                 class="flex flex-col gap-2 sm:gap-3"
               >
                 <h2 class="text-highlighted font-medium">
@@ -422,7 +422,7 @@
           >
             <span class="text-muted text-xs">{{ bigChartStatsMapping[key] || key }}</span>
             <span class="text-lg font-medium text-default text-center">{{ value.toFixed(2) }}</span>
-            <span class="text-xs text-muted text-center">{{ bigChartPoints[0]?.unite_valeur || '' }}</span>
+            <span class="text-xs text-muted text-center">{{ relevesEntries.find(e => e.type_releves === bigChartType)?.relevesAscending?.[0]?.unite_valeur || '' }}</span>
           </UCard>
         </div>
         <div class="flex items-center justify-between text-[13px] text-muted leading-none">
@@ -671,6 +671,7 @@
 
     await openInstallation(sonde.id);
 
+    // Ajouter à l'historique seulement si l'installation a été récupérée avec succès
     if (installationData.value?.id === sonde.id) {
       installationHistoryData.value.push(previousInstallation);
     }

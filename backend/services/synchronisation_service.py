@@ -6,7 +6,7 @@ from geopy.distance import geodesic
 
 from db import db
 from enums import TypeInstallation
-from models import Centrale, Installation, Sonde
+from models import Barrage, Centrale, Installation, Sonde
 from utils import constantes, simplifier_texte
 
 
@@ -61,12 +61,16 @@ def synchroniser_installations(app: Flask) -> dict[str, int | float]:
                     continue
 
                 type_installation = TypeInstallation.SONDE
-                # Si la liste des donnees comprend une donnee "Débit turbiné", il s'agit d'une centrale
+                # Si la liste des données comprend une donnée "Débit turbiné", il s'agit d'une centrale
                 if any(
                     simplifier_texte("Débit turbiné") in simplifier_texte(donnee.get("type_point_donnee", ""))
                     for donnee in donnees_installation.get("Composition", [])
                 ):
                     type_installation = TypeInstallation.CENTRALE
+                # S'il ne s'agit pas d'une centrale et que l'identifiant de l'installation est présent
+                # dans la liste des barrages et centrales, il s'agit alors d'un barrage
+                elif id_installation.startswith("3-"):
+                    type_installation = TypeInstallation.BARRAGE
 
                 installation = {
                     "id": id_installation,
@@ -83,6 +87,8 @@ def synchroniser_installations(app: Flask) -> dict[str, int | float]:
                 if not installation_existante:
                     if type_installation == TypeInstallation.CENTRALE:
                         nouvelle_installation = Centrale(**installation)
+                    elif type_installation == TypeInstallation.BARRAGE:
+                        nouvelle_installation = Barrage(**installation)
                     elif type_installation == TypeInstallation.SONDE:
                         nouvelle_installation = Sonde(**installation)
 
@@ -123,15 +129,17 @@ def associer_sondes_centrales(app: Flask) -> int:
     """
 
     with app.app_context():
-        lst_centrales: list[Centrale] = Centrale.query.all()
+        lst_ouvrages: list[Centrale | Barrage] = Installation.query.filter(
+            Installation.type.in_([TypeInstallation.BARRAGE, TypeInstallation.CENTRALE])
+        ).all()
 
         associations_creees = 0
 
-        for centrale in lst_centrales:
-            if (centrale.y is None) or (centrale.x is None):
+        for ouvrage in lst_ouvrages:
+            if (ouvrage.y is None) or (ouvrage.x is None):
                 continue
 
-            point_centrale = (centrale.y, centrale.x)
+            point_centrale = (ouvrage.y, ouvrage.x)
             distance = geodesic(kilometers=constantes.DISTANCE_ASSOCIATION_CENTRALE_KM)
 
             # Calculer les 4 points de la zone de recherche
@@ -141,7 +149,7 @@ def associer_sondes_centrales(app: Flask) -> int:
             ouest = distance.destination(point=point_centrale, bearing=270).longitude
 
             sondes_a_proximite: list[Sonde] = Sonde.query.filter(
-                Sonde.centrale_id == None,  # noqa: E711
+                Sonde.ouvrage_id == None,  # noqa: E711
                 Sonde.y >= sud,  # Plus grand (ou égal) que 5 km au sud de la centrale
                 Sonde.y <= nord,  # Plus petit (ou égal) que 5 km au nord de la centrale
                 Sonde.x >= ouest,  # Plus grand (ou égal) que 5 km a l'ouest de la centrale
@@ -149,8 +157,11 @@ def associer_sondes_centrales(app: Flask) -> int:
             ).all()
 
             for sonde in sondes_a_proximite:
-                sonde.centrale_id = centrale.id
-                associations_creees += 1
+                if (
+                    ouvrage.type == TypeInstallation.BARRAGE
+                    and simplifier_texte("Barrage") in simplifier_texte(sonde.nom)
+                ) or (ouvrage.type == TypeInstallation.CENTRALE):
+                    sonde.ouvrage_id = ouvrage.id
 
         db.session.commit()
 

@@ -4,9 +4,9 @@ from enums import TypeInstallation
 from .Installation import Installation
 
 
-class Centrale(Installation):
+class Barrage(Installation):
     __mapper_args__ = {
-        "polymorphic_identity": TypeInstallation.CENTRALE,
+        "polymorphic_identity": TypeInstallation.BARRAGE,
     }
 
     def serialiser(

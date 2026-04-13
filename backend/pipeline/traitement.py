@@ -121,7 +121,7 @@ def supprimer_anciens_releves(app: Flask) -> int:
         )
 
         try:
-            nb_releves_supprimes = db.session.query(Releve).filter(Releve.date < date_semaine_precedente).delete()
+            nb_releves_supprimes = Releve.query.filter(Releve.date < date_semaine_precedente).delete()
 
             db.session.commit()
 

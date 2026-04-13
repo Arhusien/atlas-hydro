@@ -51,6 +51,8 @@
   import satellitePinActive from "~/assets/img/satellitePinActive.svg?url";
   import factoryPin from "~/assets/img/factoryPin.svg?url";
   import factoryPinActive from "~/assets/img/factoryPinActive.svg?url";
+  import damPin from "~/assets/img/damPin.svg?url";
+  import damPinActive from "~/assets/img/damPinActive.svg?url";
   import pinShadow from "~/assets/img/pinShadow.svg?url";
 
   const panelInstallationOpen = ref(false),
@@ -77,6 +79,16 @@
       active: L.icon({
         ...markerIconOptions,
         iconUrl: factoryPinActive,
+      }),
+    },
+    BARRAGE: {
+      default: L.icon({
+        ...markerIconOptions,
+        iconUrl: damPin,
+      }),
+      active: L.icon({
+        ...markerIconOptions,
+        iconUrl: damPinActive,
       }),
     },
     SONDE: {
@@ -122,12 +134,12 @@
     // Ajouter le GeoJSON à la carte
     L.geoJSON(geojson.value.data, {
       pointToLayer: function (feature, latlng) {
-        if (feature.properties.centrale_id) return;
+        if (feature.properties.ouvrage_id) return;
 
         return L.marker(latlng, {
           title: feature.properties.nom || "Inconnu",
           icon: markerIcons[feature.properties.type]?.default || markerIcons.SONDE.default,
-          zIndexOffset: feature.properties.type === "CENTRALE" ? 1000 : 0,
+          zIndexOffset: feature.properties.type === "CENTRALE" ? 9999 : feature.properties.type === "BARRAGE" ? 4999 : 0,
         }).on("click", function () {
           if (activeMarker.value) {
             const previousType = activeMarker.value.feature.properties.type;

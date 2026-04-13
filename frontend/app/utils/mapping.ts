@@ -1,5 +1,6 @@
 export const installationTypeMapping = {
     CENTRALE: "Centrale",
+    BARRAGE: "Barrage",
     SONDE: "Sonde",
 };
 
