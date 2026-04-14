@@ -12,8 +12,15 @@ from enums import TypeInstallation
 from models import Barrage, Centrale, Installation, Sonde
 from utils import constantes, simplifier_texte
 
+associations_syonymes = {
+    "Grande-2": "Robert-Bourassa",
+    "Hart-Jaune Supérieur": "Petit Lac Manicouagan",
+    "Rapide Sept": "Rapide-7",
+    # "Manouane A": "Manouane-A"
+}
+
 # Ajouter quelques mots génériques aux mots vides par défaut de Spacy
-STOP_WORDS.update(["barrage", "centrale", "aval", "amont"])
+STOP_WORDS.update(["barrage", "centrale", "digue", "bief", "aval", "amont"])
 
 tal = spacy.load("fr_core_news_sm")
 
