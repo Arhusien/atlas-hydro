@@ -7,7 +7,7 @@ from extentions import cache
 from models import Installation
 from pipeline import executer_pipeline
 from routes import bp_carte, bp_installations
-from services.synchronisation_service import associer_sondes_centrales, synchroniser_installations
+from services.synchronisation_service import associer_sondes_ouvrages, synchroniser_installations
 
 app = Flask(__name__)
 app.config.from_object("config.Config")
@@ -33,7 +33,7 @@ with app.app_context():
 @app.cli.command("synchroniser_installations")
 def synchroniser_installations_commande():
     stats_synchronisation = synchroniser_installations(app)
-    nb_associations = associer_sondes_centrales(app)
+    nb_associations = associer_sondes_ouvrages(app)
 
     print(
         f"Installations créées : {stats_synchronisation['creees']}\n"

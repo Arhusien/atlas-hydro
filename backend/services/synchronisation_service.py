@@ -1,13 +1,43 @@
 import time
 
 import requests
+import spacy
 from flask import Flask
 from geopy.distance import geodesic
+from spacy.lang.fr.stop_words import STOP_WORDS
+from spacy.language import Language
 
 from db import db
 from enums import TypeInstallation
 from models import Barrage, Centrale, Installation, Sonde
 from utils import constantes, simplifier_texte
+
+# Ajouter quelques mots génériques aux mots vides par défaut de Spacy
+STOP_WORDS.update(["barrage", "centrale", "aval", "amont"])
+
+tal = spacy.load("fr_core_news_sm")
+
+
+def _traiter_nom_ouvrage(modele_tal: Language, nom: str) -> str:
+    """
+    Traite le nom d'un ouvrage à l'aide d'un modèle de traitement automatique des langages.
+
+    Parameters:
+        modele_tal (Language): Un modèle de traitement Spacy.
+        nom (str): Le nom de l'ouvrage.
+
+    Reuturns:
+        (str): Le nom traité.
+    """
+
+    if not isinstance(modele_tal, Language):
+        return nom
+
+    doc = modele_tal(nom)
+
+    mots_filtres = [token.text for token in doc if not token.is_stop and not token.is_punct]
+
+    return " ".join(mots_filtres).strip()
 
 
 def synchroniser_installations(app: Flask) -> dict[str, int | float]:
@@ -117,9 +147,9 @@ def synchroniser_installations(app: Flask) -> dict[str, int | float]:
     }
 
 
-def associer_sondes_centrales(app: Flask) -> int:
+def associer_sondes_ouvrages(app: Flask) -> int:
     """
-    Associe les sondes à proximité d'une centrale à cette même centrale.
+    Associe à un ouvrage les sondes à proximité qui lui correspondent.
 
     Parameters:
         app (Flask): L'application Flask.
@@ -133,6 +163,9 @@ def associer_sondes_centrales(app: Flask) -> int:
             Installation.type.in_([TypeInstallation.BARRAGE, TypeInstallation.CENTRALE])
         ).all()
 
+        # Trier la liste de manière à ce que les barrages soient placés devant les centrales
+        lst_ouvrages = sorted(lst_ouvrages, key=lambda o: o.type.value)
+
         associations_creees = 0
 
         for ouvrage in lst_ouvrages:
@@ -142,7 +175,7 @@ def associer_sondes_centrales(app: Flask) -> int:
             point_centrale = (ouvrage.y, ouvrage.x)
             distance = geodesic(kilometers=constantes.DISTANCE_ASSOCIATION_CENTRALE_KM)
 
-            # Calculer les 4 points de la zone de recherche
+            # Calculer les 4 sommets du carré de la zone de proximité
             nord = distance.destination(point=point_centrale, bearing=0).latitude
             sud = distance.destination(point=point_centrale, bearing=180).latitude
             est = distance.destination(point=point_centrale, bearing=90).longitude
@@ -157,11 +190,10 @@ def associer_sondes_centrales(app: Flask) -> int:
             ).all()
 
             for sonde in sondes_a_proximite:
-                if (
-                    ouvrage.type == TypeInstallation.BARRAGE
-                    and simplifier_texte("Barrage") in simplifier_texte(sonde.nom)
-                ) or (ouvrage.type == TypeInstallation.CENTRALE):
+                # Associer seulement si le nom de l'ouvrage est contenu dans le nom de la sonde
+                if simplifier_texte(_traiter_nom_ouvrage(tal, ouvrage.nom)) in simplifier_texte(sonde.nom):
                     sonde.ouvrage_id = ouvrage.id
+                    associations_creees += 1
 
         db.session.commit()
 

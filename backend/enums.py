@@ -3,8 +3,6 @@ from enum import Enum
 
 class TypeInstallation(Enum):
     CENTRALE = "centrale"
-    # TODO: Ajouter une prise en charge des barrages se comportant comme une central
-    # (avec sondes associées (voir si nom de la sonde comprend « barrage » ?))
     BARRAGE = "barrage"
     SONDE = "sonde"
 

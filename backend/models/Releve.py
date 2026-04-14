@@ -8,7 +8,7 @@ class Releve(db.Model):
 
     id = db.Column(db.BigInteger, primary_key=True, default=generer_snowflake)
 
-    installation_id = db.Column(db.String(20), db.ForeignKey("installations.id"), nullable=False)
+    installation_id = db.Column(db.String(20), db.ForeignKey("installations.id"), nullable=False, index=True)
 
     date = db.Column(db.DateTime, nullable=False)
 

@@ -55,6 +55,9 @@
   import damPinActive from "~/assets/img/damPinActive.svg?url";
   import pinShadow from "~/assets/img/pinShadow.svg?url";
 
+  const route = useRoute(),
+        installationId = route.query.installation;
+
   const panelInstallationOpen = ref(false),
         panelInstallationData = ref({});
 
@@ -102,6 +105,16 @@
       }),
     },
   };
+
+  watch(panelInstallationOpen, (newValue) => {
+    if (newValue === false) {
+      if (activeMarker.value) {
+        const activeType = activeMarker.value.feature.properties.type;
+        activeMarker.value.setIcon(markerIcons[activeType].default);
+        activeMarker.value = null;
+      }
+    }
+  });
 
   const quebecBounds = L.latLngBounds(
           L.latLng(45.0, -80.0), // Gatineau/Abitibi
@@ -154,6 +167,17 @@
         });
       },
     }).addTo(map.value.leafletObject);
+
+    if (installationId) {
+      const selectedFeature = geojson.value.data.features.find((feature) => {
+        return feature.properties.objectid === installationId;
+      });
+
+      if (selectedFeature) {
+        panelInstallationData.value = selectedFeature.properties;
+        panelInstallationOpen.value = true;
+      }
+    }
   };
 
   const centerOnQuebec = () => {
@@ -162,14 +186,4 @@
       padding: [50, 50],
     });
   };
-
-  watch(panelInstallationOpen, (newValue) => {
-    if (newValue === false) {
-      if (activeMarker.value) {
-        const activeType = activeMarker.value.feature.properties.type;
-        activeMarker.value.setIcon(markerIcons[activeType].default);
-        activeMarker.value = null;
-      }
-    }
-  });
 </script>

@@ -9,7 +9,7 @@
       content: 'ring-0 sm:ring-0',
       body: 'flex-1 overflow-hidden p-0 sm:p-0',
       footer: 'p-2 sm:p-4',
-      close: 'cursor-pointer',
+      close: 'cursor-pointer rounded',
     }"
   >
     <template #title>
@@ -91,7 +91,7 @@
                 </div>
               </div>
               <div
-                v-if="relevesEntries.length > 0"
+                v-if="computedReleves.length > 0"
                 class="flex flex-col gap-2 sm:gap-3"
               >
                 <h2 class="text-highlighted font-medium">
@@ -99,7 +99,7 @@
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   <UCard
-                    v-for="({ type_releves, releves }) in relevesEntries"
+                    v-for="({ type_releves, releves }) in computedReleves"
                     :key="type_releves"
                     variant="soft"
                     :ui="{
@@ -135,7 +135,7 @@
                 class="flex flex-col gap-2 sm:gap-3"
               >
                 <h2 class="text-highlighted font-medium">
-                  Sondes à proximité
+                  Sondes associées
                 </h2>
                 <div class="flex flex-col gap-2 sm:gap-3">
                   <UCard
@@ -161,14 +161,14 @@
           </template>
           <template #data>
             <div
-              v-if="relevesEntries.length > 0"
+              v-if="computedReleves.length > 0"
               class="flex flex-col gap-2 sm:gap-3"
             >
               <h2 class="text-highlighted font-medium">
                 Mesures
               </h2>
               <UAccordion
-                v-for="({ type_releves, releves }) in relevesEntries"
+                v-for="({ type_releves, releves }) in computedReleves"
                 :key="type_releves"
                 :items="[
                   {
@@ -219,7 +219,7 @@
           </template>
           <template #stats>
             <div
-              v-if="relevesEntries.length > 0"
+              v-if="computedReleves.length > 0"
               class="flex flex-col gap-2 sm:gap-3"
             >
               <h2 class="text-highlighted font-medium">
@@ -227,7 +227,7 @@
               </h2>
               <div class="flex flex-col gap-2 sm:gap-3">
                 <UCard
-                  v-for="({ type_releves, chartPoints, relevesAscending }) in relevesEntries.filter((e) => !excludedDataTypesForDifference.includes(e.type_releves))"
+                  v-for="({ type_releves, chartPoints, relevesAscending }) in computedReleves.filter((e) => !excludedDataTypesForDifference.includes(e.type_releves))"
                   :key="type_releves"
                   variant="soft"
                   :ui="{
@@ -314,7 +314,7 @@
         icon="i-lucide-arrow-left"
         color="neutral"
         variant="ghost"
-        class="cursor-pointer"
+        class="cursor-pointer rounded"
         @click="(installationHistoryData.length > 0) ? goToPreviousInstallation() : null"
       >
         Retour
@@ -360,7 +360,7 @@
                   ...chartDefaultOptions.plugins.tooltip,
                   callbacks: {
                     title: (context) => {
-                      const relevesAscending = relevesEntries.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
+                      const relevesAscending = computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
                             releve = relevesAscending[context[0].dataIndex];
 
                       return releve
@@ -370,13 +370,13 @@
                         }) : '';
                     },
                     label: (context) => {
-                      const relevesAscending = relevesEntries.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
+                      const relevesAscending = computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
                             releve = relevesAscending[context.dataIndex];
 
                       return releve ? `${context.parsed.y.toFixed(2)} ${releve.unite_valeur || ''}` : '';
                     },
                     afterLabel: (context) => {
-                      const relevesAscending = relevesEntries.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
+                      const relevesAscending = computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
                             releve = relevesAscending[context.dataIndex];
                       if (!releve) return '';
 
@@ -422,7 +422,7 @@
           >
             <span class="text-muted text-xs">{{ bigChartStatsMapping[key] || key }}</span>
             <span class="text-lg font-medium text-default text-center">{{ value.toFixed(2) }}</span>
-            <span class="text-xs text-muted text-center">{{ relevesEntries.find(e => e.type_releves === bigChartType)?.relevesAscending?.[0]?.unite_valeur || '' }}</span>
+            <span class="text-xs text-muted text-center">{{ computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending?.[0]?.unite_valeur || '' }}</span>
           </UCard>
         </div>
         <div class="flex items-center justify-between text-[13px] text-muted leading-none">
@@ -488,6 +488,9 @@
     "update:modelValue",
   ]);
 
+  const route = useRoute(),
+        router = useRouter();
+
   const open = ref(props.modelValue),
         installationData = ref(null),
         pendingData = ref(true),
@@ -535,6 +538,19 @@
     open.value = newValue;
   });
 
+  watch(installationData, (newData) => {
+    if (newData) {
+      const installationId = newData.id;
+
+      router.replace({
+        query: {
+          ...route.query,
+          installation: installationId,
+        },
+      });
+    }
+  });
+
   watch(open, async (newValue) => {
     emit("update:modelValue", newValue);
 
@@ -550,6 +566,13 @@
       bigChartType.value = null;
       bigChartPoints.value = [];
       pendingData.value = false;
+
+      router.replace({
+        query: {
+          ...route.query,
+          installation: undefined,
+        },
+      });
     }
   });
 
@@ -586,7 +609,7 @@
       id: "difference",
       header: "Différence",
       cell: ({ row }) => {
-        const relevesOfSameType = relevesEntries.value.find(e => e.type_releves === row.original.type_donnee)?.relevesAscending || [],
+        const relevesOfSameType = computedReleves.value.find(e => e.type_releves === row.original.type_donnee)?.relevesAscending || [],
               delta = calculateDifference(row.original, relevesOfSameType);
 
         if (excludedDataTypesForDifference.includes(row.original.type_donnee) || delta === null) {
@@ -641,7 +664,7 @@
     return processReleves(installationData.value.releves);
   });
 
-  const relevesEntries = computed(() => {
+  const computedReleves = computed(() => {
     return Object.entries(relevesByDataType.value)
       .map(([type_releves, releves]) => {
         const relevesAscending = [...releves].reverse(),
