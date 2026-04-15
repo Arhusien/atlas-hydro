@@ -6,17 +6,17 @@ from flask import Flask
 from geopy.distance import geodesic
 from spacy.lang.fr.stop_words import STOP_WORDS
 from spacy.language import Language
+from spacy.tokens import Doc
 
 from db import db
 from enums import TypeInstallation
 from models import Barrage, Centrale, Installation, Sonde
 from utils import constantes, simplifier_texte
 
-associations_syonymes = {
+noms_syonymes = {
     "Grande-2": "Robert-Bourassa",
     "Hart-Jaune Supérieur": "Petit Lac Manicouagan",
     "Rapide Sept": "Rapide-7",
-    # "Manouane A": "Manouane-A"
 }
 
 # Ajouter quelques mots génériques aux mots vides par défaut de Spacy
@@ -25,26 +25,37 @@ STOP_WORDS.update(["barrage", "centrale", "digue", "bief", "aval", "amont"])
 tal = spacy.load("fr_core_news_sm")
 
 
-def _traiter_nom_ouvrage(modele_tal: Language, nom: str) -> str:
+def _traiter_nom_installation(modele_tal: Language, nom: str) -> str:
     """
-    Traite le nom d'un ouvrage à l'aide d'un modèle de traitement automatique des langages.
+    Traite le nom d'une installation à l'aide d'un modèle de traitement automatique des langages.
 
     Parameters:
         modele_tal (Language): Un modèle de traitement Spacy.
-        nom (str): Le nom de l'ouvrage.
+        nom (str): Le nom de l'installation.
 
     Reuturns:
         (str): Le nom traité.
     """
 
+    nom_traite = nom
+    # Remplacer certains mots contenus dans le nom de l'installation par un synonyme
+    # afin de faciliter l'assocition des sondes aux ouvrages
+    for mot, synonyme in noms_syonymes.items():
+        nom_traite = nom_traite.replace(mot, synonyme)
+
     if not isinstance(modele_tal, Language):
-        return nom
+        return simplifier_texte(nom_traite)
 
-    doc = modele_tal(nom)
+    doc: Doc = modele_tal(nom_traite)
 
-    mots_filtres = [token.text for token in doc if not token.is_stop and not token.is_punct]
+    mots_traites = []
+    for token in doc:
+        if not (token.is_stop or token.is_punct):
+            mots_traites.append(token.text)
 
-    return " ".join(mots_filtres).strip()
+    nom_traite = " ".join(mots_traites).strip()
+
+    return simplifier_texte(nom_traite)
 
 
 def synchroniser_installations(app: Flask) -> dict[str, int | float]:
@@ -174,13 +185,13 @@ def associer_sondes_ouvrages(app: Flask) -> int:
         lst_ouvrages = sorted(lst_ouvrages, key=lambda o: o.type.value)
 
         associations_creees = 0
+        distance = geodesic(kilometers=constantes.DISTANCE_ASSOCIATION_CENTRALE_KM)
 
         for ouvrage in lst_ouvrages:
             if (ouvrage.y is None) or (ouvrage.x is None):
                 continue
 
             point_centrale = (ouvrage.y, ouvrage.x)
-            distance = geodesic(kilometers=constantes.DISTANCE_ASSOCIATION_CENTRALE_KM)
 
             # Calculer les 4 sommets du carré de la zone de proximité
             nord = distance.destination(point=point_centrale, bearing=0).latitude
@@ -189,7 +200,7 @@ def associer_sondes_ouvrages(app: Flask) -> int:
             ouest = distance.destination(point=point_centrale, bearing=270).longitude
 
             sondes_a_proximite: list[Sonde] = Sonde.query.filter(
-                Sonde.ouvrage_id == None,  # noqa: E711
+                Sonde.ouvrage_id.is_(None),
                 Sonde.y >= sud,  # Plus grand (ou égal) que 5 km au sud de la centrale
                 Sonde.y <= nord,  # Plus petit (ou égal) que 5 km au nord de la centrale
                 Sonde.x >= ouest,  # Plus grand (ou égal) que 5 km a l'ouest de la centrale
@@ -198,7 +209,7 @@ def associer_sondes_ouvrages(app: Flask) -> int:
 
             for sonde in sondes_a_proximite:
                 # Associer seulement si le nom de l'ouvrage est contenu dans le nom de la sonde
-                if simplifier_texte(_traiter_nom_ouvrage(tal, ouvrage.nom)) in simplifier_texte(sonde.nom):
+                if _traiter_nom_installation(tal, ouvrage.nom) in _traiter_nom_installation(tal, sonde.nom):
                     sonde.ouvrage_id = ouvrage.id
                     associations_creees += 1
 
