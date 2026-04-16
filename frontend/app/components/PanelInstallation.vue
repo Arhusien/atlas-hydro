@@ -176,7 +176,7 @@
           </template>
           <template #data>
             <div
-              v-if="activeTab === '1' && computedReleves.length > 0"
+              v-if="computedReleves.length > 0"
               class="flex flex-col gap-2.5 sm:gap-3"
             >
               <h2 class="text-highlighted font-medium">
@@ -232,7 +232,7 @@
               </UAccordion>
             </div>
             <div
-              v-else-if="activeTab === '1'"
+              v-else
               class="flex flex-col items-center justify-center"
             >
               <UEmpty
@@ -245,7 +245,7 @@
           </template>
           <template #stats>
             <div
-              v-if="activeTab === '2' && computedReleves.length > 0"
+              v-if="computedReleves.length > 0"
               class="flex flex-col gap-2.5 sm:gap-3"
             >
               <h2 class="text-highlighted font-medium">
@@ -329,7 +329,7 @@
               </div>
             </div>
             <div
-              v-else-if="activeTab === '2'"
+              v-else
               class="flex flex-col items-center justify-center"
             >
               <UEmpty
