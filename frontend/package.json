@@ -9,6 +9,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@iconify-json/lucide": "^1.2.102",
     "@lucide/vue": "1.0.0-rc.0",
     "@nuxt/a11y": "1.0.0-alpha.1",
     "@nuxt/eslint": "^1.15.2",

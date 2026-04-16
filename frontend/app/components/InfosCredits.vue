@@ -1,7 +1,7 @@
 <template>
   <UModal
     title="Informations et crédits"
-    close-icon="i-lucide-x"
+    close-icon="lucide:x"
   >
     <UTooltip
       :delay-duration="0"
@@ -12,7 +12,7 @@
       }"
     >
       <UButton
-        icon="lucide-info"
+        icon="lucide:info"
         color="neutral"
         variant="solid"
         size="lg"

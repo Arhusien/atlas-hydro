@@ -8,7 +8,7 @@
     }"
   >
     <UButton
-      icon="lucide-utility-pole"
+      icon="lucide:utility-pole"
       color="neutral"
       variant="solid"
       size="lg"

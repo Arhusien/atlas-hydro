@@ -8,7 +8,7 @@
     }"
   >
     <UButton
-      icon="lucide-house"
+      icon="lucide:house"
       color="neutral"
       variant="solid"
       size="lg"

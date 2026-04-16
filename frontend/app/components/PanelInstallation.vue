@@ -3,9 +3,10 @@
     v-model:open="open"
     side="right"
     inset
-    :overlay="false"
-    close-icon="lucide-x"
+    :overlay="true"
+    close-icon="lucide:x"
     :ui="{
+      overlay: 'sm:hidden',
       header: 'px-5',
       content: 'ring-0 sm:ring-0',
       body: 'flex-1 overflow-hidden p-0 sm:p-0',
@@ -122,7 +123,7 @@
                       >
                         <UIcon
                           v-if="shouldDisplayMeasureAlert(releves[0].date)"
-                          name="i-lucide-triangle-alert"
+                          name="lucide:triangle-alert"
                           class="size-4.5 text-warning-500 cursor-pointer"
                         />
                       </UTooltip>
@@ -196,7 +197,7 @@
                     }"
                   >
                     <UIcon
-                      name="i-lucide-info"
+                      name="lucide:info"
                       class="size-4.5"
                     />
                   </UTooltip>
@@ -223,7 +224,7 @@
               class="flex flex-col items-center justify-center"
             >
               <UEmpty
-                icon="i-lucide-circle-off"
+                icon="lucide:circle-off"
                 title="Aucune donnée"
                 description="Atlas Hydro n'a pas pu récupérer de données liées à cette installation."
                 variant="naked"
@@ -259,7 +260,7 @@
                       }"
                     >
                       <UIcon
-                        name="i-lucide-zoom-in"
+                        name="lucide:zoom-in"
                         class="size-4.5 cursor-pointer"
                         @click="zoomInChart(type_releves, chartPoints)"
                       />
@@ -320,7 +321,7 @@
               class="flex flex-col items-center justify-center"
             >
               <UEmpty
-                icon="i-lucide-circle-off"
+                icon="lucide:circle-off"
                 title="Aucune donnée"
                 description="Atlas Hydro n'a pas pu récupérer de données liées à cette installation."
                 variant="naked"
@@ -335,7 +336,7 @@
       #footer
     >
       <UButton
-        icon="i-lucide-arrow-left"
+        icon="lucide:arrow-left"
         color="neutral"
         variant="ghost"
         class="cursor-pointer rounded"
@@ -348,7 +349,7 @@
   <UModal
     v-model:open="bigChartModalOpen"
     :title="dataTypeReleveMapping[bigChartType] || 'Inconnu'"
-    close-icon="i-lucide-x"
+    close-icon="lucide:x"
     :ui="{
       header: 'p-5',
       content: 'w-[calc(100vw-2rem)] max-w-xl',
@@ -605,18 +606,22 @@
   const tabs = [
     {
       label: "Informations",
-      // icon: "i-lucide-info",
+      // icon: "lucide:info",
       slot: "infos",
+      trailingIcon: "lucide:chevron-down",
     },
     {
       label: "Mesures",
-      // icon: "i-lucide-activity",
+      // icon: "lucide:activity",
       slot: "data",
+      trailingIcon: "lucide:chevron-down",
+
     },
     {
       label: "Graphiques",
-      // icon: "i-lucide-satellite-dish",
+      // icon: "lucide:satellite-dish",
       slot: "stats",
+      trailingIcon: "lucide:chevron-down",
     },
   ];
 

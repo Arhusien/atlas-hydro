@@ -17,7 +17,7 @@
       }"
     >
       <UButton
-        icon="lucide-layers"
+        icon="lucide:layers"
         color="neutral"
         variant="solid"
         size="lg"
@@ -33,16 +33,19 @@
           v-model="layerStates.centrale"
           label="Centrales"
           color="neutral"
+          icon="lucide:check"
         />
         <UCheckbox
           v-model="layerStates.barrage"
           label="Barrages"
           color="neutral"
+          icon="lucide:check"
         />
         <UCheckbox
           v-model="layerStates.sonde"
           label="Sondes"
           color="neutral"
+          icon="lucide:check"
         />
       </div>
     </template>

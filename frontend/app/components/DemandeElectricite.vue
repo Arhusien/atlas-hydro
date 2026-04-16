@@ -8,7 +8,7 @@
     }"
   >
     <UButton
-      icon="lucide-plug"
+      icon="lucide:plug"
       color="neutral"
       variant="solid"
       size="lg"
