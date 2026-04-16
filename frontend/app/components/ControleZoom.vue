@@ -1,7 +1,7 @@
 <template>
   <UFieldGroup orientation="vertical">
     <UButton
-      icon="lucide-plus"
+      icon="lucide:plus"
       color="neutral"
       variant="solid"
       size="lg"
@@ -12,7 +12,7 @@
       <span class="sr-only">Zoom avant</span>
     </UButton>
     <UButton
-      icon="lucide-minus"
+      icon="lucide:minus"
       color="neutral"
       variant="solid"
       size="lg"

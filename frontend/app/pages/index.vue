@@ -37,7 +37,7 @@
         </div>
       </LControl>
       <LControl position="bottomleft">
-        <div class="flex flex-col items-center justify-center gap-2.5 mb-4 sm:mb-0">
+        <div class="flex flex-col items-center justify-center gap-2.5 mb-4.25 sm:mb-0">
           <ControleCouches
             v-model="layerStates"
           />

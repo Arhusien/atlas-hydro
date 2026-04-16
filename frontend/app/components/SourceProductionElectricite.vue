@@ -8,7 +8,7 @@
     }"
   >
     <UButton
-      icon="lucide-zap"
+      icon="lucide:zap"
       color="neutral"
       variant="solid"
       size="lg"

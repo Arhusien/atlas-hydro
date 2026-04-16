@@ -100,4 +100,9 @@ export default defineNuxtConfig({
             "fr",
         ],
     },
+    icon: {
+        clientBundle: {
+            scan: true,
+        },
+    },
 });
