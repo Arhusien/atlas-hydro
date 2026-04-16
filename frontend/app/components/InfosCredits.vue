@@ -9,7 +9,6 @@
       :content="{
         side: 'left',
         sideOffset: 10,
-        updatePositionStrategy: 'always',
       }"
     >
       <UButton

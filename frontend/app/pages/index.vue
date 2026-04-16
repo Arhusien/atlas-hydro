@@ -1,5 +1,5 @@
 <template>
-  <div class="w-screen h-screen">
+  <div class="w-svw h-svh">
     <LMap
       ref="map"
       :zoom="5"
@@ -14,6 +14,17 @@
         name="OpenStreetMap"
         no-wrap
       />
+      <div
+        v-if="geojson.data"
+      >
+        <LGeoJson
+          v-for="([layerName, features]) in Object.entries(geojson.data)"
+          :key="layerName"
+          :geojson="features"
+          :options="createLayerOptions(layerName)"
+          :visible="layerStates[layerName]"
+        />
+      </div>
       <LControl position="topleft">
         <ControleZoom
           @zoom-in="map.leafletObject.zoomIn()"
@@ -23,18 +34,21 @@
           <SourceProductionElectricite />
           <DemandeElectricite />
           <ExportationElectricite />
-          <InfosCredits />
         </div>
       </LControl>
       <LControl position="bottomleft">
-        <div class="flex flex-col items-center justify-center gap-2.5 mt-2.5">
-          <Parametres />
-          <LocaliserPosition
-            @locate="null"
+        <div class="flex flex-col items-center justify-center gap-2.5 mb-4 sm:mb-0">
+          <ControleCouches
+            v-model="layerStates"
           />
           <CentrerQuebec
             @center="centerOnQuebec()"
           />
+        </div>
+      </LControl>
+      <LControl position="topright">
+        <div class="flex flex-col items-center justify-center gap-2.5">
+          <InfosCredits />
         </div>
       </LControl>
     </LMap>
@@ -56,12 +70,19 @@
   import pinShadow from "~/assets/img/pinShadow.svg?url";
 
   const route = useRoute(),
-        installationId = route.query.installation;
+        installationId = route.query.installation,
+        installationType = route.query.type;
 
   const panelInstallationOpen = ref(false),
         panelInstallationData = ref({});
 
   const activeMarker = ref(null);
+
+  const layerStates = ref({
+    centrale: true,
+    barrage: true,
+    sonde: true,
+  });
 
   const markerIconOptions = {
     className: "marker-icon",
@@ -74,7 +95,7 @@
   };
 
   const markerIcons = {
-    CENTRALE: {
+    centrale: {
       default: L.icon({
         ...markerIconOptions,
         iconUrl: factoryPin,
@@ -84,7 +105,7 @@
         iconUrl: factoryPinActive,
       }),
     },
-    BARRAGE: {
+    barrage: {
       default: L.icon({
         ...markerIconOptions,
         iconUrl: damPin,
@@ -94,7 +115,7 @@
         iconUrl: damPinActive,
       }),
     },
-    SONDE: {
+    sonde: {
       default: L.icon({
         ...markerIconOptions,
         iconUrl: satellitePin,
@@ -106,11 +127,19 @@
     },
   };
 
+  const markerZIndex = {
+    centrale: 9999,
+    barrage: 4999,
+    sonde: 0,
+  };
+
   watch(panelInstallationOpen, (newValue) => {
     if (newValue === false) {
       if (activeMarker.value) {
-        const activeType = activeMarker.value.feature.properties.type;
-        activeMarker.value.setIcon(markerIcons[activeType].default);
+        const currentMarker = activeMarker.value.feature,
+              currentType = currentMarker.properties.type.toLowerCase();
+
+        activeMarker.value.setIcon(markerIcons[currentType].default);
         activeMarker.value = null;
       }
     }
@@ -141,35 +170,43 @@
     transform: rawData => markRaw(rawData),
   });
 
-  const onMapReady = () => {
-    centerOnQuebec();
-
-    // Ajouter le GeoJSON à la carte
-    L.geoJSON(geojson.value.data, {
+  function createLayerOptions() {
+    return {
       pointToLayer: function (feature, latlng) {
+        // Ne pas afficher les installations associées à un ouvrage
         if (feature.properties.ouvrage_id) return;
 
+        const markerType = feature.properties.type.toLowerCase();
+
         return L.marker(latlng, {
-          title: feature.properties.nom || "Inconnu",
-          icon: markerIcons[feature.properties.type]?.default || markerIcons.SONDE.default,
-          zIndexOffset: feature.properties.type === "CENTRALE" ? 9999 : feature.properties.type === "BARRAGE" ? 4999 : 0,
+          title: feature.properties?.nom || "Inconnu",
+          icon: markerIcons[markerType].default,
+          zIndexOffset: markerZIndex[markerType] || 0,
         }).on("click", function () {
           if (activeMarker.value) {
-            const previousType = activeMarker.value.feature.properties.type;
-            activeMarker.value.setIcon(markerIcons[previousType].default);
+            const previousMarker = activeMarker.value.feature,
+                  previousMarkerType = previousMarker.properties.type.toLowerCase();
+
+            activeMarker.value.setIcon(markerIcons[previousMarkerType].default);
           }
 
-          this.setIcon(markerIcons[feature.properties.type].active);
+          this.setIcon(markerIcons[markerType].active);
           activeMarker.value = this;
 
           panelInstallationOpen.value = true;
           panelInstallationData.value = feature.properties;
         });
       },
-    }).addTo(map.value.leafletObject);
+    };
+  };
 
-    if (installationId) {
-      const selectedFeature = geojson.value.data.features.find((feature) => {
+  function onMapReady() {
+    centerOnQuebec();
+
+    if (installationId && installationType) {
+      if (!geojson.value.data[installationType]) return;
+
+      const selectedFeature = geojson.value.data[installationType].features.find((feature) => {
         return feature.properties.objectid === installationId;
       });
 
@@ -180,10 +217,23 @@
     }
   };
 
-  const centerOnQuebec = () => {
+  function centerOnQuebec() {
     map.value.leafletObject.flyToBounds(quebecBounds, {
       animate: false,
       padding: [50, 50],
     });
   };
+
+  onMounted(() => {
+    const storedLayerStates = localStorage.getItem("layerStates");
+    if (storedLayerStates) {
+      layerStates.value = JSON.parse(storedLayerStates);
+    }
+  });
+
+  watch(layerStates, (newValue) => {
+    localStorage.setItem("layerStates", JSON.stringify(newValue));
+  }, {
+    deep: true,
+  });
 </script>

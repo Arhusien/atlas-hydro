@@ -10,12 +10,20 @@ def generer_geojson_installations() -> dict:
     """
 
     lst_installations: list[Installation] = Installation.query.all()
-    lst_points_installations = []
 
+    points_installations_par_types = {}
     for installation in lst_installations:
+        type_nom = installation.type.value
+
+        if type_nom not in points_installations_par_types:
+            points_installations_par_types[type_nom] = {
+                "type": "FeatureCollection",
+                "features": [],
+            }
+
         donnees_installation = installation.serialiser()
 
-        lst_points_installations.append(
+        points_installations_par_types[type_nom]["features"].append(
             {
                 "type": "Feature",
                 "id": donnees_installation["id"],
@@ -37,10 +45,7 @@ def generer_geojson_installations() -> dict:
                     },
                     "ouvrage_id": donnees_installation.get("ouvrage_id", None),
                 },
-            },
+            }
         )
 
-    return {
-        "type": "FeatureCollection",
-        "features": lst_points_installations,
-    }
+    return points_installations_par_types

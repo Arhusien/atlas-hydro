@@ -49,4 +49,4 @@ def executer_pipeline_commande():
 
 
 if __name__ == "__main__":
-    app.run(debug=app.config["DEBUG"], port=5000)
+    app.run(debug=app.config["DEBUG"], port=5000, use_reloader=False)

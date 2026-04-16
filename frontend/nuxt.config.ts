@@ -45,6 +45,7 @@ export default defineNuxtConfig({
         "@nuxtjs/i18n",
         "@nuxtjs/robots",
         "@nuxtjs/sitemap",
+        "@vueuse/nuxt",
         "@pinia/nuxt",
     ],
     ssr: false,

@@ -6,9 +6,10 @@
     :overlay="false"
     close-icon="lucide-x"
     :ui="{
+      header: 'px-5',
       content: 'ring-0 sm:ring-0',
       body: 'flex-1 overflow-hidden p-0 sm:p-0',
-      footer: 'p-2 sm:p-4',
+      footer: 'px-4 sm:px-4 min-h-16',
       close: 'cursor-pointer rounded',
     }"
   >
@@ -43,18 +44,18 @@
           class="h-full min-h-0 flex flex-col"
           :ui="{
             root: 'gap-0',
-            list: 'px-4 sm:px-6 shrink-0',
-            content: 'flex-1 min-h-0 h-full overflow-y-auto py-4 sm:py-6 pl-4 sm:pl-6 pr-[11px] sm:pr-[19px] mt-px content-scrollbar',
+            list: 'px-5 sm:px-6 shrink-0',
+            content: 'flex-1 min-h-0 h-full overflow-y-auto py-5 sm:py-6 pl-5 sm:pl-6 pr-[15px] sm:pr-[19px] mt-px content-scrollbar',
             trigger: 'w-full px-0 cursor-pointer',
           }"
         >
           <template #infos>
-            <div class="flex-col gap-4 sm:gap-6 flex">
-              <div class="flex flex-col gap-2 sm:gap-3">
+            <div class="flex-col gap-5 sm:gap-6 flex">
+              <div class="flex flex-col gap-2.5 sm:gap-3">
                 <h2 class="text-highlighted font-medium">
                   Détails de l'installation
                 </h2>
-                <div class="flex flex-col justify-center gap-2 sm:gap-3">
+                <div class="flex flex-col justify-center gap-2.5 sm:gap-3">
                   <div class="flex items-center justify-between text-sm">
                     <span>Identifiant</span>
                     <span>{{ installationData?.id || 'Inconnu' }}</span>
@@ -69,22 +70,25 @@
                   </div>
                   <div class="flex items-center justify-between text-sm">
                     <span>Région</span>
-                    <div class="flex items-center justify-end gap-2">
+                    <div class="flex items-center justify-end">
                       <span>{{ installationData?.nom_region || 'Inconnu' }}</span>
+                      <span class="text-muted select-none">&nbsp;&middot;&nbsp;</span>
                       <span class="text-muted">{{ installationData?.code_region || 'Inconnu' }}</span>
                     </div>
                   </div>
                   <div class="flex items-center justify-between text-sm">
                     <span>Latitude</span>
-                    <div class="flex items-center justify-end gap-2">
+                    <div class="flex items-center justify-end">
                       <span>{{ convertToDMS(installationData?.y, true) || 'Inconnu' }}</span>
+                      <span class="text-muted select-none">&nbsp;&middot;&nbsp;</span>
                       <span class="text-muted">{{ installationData?.y || 'Inconnu' }}</span>
                     </div>
                   </div>
                   <div class="flex items-center justify-between text-sm">
                     <span>Longitude</span>
-                    <div class="flex items-center justify-end gap-2">
+                    <div class="flex items-center justify-end">
                       <span>{{ convertToDMS(installationData?.x, false) || 'Inconnu' }}</span>
+                      <span class="text-muted select-none">&nbsp;&middot;&nbsp;</span>
                       <span class="text-muted">{{ installationData?.x || 'Inconnu' }}</span>
                     </div>
                   </div>
@@ -92,7 +96,7 @@
               </div>
               <div
                 v-if="computedReleves.length > 0"
-                class="flex flex-col gap-2 sm:gap-3"
+                class="flex flex-col gap-2.5 sm:gap-3"
               >
                 <h2 class="text-highlighted font-medium">
                   Dernières mesures
@@ -129,15 +133,13 @@
                     <span class="text-sm text-muted text-center">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
                   </UCard>
                 </div>
-              </div>
-              <div
-                v-if="['CENTRALE', 'BARRAGE'].includes(installationData?.type) && installationData?.sondes?.length > 0"
-                class="flex flex-col gap-2 sm:gap-3"
-              >
-                <h2 class="text-highlighted font-medium">
-                  Sondes associées
-                </h2>
-                <div class="flex flex-col gap-2 sm:gap-3">
+                <div
+                  v-if="['CENTRALE', 'BARRAGE'].includes(installationData?.type) && installationData?.sondes?.length > 0"
+                  class="flex flex-col gap-2.5 sm:gap-3"
+                >
+                  <h2 class="text-highlighted font-medium">
+                    Sondes associées
+                  </h2>
                   <UCard
                     v-for="(sonde, index) in installationData.sondes"
                     :key="index"
@@ -147,7 +149,7 @@
                       root: 'rounded-md cursor-pointer has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
                       body: 'sm:p-4 text-sm font-normal flex items-center justify-between w-full',
                     }"
-                    @click="updateData(sonde);"
+                    @click="updateData(sonde.id);"
                   >
                     <span class="text-left text-default">{{ sonde.nom || 'Inconnu' }}</span>
                     <span class="text-muted text-right">{{ getDistance(
@@ -162,7 +164,7 @@
           <template #data>
             <div
               v-if="computedReleves.length > 0"
-              class="flex flex-col gap-2 sm:gap-3"
+              class="flex flex-col gap-2.5 sm:gap-3"
             >
               <h2 class="text-highlighted font-medium">
                 Mesures
@@ -216,16 +218,27 @@
                 </template>
               </UAccordion>
             </div>
+            <div
+              v-else
+              class="flex flex-col items-center justify-center"
+            >
+              <UEmpty
+                icon="i-lucide-circle-off"
+                title="Aucune donnée"
+                description="Atlas Hydro n'a pas pu récupérer de données liées à cette installation."
+                variant="naked"
+              />
+            </div>
           </template>
           <template #stats>
             <div
               v-if="computedReleves.length > 0"
-              class="flex flex-col gap-2 sm:gap-3"
+              class="flex flex-col gap-2.5 sm:gap-3"
             >
               <h2 class="text-highlighted font-medium">
                 Graphiques
               </h2>
-              <div class="flex flex-col gap-2 sm:gap-3">
+              <div class="flex flex-col gap-2.5 sm:gap-3">
                 <UCard
                   v-for="({ type_releves, chartPoints, relevesAscending }) in computedReleves.filter((e) => !excludedDataTypesForDifference.includes(e.type_releves))"
                   :key="type_releves"
@@ -235,7 +248,7 @@
                     body: 'sm:p-4 p-4 text-sm font-normal flex flex-col justify-center w-full h-full gap-4',
                   }"
                 >
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-1.5">
                     <span class="text-left text-default">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
                     <UTooltip
                       :delay-duration="0"
@@ -302,12 +315,23 @@
                 </UCard>
               </div>
             </div>
+            <div
+              v-else
+              class="flex flex-col items-center justify-center"
+            >
+              <UEmpty
+                icon="i-lucide-circle-off"
+                title="Aucune donnée"
+                description="Atlas Hydro n'a pas pu récupérer de données liées à cette installation."
+                variant="naked"
+              />
+            </div>
           </template>
         </UTabs>
       </div>
     </template>
     <template
-      v-if="installationHistoryData.length > 0"
+      v-if="installationData && installationData.ouvrage_id"
       #footer
     >
       <UButton
@@ -315,7 +339,7 @@
         color="neutral"
         variant="ghost"
         class="cursor-pointer rounded"
-        @click="(installationHistoryData.length > 0) ? goToPreviousInstallation() : null"
+        @click="updateData(installationData.ouvrage_id);"
       >
         Retour
       </UButton>
@@ -326,14 +350,16 @@
     :title="dataTypeReleveMapping[bigChartType] || 'Inconnu'"
     close-icon="i-lucide-x"
     :ui="{
+      header: 'p-5',
       content: 'w-[calc(100vw-2rem)] max-w-xl',
-      close: 'cursor-pointer',
+      close: 'cursor-pointer rounded',
+      body: 'p-5',
     }"
   >
     <template #body>
       <div
         v-if="bigChartPoints.length > 0"
-        class="flex flex-col gap-2 sm:gap-3"
+        class="flex flex-col gap-2.5 sm:gap-3"
       >
         <UCard
           variant="soft"
@@ -410,7 +436,7 @@
             }"
           />
         </UCard>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
           <UCard
             v-for="([key, value]) in Object.entries(chartStats).filter(([_, value]) => typeof value === 'number')"
             :key="key"
@@ -425,7 +451,7 @@
             <span class="text-xs text-muted text-center">{{ computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending?.[0]?.unite_valeur || '' }}</span>
           </UCard>
         </div>
-        <div class="flex items-center justify-between text-[13px] text-muted leading-none">
+        <div class="flex items-center justify-between text-[13px] text-muted leading-tight sm:leading-none">
           <span class="text-left">Sur {{ bigChartPoints.length }} mesures</span>
           <span class="text-right">Du {{ chartStats.dateRange[0] }} au {{ chartStats.dateRange[1] }}</span>
         </div>
@@ -494,7 +520,6 @@
   const open = ref(props.modelValue),
         installationData = ref(null),
         pendingData = ref(true),
-        installationHistoryData = ref([]),
         activeTab = ref("0"),
         bigChartType = ref(null),
         bigChartPoints = ref([]),
@@ -540,12 +565,14 @@
 
   watch(installationData, (newData) => {
     if (newData) {
-      const installationId = newData.id;
+      const installationId = newData.id,
+            installationType = newData.type.toLowerCase();
 
       router.replace({
         query: {
           ...route.query,
           installation: installationId,
+          type: installationType,
         },
       });
     }
@@ -555,13 +582,11 @@
     emit("update:modelValue", newValue);
 
     if (newValue === true) {
-      installationHistoryData.value = [];
       installationData.value = null;
 
       await openInstallation(props.defaultData.objectid);
     }
     else {
-      installationHistoryData.value = [];
       bigChartModalOpen.value = false;
       bigChartType.value = null;
       bigChartPoints.value = [];
@@ -571,6 +596,7 @@
         query: {
           ...route.query,
           installation: undefined,
+          type: undefined,
         },
       });
     }
@@ -686,18 +712,11 @@
     return calculateChartStats(bigChartPoints.value, localTimezone);
   });
 
-  async function updateData(sonde) {
-    if (!sonde?.id || !installationData.value || pendingData.value) return;
-    if (installationData.value.id === sonde.id) return;
+  async function updateData(id) {
+    if (!id || !installationData.value || pendingData.value) return;
+    if (installationData.value.id === id) return;
 
-    const previousInstallation = installationData.value;
-
-    await openInstallation(sonde.id);
-
-    // Ajouter à l'historique seulement si l'installation a été récupérée avec succès
-    if (installationData.value?.id === sonde.id) {
-      installationHistoryData.value.push(previousInstallation);
-    }
+    await openInstallation(id);
   }
 
   function zoomInChart(type_releves, releves) {
@@ -705,17 +724,6 @@
     bigChartPoints.value = releves;
 
     bigChartModalOpen.value = true;
-  }
-
-  function goToPreviousInstallation() {
-    if (installationHistoryData.value.length === 0) return;
-
-    installationData.value = installationHistoryData.value.pop();
-
-    activeTab.value = "0";
-    bigChartModalOpen.value = false;
-    bigChartType.value = null;
-    bigChartPoints.value = [];
   }
 
   function shouldDisplayMeasureAlert(releveDate) {

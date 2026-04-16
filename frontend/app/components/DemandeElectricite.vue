@@ -3,9 +3,8 @@
     :delay-duration="0"
     text="Demande d'électricité"
     :content="{
-      side: 'left',
+      side: 'right',
       sideOffset: 10,
-      updatePositionStrategy: 'always',
     }"
   >
     <UButton
