@@ -4,26 +4,38 @@
     side="right"
     inset
     :overlay="true"
-    close-icon="lucide:x"
     :ui="{
       overlay: 'sm:hidden',
       header: 'px-5',
       content: 'ring-0 sm:ring-0',
       body: 'flex-1 overflow-hidden p-0 sm:p-0',
       footer: 'px-4 sm:px-4 min-h-16',
-      close: 'cursor-pointer rounded',
     }"
   >
-    <template #title>
-      <div class="flex items-center gap-2">
-        <h2>{{ installationData?.nom || defaultData.nom || 'Inconnu' }}</h2>
-        <UBadge
+    <template #header="{ close }">
+      <div class="flex w-full items-center gap-2">
+        <div class="flex w-full min-w-0 items-center gap-2">
+          <h2 class="overflow-hidden text-ellipsis whitespace-nowrap text-highlighted font-medium">
+            {{ installationData?.nom || defaultData.nom || 'Inconnu' }}
+          </h2>
+          <UBadge
+            color="neutral"
+            variant="soft"
+            class="rounded"
+          >
+            {{ installationTypeMapping[installationData?.type || defaultData.type] || 'Inconnu' }}
+          </UBadge>
+        </div>
+        <UButton
+          icon="lucide:x"
           color="neutral"
-          variant="soft"
-          class="rounded"
+          variant="ghost"
+          square
+          class="cursor-pointer rounded -mr-2"
+          @click="close"
         >
-          {{ installationTypeMapping[installationData?.type || defaultData.type] || 'Inconnu' }}
-        </UBadge>
+          <span class="sr-only">Fermer</span>
+        </UButton>
       </div>
     </template>
     <template #body>
