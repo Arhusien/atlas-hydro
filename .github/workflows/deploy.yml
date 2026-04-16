@@ -2,7 +2,7 @@ name: Deploy Atlas Hydro
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "main" ]
 
 concurrency:
   group: deploy-atlas-hydro-production
