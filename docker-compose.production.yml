@@ -1,0 +1,27 @@
+services:
+  frontend:
+    networks:
+      - proxy_network
+    ports: !reset []
+    labels:
+      - "traefik.enable=true"
+      # Écouter atlashydro.ca et www.atlashydro.ca
+      - "traefik.http.routers.atlas-frontend.rule=Host(`atlashydro.ca`) || Host(`www.atlashydro.ca`)"
+      - "traefik.http.routers.atlas-frontend.tls.certresolver=letsencrypt"
+      # Rediriger atlashydro.ca vers www.atlashydro.ca
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.regex=^https?://atlashydro.ca/(.*)"
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.atlashydro.ca/$${1}"
+      - "traefik.http.middlewares.redirect-to-www.redirectregex.permanent=true"
+      - "traefik.http.routers.atlas-frontend.middlewares=redirect-to-www"
+      # Servir le frontend
+      - "traefik.http.services.atlas-frontend.loadbalancer.server.port=3000"
+
+  backend:
+    ports: !reset []
+
+  redis:
+    ports: !reset []
+
+networks:
+  proxy_network:
+    external: true

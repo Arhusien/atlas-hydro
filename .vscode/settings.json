@@ -49,4 +49,5 @@
     "python.analysis.extraPaths": [
         "./backend"
     ],
+    "python.terminal.activateEnvironment": false
 }

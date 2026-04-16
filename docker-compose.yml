@@ -1,0 +1,83 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - NUXT_BACKEND_API_BASE=http://backend:5000
+    container_name: atlas-hydro_frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - NUXT_BACKEND_API_BASE=http://backend:5000
+    networks:
+      - default
+      - proxy_network
+    restart: unless-stopped
+
+  db_sync:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: atlas-hydro_db_sync
+    command: [ "python", "-m", "flask", "--app", "app.py", "synchroniser_installations" ]
+    volumes:
+      - db_data:/app/instance
+    environment:
+      - FLASK_ENV=production
+      - CACHE_TYPE=RedisCache
+      - CACHE_REDIS_URL=redis://redis:6379/0
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: atlas-hydro_backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      redis:
+        condition: service_started
+      db_sync:
+        condition: service_completed_successfully
+    volumes:
+      - db_data:/app/instance
+    environment:
+      - FLASK_ENV=production
+      - CACHE_TYPE=RedisCache
+      - CACHE_REDIS_URL=redis://redis:6379/0
+    restart: unless-stopped
+
+  cron_worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: atlas-hydro_cron_worker
+    command: [ "python", "worker.py" ]
+    depends_on:
+      backend:
+        condition: service_started
+      db_sync:
+        condition: service_completed_successfully
+    volumes:
+      - db_data:/app/instance
+    environment:
+      - FLASK_ENV=production
+      - CACHE_TYPE=RedisCache
+      - CACHE_REDIS_URL=redis://redis:6379/0
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: atlas-hydro_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:
+  db_data:

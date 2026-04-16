@@ -1,0 +1,49 @@
+{
+    "animation": {
+        "duration": 0
+    },
+    "normalized": true,
+    "plugins": {
+        "legend": {
+            "display": false
+        },
+        "tooltip": {
+            "backgroundColor": "rgba(23, 23, 23, 0.95)",
+            "displayColors": false,
+            "caretPadding": 4,
+            "titleFont": {
+                "weight": "500"
+            },
+            "bodyFont": {
+                "weight": "400"
+            }
+        }
+    },
+    "scales": {
+        "x": {
+            "ticks": {
+                "autoSkip": true,
+                "maxTicksLimit": 12
+            },
+            "grid": {
+                "color": "rgba(38, 38, 38)",
+                "drawTicks": false
+            },
+            "type": "time",
+            "time": {
+                "unit": "day",
+                "displayFormats": {
+                    "day": "d MMM"
+                }
+            }
+        },
+        "y": {
+            "ticks": {
+                "color": "rgba(115, 115, 115)"
+            },
+            "grid": {
+                "color": "rgba(38, 38, 38)"
+            }
+        }
+    }
+}
