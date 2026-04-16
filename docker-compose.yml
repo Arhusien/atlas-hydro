@@ -12,6 +12,9 @@ services:
       - backend
     environment:
       - NUXT_BACKEND_API_BASE=http://backend:5000
+    networks:
+      - default
+      - proxy_network
     restart: unless-stopped
 
   db_sync:
@@ -21,7 +24,7 @@ services:
     container_name: atlas-hydro_db_sync
     command: [ "python", "-m", "flask", "--app", "app.py", "synchroniser_installations" ]
     volumes:
-      - ./backend/instance:/app/instance
+      - db_data:/app/instance
     environment:
       - FLASK_ENV=production
       - CACHE_TYPE=RedisCache
@@ -40,7 +43,7 @@ services:
       db_sync:
         condition: service_completed_successfully
     volumes:
-      - ./backend/instance:/app/instance
+      - db_data:/app/instance
     environment:
       - FLASK_ENV=production
       - CACHE_TYPE=RedisCache
@@ -59,7 +62,7 @@ services:
       db_sync:
         condition: service_completed_successfully
     volumes:
-      - ./backend/instance:/app/instance
+      - db_data:/app/instance
     environment:
       - FLASK_ENV=production
       - CACHE_TYPE=RedisCache
@@ -77,3 +80,4 @@ services:
 
 volumes:
   redis_data:
+  db_data:

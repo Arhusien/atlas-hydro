@@ -1,0 +1,36 @@
+name: Deploy Atlas Hydro
+
+on:
+  push:
+    branches: [ "dev" ]
+
+concurrency:
+  group: deploy-atlas-hydro-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: self-hosted
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Build and Deploy
+        run: |
+          set -eu
+
+          mkdir -p /home/ubuntu/atlas-hydro
+
+          rsync -av --delete --exclude='backend/instance' ./ /home/ubuntu/atlas-hydro/
+
+          cd /home/ubuntu/atlas-hydro
+          
+          docker compose -f docker-compose.yml -f docker-compose.production.yml up -d --build --remove-orphans
+
+          docker image prune -f --filter "until=168h" || true
