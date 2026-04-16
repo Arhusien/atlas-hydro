@@ -13,7 +13,7 @@ services:
       - "traefik.http.middlewares.redirect-to-www.redirectregex.replacement=https://www.atlashydro.ca/$${1}"
       - "traefik.http.middlewares.redirect-to-www.redirectregex.permanent=true"
       - "traefik.http.routers.atlas-frontend.middlewares=redirect-to-www"
-      # Lire le frontend
+      # Servir le frontend
       - "traefik.http.services.atlas-frontend.loadbalancer.server.port=3000"
 
   backend:
