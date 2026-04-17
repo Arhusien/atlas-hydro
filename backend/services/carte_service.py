@@ -6,7 +6,7 @@ def generer_geojson_installations() -> dict:
     Récupère toutes les installations d'Hydro-Québec et génère un objet GeoJSON.
 
     Returns:
-        (dict): Un objet GeoJSON conteant les points de toutes les installations.
+        (dict): Un dictionnaire GeoJSON contenant les points de toutes les installations.
     """
 
     lst_installations: list[Installation] = Installation.query.all()

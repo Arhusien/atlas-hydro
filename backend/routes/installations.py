@@ -18,6 +18,6 @@ TEMPS_CACHE_SECONDES = 60  # Une minute
 def afficher_installation(id_installation: str):
     installation = obtenir_installation(id_installation)
     if not installation:
-        return repondre_erreur("Installation introuvable", code_statut=404)
+        return repondre_erreur("Cette installation n'existe pas.", code_statut=404)
 
     return repondre_succes(installation, code_statut=200)
