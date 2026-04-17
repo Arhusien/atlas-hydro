@@ -253,7 +253,7 @@
               </h2>
               <div class="flex flex-col gap-2.5 sm:gap-3">
                 <UCard
-                  v-for="({ type_releves, chartPoints, relevesAscending }) in computedReleves.filter((e) => !excludedDataTypesForDifference.includes(e.type_releves))"
+                  v-for="({ type_releves, chartPoints }) in computedReleves.filter((e) => !excludedDataTypesForDifference.includes(e.type_releves))"
                   :key="type_releves"
                   variant="soft"
                   :ui="{
@@ -295,16 +295,8 @@
                         tooltip: {
                           ...chartDefaultOptions.plugins.tooltip,
                           callbacks: {
-                            title: (context) => {
-                              const releve = relevesAscending[context[0].dataIndex];
-
-                              return releve ? formatToLocalDate(releve.date, localTimezone) : '';
-                            },
-                            label: (context) => {
-                              const releve = relevesAscending[context.dataIndex];
-
-                              return releve ? `${context.parsed.y} ${releve.unite_valeur || ''}` : '';
-                            },
+                            title: (ctx) => createTooltipTitle(ctx, type_releves),
+                            label: (ctx) => createTooltipLabel(ctx, type_releves),
                           },
                         },
                       },
@@ -398,40 +390,9 @@
                 tooltip: {
                   ...chartDefaultOptions.plugins.tooltip,
                   callbacks: {
-                    title: (context) => {
-                      const relevesAscending = computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
-                            releve = relevesAscending[context[0].dataIndex];
-
-                      return releve
-                        ? formatToLocalDate(releve.date, localTimezone, {
-                          year: 'numeric',
-                          month: 'long',
-                        }) : '';
-                    },
-                    label: (context) => {
-                      const relevesAscending = computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
-                            releve = relevesAscending[context.dataIndex];
-
-                      return releve ? `${context.parsed.y.toFixed(2)} ${releve.unite_valeur || ''}` : '';
-                    },
-                    afterLabel: (context) => {
-                      const relevesAscending = computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending || [],
-                            releve = relevesAscending[context.dataIndex];
-                      if (!releve) return '';
-
-                      const difference = calculateDifference(releve, relevesAscending),
-                            zScore = (releve.valeur - chartStats.average) / (chartStats.standardDeviation || 1);
-
-                      let labels = [];
-                      if (difference !== null) {
-                        labels.push(`Différence : ${difference === 0 ? '' : difference > 0 ? '+' : '-'}${Math.abs(difference).toFixed(2)} ${releve.unite_valeur || ''}`);
-                      }
-                      if (isFinite(zScore)) {
-                        labels.push(`Cote Z : ${zScore === 0 ? '' : zScore > 0 ? '+' : '-'}${Math.abs(zScore).toFixed(2)}`);
-                      }
-
-                      return labels.length > 0 ? labels.join('\n') : '';
-                    },
+                    title: (ctx) => createTooltipTitle(ctx, bigChartType, true),
+                    label: (ctx) => createTooltipLabel(ctx, bigChartType, true),
+                    afterLabel: (ctx) => createTooltipAfterLabel(ctx, bigChartType),
                   },
                 },
               },
@@ -752,6 +713,51 @@
           );
 
     return releveHour <= thresholdHour;
+  }
+
+  function createTooltipTitle(ctx, type_releves, detailed = false) {
+    const relevesAscending = computedReleves.value.find(e => e.type_releves === type_releves)?.relevesAscending || [],
+          releve = relevesAscending[ctx[0].dataIndex];
+
+    if (!detailed) {
+      return releve ? formatToLocalDate(releve.date, localTimezone) : "";
+    }
+
+    return releve
+      ? formatToLocalDate(releve.date, localTimezone, {
+        year: "numeric",
+        month: "long",
+      })
+      : "";
+  }
+
+  function createTooltipLabel(ctx, type_releves, detailed = false) {
+    const relevesAscending = computedReleves.value.find(e => e.type_releves === type_releves)?.relevesAscending || [],
+          releve = relevesAscending[ctx.dataIndex];
+
+    if (!detailed) {
+      return releve ? `${ctx.parsed.y} ${releve.unite_valeur || ""}` : "";
+    }
+
+    return releve ? `${ctx.parsed.y.toFixed(2)} ${releve.unite_valeur || ""}` : "";
+  }
+
+  function createTooltipAfterLabel(ctx, type_releves) {
+    const relevesAscending = computedReleves.value.find(e => e.type_releves === type_releves)?.relevesAscending || [],
+          releve = relevesAscending[ctx.dataIndex];
+
+    const difference = calculateDifference(releve, relevesAscending),
+          zScore = (releve.valeur - chartStats.value.average) / (chartStats.value.standardDeviation || 1);
+
+    let labels = [];
+    if (difference !== null) {
+      labels.push(`Différence : ${difference === 0 ? "" : difference > 0 ? "+" : "-"}${Math.abs(difference).toFixed(2)} ${releve.unite_valeur || ""}`);
+    }
+    if (isFinite(zScore)) {
+      labels.push(`Cote Z : ${zScore === 0 ? "" : zScore > 0 ? "+" : "-"}${Math.abs(zScore).toFixed(2)}`);
+    }
+
+    return labels.length > 0 ? labels.join("\n") : "";
   }
 </script>
 
