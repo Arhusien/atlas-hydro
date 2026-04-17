@@ -1,5 +1,15 @@
 <template>
-  <div class="w-svw h-svh">
+  <div class="w-svw h-svh relative">
+    <div
+      position="topleft"
+      class="absolute bottom-4 left-1/2 -translate-x-1/2 z-1000"
+    >
+      <div class="flex items-center justify-center gap-2.5 mt-2.5">
+        <SourceProductionElectricite />
+        <DemandeElectricite />
+        <ExportationElectricite />
+      </div>
+    </div>
     <LMap
       ref="map"
       :zoom="5"
@@ -30,11 +40,6 @@
           @zoom-in="map.leafletObject.zoomIn()"
           @zoom-out="map.leafletObject.zoomOut()"
         />
-        <div class="flex flex-col items-center justify-center gap-2.5 mt-2.5">
-          <SourceProductionElectricite />
-          <DemandeElectricite />
-          <ExportationElectricite />
-        </div>
       </LControl>
       <LControl position="bottomleft">
         <div class="flex flex-col items-center justify-center gap-2.5 mb-4.25 sm:mb-0">

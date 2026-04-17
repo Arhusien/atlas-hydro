@@ -3,7 +3,7 @@
     :delay-duration="0"
     text="Exportations d'électricité"
     :content="{
-      side: 'right',
+      side: 'top',
       sideOffset: 10,
     }"
   >
