@@ -3,7 +3,7 @@
     :delay-duration="0"
     text="Demande d'électricité"
     :content="{
-      side: 'top',
+      side: 'bottom',
       sideOffset: 10,
     }"
   >

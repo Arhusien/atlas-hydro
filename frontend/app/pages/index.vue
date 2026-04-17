@@ -1,14 +1,28 @@
 <template>
   <div class="w-svw h-svh relative">
     <div
-      position="topleft"
-      class="absolute bottom-4 left-1/2 -translate-x-1/2 z-1000"
+      class="absolute py-4 left-4 z-1000 flex flex-col items-center justify-between h-full"
     >
-      <div class="flex items-center justify-center gap-2.5 mt-2.5">
-        <SourceProductionElectricite />
-        <DemandeElectricite />
-        <ExportationElectricite />
+      <ControleZoom
+        @zoom-in="map.leafletObject.zoomIn()"
+        @zoom-out="map.leafletObject.zoomOut()"
+      />
+      <div class="flex flex-col items-center justify-center gap-2.5">
+        <ControleCouches
+          v-model="layerStates"
+        />
+        <CentrerQuebec
+          @center="centerOnQuebec()"
+        />
       </div>
+    </div>
+    <div class="flex flex-col items-center justify-center gap-2.5 absolute top-4 right-4 z-1000">
+      <InfosCredits />
+    </div>
+    <div class="flex items-center justify-center gap-2.5 absolute top-4 left-1/2 -translate-x-1/2 z-1000">
+      <SourceProductionElectricite />
+      <DemandeElectricite />
+      <ExportationElectricite />
     </div>
     <LMap
       ref="map"
@@ -19,7 +33,7 @@
     >
       <LTileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/copyright&quot; target=&quot;_blank&quot;>OpenStreetMap</a> contributors &amp;copy; <a href=&quot;https://www.hydroquebec.com/documents-donnees/donnees-ouvertes/licence.html&quot; target=&quot;_blank&quot;>Hydro-Québec</a>"
+        attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/copyright&quot; target=&quot;_blank&quot;>OpenStreetMap</a> contributors</a>"
         layer-type="base"
         name="OpenStreetMap"
         no-wrap
@@ -35,27 +49,6 @@
           :visible="layerStates[layerName]"
         />
       </div>
-      <LControl position="topleft">
-        <ControleZoom
-          @zoom-in="map.leafletObject.zoomIn()"
-          @zoom-out="map.leafletObject.zoomOut()"
-        />
-      </LControl>
-      <LControl position="bottomleft">
-        <div class="flex flex-col items-center justify-center gap-2.5 mb-4.25 sm:mb-0">
-          <ControleCouches
-            v-model="layerStates"
-          />
-          <CentrerQuebec
-            @center="centerOnQuebec()"
-          />
-        </div>
-      </LControl>
-      <LControl position="topright">
-        <div class="flex flex-col items-center justify-center gap-2.5">
-          <InfosCredits />
-        </div>
-      </LControl>
     </LMap>
     <PanelInstallation
       v-model="panelInstallationOpen"
