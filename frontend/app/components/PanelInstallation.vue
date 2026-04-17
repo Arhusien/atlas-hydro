@@ -711,10 +711,12 @@
     return Object.entries(relevesByDataType.value)
       .map(([type_releves, releves]) => {
         const relevesAscending = [...releves].reverse(),
-              points = relevesAscending.map(releve => ({
-                x: new Date(releve.date),
-                y: releve.valeur,
-              }));
+              points = markRaw(
+                relevesAscending.map(releve => ({
+                  x: new Date(releve.date),
+                  y: releve.valeur,
+                })),
+              );
 
         return {
           type_releves,

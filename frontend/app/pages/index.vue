@@ -21,7 +21,7 @@
           v-for="([layerName, features]) in Object.entries(geojson.data)"
           :key="layerName"
           :geojson="features"
-          :options="createLayerOptions(layerName)"
+          :options="layerOptions"
           :visible="layerStates[layerName]"
         />
       </div>
@@ -170,34 +170,32 @@
     transform: rawData => markRaw(rawData),
   });
 
-  function createLayerOptions() {
-    return {
-      pointToLayer: function (feature, latlng) {
-        // Ne pas afficher les installations associées à un ouvrage
-        if (feature.properties.ouvrage_id) return;
+  const layerOptions = {
+    pointToLayer: function (feature, latlng) {
+      // Ne pas afficher les installations associées à un ouvrage
+      if (feature.properties.ouvrage_id) return;
 
-        const markerType = feature.properties.type.toLowerCase();
+      const markerType = feature.properties.type.toLowerCase();
 
-        return L.marker(latlng, {
-          title: feature.properties?.nom || "Inconnu",
-          icon: markerIcons[markerType].default,
-          zIndexOffset: markerZIndex[markerType] || 0,
-        }).on("click", function () {
-          if (activeMarker.value) {
-            const previousMarker = activeMarker.value.feature,
-                  previousMarkerType = previousMarker.properties.type.toLowerCase();
+      return L.marker(latlng, {
+        title: feature.properties?.nom || "Inconnu",
+        icon: markerIcons[markerType].default,
+        zIndexOffset: markerZIndex[markerType] || 0,
+      }).on("click", function () {
+        if (activeMarker.value) {
+          const previousMarker = activeMarker.value.feature,
+                previousMarkerType = previousMarker.properties.type.toLowerCase();
 
-            activeMarker.value.setIcon(markerIcons[previousMarkerType].default);
-          }
+          activeMarker.value.setIcon(markerIcons[previousMarkerType].default);
+        }
 
-          this.setIcon(markerIcons[markerType].active);
-          activeMarker.value = this;
+        this.setIcon(markerIcons[markerType].active);
+        activeMarker.value = this;
 
-          panelInstallationOpen.value = true;
-          panelInstallationData.value = feature.properties;
-        });
-      },
-    };
+        panelInstallationOpen.value = true;
+        panelInstallationData.value = feature.properties;
+      });
+    },
   };
 
   function onMapReady() {

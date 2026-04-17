@@ -74,13 +74,20 @@ export default defineNuxtConfig({
         plugins: [
             tailwindcss(),
         ],
+        build: {
+            rollupOptions: {
+                output: {
+                    manualChunks: {
+                        chartjs: ["chart.js", "vue-chartjs", "chartjs-adapter-date-fns"],
+                    },
+                },
+            },
+        },
         optimizeDeps: {
             include: [
                 "leaflet",
                 "geolib",
                 "luxon",
-                "chart.js",
-                "chartjs-adapter-date-fns",
             ],
         },
     },
