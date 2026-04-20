@@ -26,6 +26,9 @@ importers:
       '@nuxt/ui':
         specifier: 4.5.1
         version: 4.5.1(@tiptap/extensions@3.20.4(@tiptap/core@3.20.4(@tiptap/pm@3.20.4))(@tiptap/pm@3.20.4))(@tiptap/y-tiptap@3.0.2(prosemirror-model@1.25.4)(prosemirror-state@1.4.4)(prosemirror-view@1.41.7)(y-protocols@1.0.7(yjs@13.6.30))(yjs@13.6.30))(change-case@5.4.4)(db0@0.3.4)(embla-carousel@8.6.0)(ioredis@5.10.1)(magicast@0.5.2)(tailwindcss@4.2.2)(typescript@5.9.3)(valibot@1.3.1(typescript@5.9.3))(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.1)(yaml@2.8.3))(vue-router@4.6.4(vue@3.5.30(typescript@5.9.3)))(vue@3.5.30(typescript@5.9.3))(yjs@13.6.30)
+      '@nuxtjs/device':
+        specifier: ^4.0.0
+        version: 4.0.0
       '@nuxtjs/i18n':
         specifier: 10.2.3
         version: 10.2.3(@vue/compiler-dom@3.5.30)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.10.1)(magicast@0.5.2)(rollup@4.60.0)(vue@3.5.30(typescript@5.9.3))
@@ -35,9 +38,6 @@ importers:
       '@nuxtjs/sitemap':
         specifier: 7.6.0
         version: 7.6.0(magicast@0.5.2)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.1)(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))
-      '@pinia/nuxt':
-        specifier: 0.11.3
-        version: 0.11.3(magicast@0.5.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3)))
       '@vueuse/nuxt':
         specifier: ^14.2.1
         version: 14.2.1(magicast@0.5.2)(nuxt@4.4.2(@babel/core@7.29.0)(@babel/plugin-syntax-jsx@7.28.6(@babel/core@7.29.0))(@parcel/watcher@2.5.6)(@types/node@25.5.0)(@vue/compiler-sfc@3.5.30)(cac@6.7.14)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(optionator@0.9.4)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3)))(rollup-plugin-visualizer@7.0.1(rollup@4.60.0))(rollup@4.60.0)(stylelint@17.5.0(typescript@5.9.3))(terser@5.46.1)(typescript@5.9.3)(vite@7.3.1(@types/node@25.5.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.1)(yaml@2.8.3))(yaml@2.8.3))(vue@3.5.30(typescript@5.9.3))
@@ -1072,6 +1072,9 @@ packages:
   '@nuxtjs/color-mode@3.5.2':
     resolution: {integrity: sha512-cC6RfgZh3guHBMLLjrBB2Uti5eUoGM9KyauOaYS9ETmxNWBMTvpgjvSiSJp1OFljIXPIqVTJ3xtJpSNZiO3ZaA==}
 
+  '@nuxtjs/device@4.0.0':
+    resolution: {integrity: sha512-Tkbvde/GInmigbS/n3X3X+qXJWi6hsYrViKpZrakaBBYY3NbGYJb0c8aVxd3vI636HBbOhu0I39rv7MSjP7w8Q==}
+
   '@nuxtjs/i18n@10.2.3':
     resolution: {integrity: sha512-nRAQJbWjbiBvW6XRsG3Q6olYw2EKz7V1J6cDCHLCPbF1EyNhrAH/9aCNQaR5PYcoXPeRLpF86DIPBEnamghyHw==}
     engines: {node: '>=20.11.1'}
@@ -1849,11 +1852,6 @@ packages:
   '@parcel/watcher@2.5.6':
     resolution: {integrity: sha512-tmmZ3lQxAe/k/+rNnXQRawJ4NjxO2hqiOLTHvWchtGZULp4RyFeh6aU4XdOYBFe2KE1oShQTv4AblOs2iOrNnQ==}
     engines: {node: '>= 10.0.0'}
-
-  '@pinia/nuxt@0.11.3':
-    resolution: {integrity: sha512-7WVNHpWx4qAEzOlnyrRC88kYrwnlR/PrThWT0XI1dSNyUAXu/KBv9oR37uCgYkZroqP5jn8DfzbkNF3BtKvE9w==}
-    peerDependencies:
-      pinia: ^3.0.4
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -7454,6 +7452,10 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
+  '@nuxtjs/device@4.0.0':
+    dependencies:
+      defu: 6.1.4
+
   '@nuxtjs/i18n@10.2.3(@vue/compiler-dom@3.5.30)(db0@0.3.4)(eslint@9.39.1(jiti@2.6.1))(ioredis@5.10.1)(magicast@0.5.2)(rollup@4.60.0)(vue@3.5.30(typescript@5.9.3))':
     dependencies:
       '@intlify/core': 11.3.0
@@ -7975,13 +7977,6 @@ snapshots:
       '@parcel/watcher-win32-arm64': 2.5.6
       '@parcel/watcher-win32-ia32': 2.5.6
       '@parcel/watcher-win32-x64': 2.5.6
-
-  '@pinia/nuxt@0.11.3(magicast@0.5.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3)))':
-    dependencies:
-      '@nuxt/kit': 4.4.2(magicast@0.5.2)
-      pinia: 3.0.4(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3))
-    transitivePeerDependencies:
-      - magicast
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -8821,6 +8816,7 @@ snapshots:
   '@vue/devtools-api@7.7.9':
     dependencies:
       '@vue/devtools-kit': 7.7.9
+    optional: true
 
   '@vue/devtools-api@8.1.0':
     dependencies:
@@ -8841,6 +8837,7 @@ snapshots:
       perfect-debounce: 1.0.0
       speakingurl: 14.0.1
       superjson: 2.2.6
+    optional: true
 
   '@vue/devtools-kit@8.1.0':
     dependencies:
@@ -8852,6 +8849,7 @@ snapshots:
   '@vue/devtools-shared@7.7.9':
     dependencies:
       rfdc: 1.4.1
+    optional: true
 
   '@vue/devtools-shared@8.1.0': {}
 
@@ -9290,6 +9288,7 @@ snapshots:
   copy-anything@4.0.5:
     dependencies:
       is-what: 5.5.0
+    optional: true
 
   core-js-compat@3.49.0:
     dependencies:
@@ -10283,7 +10282,8 @@ snapshots:
 
   is-stream@3.0.0: {}
 
-  is-what@5.5.0: {}
+  is-what@5.5.0:
+    optional: true
 
   is-wsl@3.1.1:
     dependencies:
@@ -10598,7 +10598,8 @@ snapshots:
     dependencies:
       minipass: 7.1.3
 
-  mitt@3.0.1: {}
+  mitt@3.0.1:
+    optional: true
 
   mlly@1.8.2:
     dependencies:
@@ -11205,7 +11206,8 @@ snapshots:
 
   pathe@2.0.3: {}
 
-  perfect-debounce@1.0.0: {}
+  perfect-debounce@1.0.0:
+    optional: true
 
   perfect-debounce@2.1.0: {}
 
@@ -11221,6 +11223,7 @@ snapshots:
       vue: 3.5.30(typescript@5.9.3)
     optionalDependencies:
       typescript: 5.9.3
+    optional: true
 
   pkg-types@1.3.1:
     dependencies:
@@ -11631,7 +11634,8 @@ snapshots:
 
   reusify@1.1.0: {}
 
-  rfdc@1.4.1: {}
+  rfdc@1.4.1:
+    optional: true
 
   rollup-plugin-visualizer@7.0.1(rollup@4.60.0):
     dependencies:
@@ -11798,7 +11802,8 @@ snapshots:
 
   spdx-license-ids@3.0.23: {}
 
-  speakingurl@14.0.1: {}
+  speakingurl@14.0.1:
+    optional: true
 
   srvx@0.11.12: {}
 
@@ -11928,6 +11933,7 @@ snapshots:
   superjson@2.2.6:
     dependencies:
       copy-anything: 4.0.5
+    optional: true
 
   supports-color@10.2.2: {}
 

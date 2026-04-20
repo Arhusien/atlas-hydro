@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-from utils import constantes
+import constantes
 
 FUSEAU_HORAIRE = ZoneInfo(constantes.FUSEAU_HORAIRE)
 
@@ -24,7 +24,6 @@ def _cumuler_donnees_cycles(cumulatif: dict, initial: dict) -> dict:
     for cle, valeur in initial.items():
         if isinstance(valeur, dict):
             base = cumulatif.get(cle, {})
-            print(base)
             # Si l'entrée n'existe pas dans le cumulatif
             if not isinstance(base, dict):
                 base = {}
@@ -56,7 +55,7 @@ def obtenir_donnees_electricite() -> dict:
 
     date_hier = datetime.now(FUSEAU_HORAIRE).replace(minute=0, second=0, microsecond=0) - timedelta(hours=24)
 
-    cumule_donnees = {}
+    cumul_donnees = {}
     for cycle_donnees in donnees_electricite.get("details", []):
         date_brute = cycle_donnees.get("date")
         if not date_brute:
@@ -67,9 +66,16 @@ def obtenir_donnees_electricite() -> dict:
         if date < date_hier:
             continue
 
+        # Supprimer la date du dictionnaire avant de calculer le cumul
         if "date" in cycle_donnees:
             del cycle_donnees["date"]
 
-        cumule_donnees = _cumuler_donnees_cycles(cumule_donnees, cycle_donnees)
+        cumul_donnees = _cumuler_donnees_cycles(cumul_donnees, cycle_donnees)
 
-    return cumule_donnees
+    return {
+        "exportation": cumul_donnees.get("Exportations", {}),
+        "importation": cumul_donnees.get("Importations_Sources", {}),
+        "consommation": cumul_donnees.get("Quebec_Consommation_Sources", {}),
+        "production": cumul_donnees.get("Quebec_Production_Sources", {}),
+        "estimation_ges": cumul_donnees.get("Quebec_Estimation_Consommation_GES"),
+    }

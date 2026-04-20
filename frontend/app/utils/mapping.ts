@@ -41,3 +41,35 @@ export const bigChartStatsMapping = {
     maximum: "Maximum",
     standardDeviation: "Écart-type",
 };
+
+export const electicityTypeMapping = {
+    hydraulique: "Hydraulique",
+    hydro: "Hydraulique",
+    wind: "Éolien",
+    eolien: "Éolien",
+    nucleaire: "Nucléaire",
+    nuclear: "Nucléaire",
+    solaire: "Solaire",
+    solar: "Solaire",
+    thermique: "Thermique",
+    geothermique: "Géothermique",
+    biomasse: "Biomasse",
+    biomass: "Biomasse",
+    autres: "Autres",
+    gas: "Gaz",
+    oil: "Pétrole",
+    other: "Autres",
+    unknown: "Inconnu",
+};
+
+export const renewableElectricityTypes = [
+    "hydraulique",
+    "hydro",
+    "wind",
+    "eolien",
+    "solaire",
+    "solar",
+    "geothermique",
+    "biomasse",
+    "biomass",
+];

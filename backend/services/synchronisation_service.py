@@ -8,10 +8,11 @@ from spacy.lang.fr.stop_words import STOP_WORDS
 from spacy.language import Language
 from spacy.tokens import Doc
 
+import constantes
 from db import db
 from enums import TypeInstallation
 from models import Barrage, Centrale, Installation, Sonde
-from utils import constantes, simplifier_texte
+from utils import simplifier_texte
 
 noms_syonymes = {
     "Grande-2": "Robert-Bourassa",

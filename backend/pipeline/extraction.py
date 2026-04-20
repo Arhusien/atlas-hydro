@@ -4,10 +4,10 @@ from zoneinfo import ZoneInfo
 import requests
 from flask import Flask
 
+import constantes
 from db import db
 from enums import JeuDonnees, TypeReleve
 from models import Releve
-from utils import constantes
 
 JEUX_DONNEES = [
     JeuDonnees.HYDROMETEOROLOGIQUES,
