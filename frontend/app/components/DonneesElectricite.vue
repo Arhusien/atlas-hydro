@@ -117,7 +117,7 @@
   const items = computed(() => [
     {
       label: "Production",
-      description: "Quantité d'électricité produite au Québec au cours des dernières 24 heures.",
+      description: "Quantité d'électricité produite par Hydro-Québec au cours des dernières 24 heures.",
       icon: "lucide:zap",
       slot: "prod",
       type: "trigger",
@@ -126,7 +126,7 @@
     },
     {
       label: "Consommation",
-      description: "Quantité d'électricité consommée au Québec au cours des dernières 24 heures.",
+      description: "Quantité d'électricité produite par Hydro-Québec et consommée au cours des dernières 24 heures.",
       icon: "lucide:plug",
       slot: "usage",
       type: "trigger",
