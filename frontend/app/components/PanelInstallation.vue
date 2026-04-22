@@ -411,24 +411,13 @@
           />
         </UCard>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 sm:my-1.5">
-          <div
+          <UILabeledNumber
             v-for="([key, value]) in Object.entries(chartStats).filter(([_, value]) => typeof value === 'number')"
             :key="key"
-            variant="soft"
-            :ui="{
-              root: 'rounded-md',
-              body: 'sm:p-4 text-sm font-normal flex flex-col items-center justify-center w-full h-full gap-0.25',
-            }"
-            class="flex flex-col gap-0.5"
-          >
-            <span class="text-sm text-muted">{{ bigChartStatsMapping[key] || key }}</span>
-            <div class="inline leading-none">
-              <span class="text-lg sm:text-xl text-default font-medium">
-                {{ value.toFixed(2) }}
-              </span>
-              <span class="text-xs sm:text-sm text-muted">&nbsp;{{ computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending?.[0]?.unite_valeur || '' }}</span>
-            </div>
-          </div>
+            :label="bigChartStatsMapping[key] || key"
+            :value="Number(value.toFixed(2)).toLocaleString()"
+            :unit="computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending?.[0]?.unite_valeur || ''"
+          />
         </div>
         <div class="h-px bg-border w-full" />
         <div class="flex items-center justify-between text-[13px] text-muted leading-tight sm:leading-none">

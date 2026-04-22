@@ -52,29 +52,22 @@
           </span>
         </div>
         <div class="flex flex-col gap-2">
-          <div class="inline leading-none">
-            <span class="text-2xl sm:text-3xl text-default font-semibold">
-              {{ Math.round(Number(item.total ?? 0)).toLocaleString() }}
-            </span>
-            <span class="text-muted font-medium text-sm sm:text-base">&nbsp;MW</span>
-          </div>
+          <UILabeledNumber
+            :value="Math.round(Number(item.total)).toLocaleString()"
+            size="xl"
+            unit="MW"
+          />
         </div>
         <div class="h-px bg-border w-full" />
         <div class="gap-2.5 sm:gap-6 grid grid-cols-2 sm:grid-cols-4 sm:w-xl">
-          <div
+          <UILabeledNumber
             v-for="([source, valeur]) in item.data"
             :key="source"
-            class="flex flex-col gap-0.5"
-          >
-            <span class="text-sm text-muted">{{ electicityTypeMapping[source] || "Inconnu" }}</span>
-            <div class="inline leading-none">
-              <span class="text-lg sm:text-2xl text-default font-semibold">
-                {{ Math.round(Number(valeur)).toLocaleString() }}
-              </span>
-              <span class="text-xs sm:text-sm text-muted font-medium">&nbsp;MW</span>
-            </div>
-            <!-- TODO: Ajouter ce que représente la valeur par rapport au total (proportion)? -->
-          </div>
+            :label="electicityTypeMapping[source] || 'Inconnu'"
+            :value="Math.round(Number(valeur)).toLocaleString()"
+            unit="MW"
+            size="lg"
+          />
         </div>
       </div>
     </template>

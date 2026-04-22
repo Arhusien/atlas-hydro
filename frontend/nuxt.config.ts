@@ -49,6 +49,14 @@ export default defineNuxtConfig({
         "@vueuse/nuxt",
     ],
     ssr: false,
+    components: [
+        {
+            path: "~/components/ui",
+            prefix: "UI",
+            pathPrefix: false,
+        },
+        "~/components",
+    ],
     devtools: {
         enabled: true,
     },
