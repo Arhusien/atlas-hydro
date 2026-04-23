@@ -535,7 +535,7 @@
 
       installationData.value = null;
 
-      await openInstallation(installationId);
+      await loadInstallation(installationId);
     }
     else {
       resetStates();
@@ -667,7 +667,7 @@
     return calculateChartStats(bigChartPoints.value, localTimezone);
   });
 
-  async function fetchInstallationData(id) {
+  async function fetchInstallation(id) {
     if (installationCache.has(id)) {
       return installationCache.get(id);
     }
@@ -687,12 +687,12 @@
     activeTab.value = "0";
   }
 
-  async function openInstallation(id) {
+  async function loadInstallation(id) {
     pendingData.value = true;
     resetStates();
 
     try {
-      installationData.value = await fetchInstallationData(id);
+      installationData.value = await fetchInstallation(id);
     }
     finally {
       pendingData.value = false;
@@ -703,7 +703,7 @@
     if (!id || !installationData.value || pendingData.value) return;
     if (installationData.value.id === id) return;
 
-    await openInstallation(id);
+    await loadInstallation(id);
   }
 
   function zoomInChart(type_releves, releves) {

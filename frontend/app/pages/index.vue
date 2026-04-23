@@ -190,12 +190,12 @@
         icon: markerIcons[markerType].default,
         zIndexOffset: markerZIndex[markerType] || 0,
       }).on("click", async function () {
-        await openInstallationPanel(this, feature);
+        await openInstallation(this, feature);
       });
     },
   };
 
-  async function openInstallationPanel(marker, feature) {
+  async function openInstallation(marker, feature) {
     if (panelInstallationOpen.value) {
       panelInstallationOpen.value = false;
       await nextTick();
