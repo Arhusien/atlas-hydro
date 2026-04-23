@@ -77,7 +77,7 @@ def _formatter_donnees_extraites(
 
             for date_brute, valeur in donnees_releve.items():
                 date = _convertir_date(date_brute)
-                if (date is None) or (date <= date_min) or (date > date_max):
+                if (date is None) or not (date_min < date <= date_max):
                     continue
 
                 lst_releves.append(
@@ -142,7 +142,7 @@ def extraire_releves(app: Flask) -> dict[str, list[dict]]:
         try:
             print(
                 "Extraction des données dans l'intervalle de temps : "
-                + f"[{date_dernier_releve.isoformat()}; {date.isoformat()}]"
+                + f"]{date_dernier_releve.isoformat()}; {date.isoformat()}]"
             )
 
             url_jeu_donnees = (
