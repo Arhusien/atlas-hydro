@@ -138,10 +138,10 @@
   watch(panelInstallationOpen, (newValue) => {
     if (newValue === false) {
       if (activeMarker.value) {
-        const currentMarker = activeMarker.value.feature,
-              currentType = currentMarker.properties.type.toLowerCase();
+        const marker = activeMarker.value.feature,
+              markerType = marker.properties.type.toLowerCase();
 
-        activeMarker.value.setIcon(markerIcons[currentType].default);
+        activeMarker.value.setIcon(markerIcons[markerType].default);
         activeMarker.value = null;
       }
     }
@@ -189,22 +189,26 @@
         title: feature.properties?.nom || "Inconnu",
         icon: markerIcons[markerType].default,
         zIndexOffset: markerZIndex[markerType] || 0,
-      }).on("click", function () {
-        if (activeMarker.value) {
-          const previousMarker = activeMarker.value.feature,
-                previousMarkerType = previousMarker.properties.type.toLowerCase();
-
-          activeMarker.value.setIcon(markerIcons[previousMarkerType].default);
-        }
-
-        this.setIcon(markerIcons[markerType].active);
-        activeMarker.value = this;
-
-        panelInstallationOpen.value = true;
-        panelInstallationData.value = feature.properties;
+      }).on("click", async function () {
+        await openInstallationPanel(this, feature);
       });
     },
   };
+
+  async function openInstallationPanel(marker, feature) {
+    if (panelInstallationOpen.value) {
+      panelInstallationOpen.value = false;
+      await nextTick();
+    }
+
+    const markerType = feature.properties.type.toLowerCase();
+
+    marker.setIcon(markerIcons[markerType].active);
+    activeMarker.value = marker;
+
+    panelInstallationData.value = feature.properties;
+    panelInstallationOpen.value = true;
+  }
 
   function onMapReady() {
     centerOnQuebec();

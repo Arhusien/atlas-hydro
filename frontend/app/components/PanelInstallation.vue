@@ -146,31 +146,31 @@
                     <span class="text-sm text-muted text-center">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
                   </UCard>
                 </div>
-                <div
-                  v-if="['CENTRALE', 'BARRAGE'].includes(installationData?.type) && installationData?.sondes?.length > 0"
-                  class="flex flex-col gap-2.5 sm:gap-3"
+              </div>
+              <div
+                v-if="installationData?.sondes && installationData.sondes.length > 0"
+                class="flex flex-col gap-2.5 sm:gap-3"
+              >
+                <h3 class="text-highlighted font-medium">
+                  Sondes associées
+                </h3>
+                <UCard
+                  v-for="(sonde, index) in installationData.sondes"
+                  :key="index"
+                  as="button"
+                  variant="soft"
+                  :ui="{
+                    root: 'rounded-md cursor-pointer has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
+                    body: 'sm:p-4 text-sm font-normal flex items-center justify-between w-full',
+                  }"
+                  @click="updateData(sonde.id);"
                 >
-                  <h3 class="text-highlighted font-medium">
-                    Sondes associées
-                  </h3>
-                  <UCard
-                    v-for="(sonde, index) in installationData.sondes"
-                    :key="index"
-                    as="button"
-                    variant="soft"
-                    :ui="{
-                      root: 'rounded-md cursor-pointer has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
-                      body: 'sm:p-4 text-sm font-normal flex items-center justify-between w-full',
-                    }"
-                    @click="updateData(sonde.id);"
-                  >
-                    <span class="text-left text-default">{{ sonde.nom || 'Inconnu' }}</span>
-                    <span class="text-muted text-right">{{ getDistance(
-                      { latitude: installationData.y, longitude: installationData.x },
-                      { latitude: sonde.y, longitude: sonde.x },
-                    ) }} mètres</span>
-                  </UCard>
-                </div>
+                  <span class="text-left text-default">{{ sonde.nom || 'Inconnu' }}</span>
+                  <span class="text-muted text-right">{{ getDistance(
+                    { latitude: installationData.y, longitude: installationData.x },
+                    { latitude: sonde.y, longitude: sonde.x },
+                  ) }} mètres</span>
+                </UCard>
               </div>
             </div>
           </template>
@@ -500,34 +500,6 @@
         localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
         installationCache = new Map();
 
-  async function fetchInstallationData(id) {
-    if (installationCache.has(id)) {
-      return installationCache.get(id);
-    }
-
-    const response = await $fetch(`/api/installations/${id}`),
-          installationData = markRaw(response.data);
-
-    installationCache.set(id, installationData);
-
-    return installationData;
-  }
-
-  async function openInstallation(id) {
-    pendingData.value = true;
-    bigChartModalOpen.value = false;
-    bigChartType.value = null;
-    bigChartPoints.value = [];
-
-    try {
-      installationData.value = await fetchInstallationData(id);
-      activeTab.value = "0";
-    }
-    finally {
-      pendingData.value = false;
-    }
-  }
-
   watch(() => props.modelValue, (newValue) => {
     open.value = newValue;
   });
@@ -551,14 +523,22 @@
     emit("update:modelValue", newValue);
 
     if (newValue === true) {
+      const installationId = props.defaultData?.objectid;
+      if (!installationId) {
+        pendingData.value = false;
+        return;
+      }
+
+      if (installationData.value?.id === installationId && !pendingData.value) {
+        return;
+      }
+
       installationData.value = null;
 
-      await openInstallation(props.defaultData.objectid);
+      await openInstallation(installationId);
     }
     else {
-      bigChartModalOpen.value = false;
-      bigChartType.value = null;
-      bigChartPoints.value = [];
+      resetStates();
       pendingData.value = false;
 
       router.replace({
@@ -686,6 +666,38 @@
   const chartStats = computed(() => {
     return calculateChartStats(bigChartPoints.value, localTimezone);
   });
+
+  async function fetchInstallationData(id) {
+    if (installationCache.has(id)) {
+      return installationCache.get(id);
+    }
+
+    const response = await $fetch(`/api/installations/${id}`),
+          installationData = markRaw(response.data);
+
+    installationCache.set(id, installationData);
+
+    return installationData;
+  }
+
+  function resetStates() {
+    bigChartModalOpen.value = false;
+    bigChartType.value = null;
+    bigChartPoints.value = [];
+    activeTab.value = "0";
+  }
+
+  async function openInstallation(id) {
+    pendingData.value = true;
+    resetStates();
+
+    try {
+      installationData.value = await fetchInstallationData(id);
+    }
+    finally {
+      pendingData.value = false;
+    }
+  }
 
   async function updateData(id) {
     if (!id || !installationData.value || pendingData.value) return;
