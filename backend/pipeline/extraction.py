@@ -1,13 +1,10 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 import requests
-from flask import Flask
 
 import constantes
-from db import db
-from enums import JeuDonnees, TypeReleve
-from models import Releve
+from enums import JeuDonnees
 
 JEUX_DONNEES = [
     JeuDonnees.HYDROMETEOROLOGIQUES,
@@ -47,8 +44,6 @@ def _convertir_date(date_brute: str) -> datetime | None:
 def _formatter_donnees_extraites(
     donnees_extraites: dict,
     jeu_donnees: JeuDonnees,
-    date_min: datetime,
-    date_max: datetime,
 ):
     """
     Formatte les données d'un jeu pour les convertir en une liste de relevés.
@@ -77,7 +72,7 @@ def _formatter_donnees_extraites(
 
             for date_brute, valeur in donnees_releve.items():
                 date = _convertir_date(date_brute)
-                if (date is None) or not (date_min < date <= date_max):
+                if date is None:  # or not (date_min < date <= date_max):
                     continue
 
                 lst_releves.append(
@@ -94,15 +89,12 @@ def _formatter_donnees_extraites(
     return lst_releves
 
 
-def extraire_releves(app: Flask) -> dict[str, list[dict]]:
+def extraire_releves() -> dict[str, list[dict]]:
     """
     Extrait les relevés hydrométéorologiques ainsi qu'hydrométriques des jeux de données d'Hydro-Québec.
 
-    Parameters:
-        app (Flask): L'application Flask.
-
     Returns:
-        (dict[str, list[dict]]]): Un dictionnaire contenant, pour chaque jeu de données, les données extraites de celui-ci.
+        (dict[str, list[dict]]]): Un dictionnaire contenant, pour chaque jeu de données, les relevés extraits de celui-ci.
     """  # noqa: E501
 
     releves_extraits = {}
@@ -110,41 +102,9 @@ def extraire_releves(app: Flask) -> dict[str, list[dict]]:
     session = requests.Session()
     session.headers.update(constantes.HEADERS)
 
-    date = datetime.now(FUSEAU_HORAIRE).replace(minute=0, second=0, microsecond=0) - timedelta(hours=1)
-
     for jeu_donnees in JEUX_DONNEES:
-        type_releve = (
-            TypeReleve.HYDROMETEOROLOGIQUE
-            if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES
-            else TypeReleve.HYDROMETRIQUE
-        )
-
-        with app.app_context():
-            date_dernier_releve = (
-                db.session.query(db.func.max(Releve.date)).filter(Releve.type_releve == type_releve).scalar()
-            )
-
-        if not date_dernier_releve:
-            date_dernier_releve = date - timedelta(days=constantes.PERSISTANCE_RELEVES_JOURS)
-
-        date_dernier_releve = date_dernier_releve.replace(tzinfo=FUSEAU_HORAIRE)
-
-        nb_heures_retard = int((date - date_dernier_releve).total_seconds() / 3600)
-        if nb_heures_retard > constantes.PERSISTANCE_RELEVES_JOURS * 24:
-            nb_heures_retard = constantes.PERSISTANCE_RELEVES_JOURS * 24
-            date_dernier_releve = date - timedelta(days=constantes.PERSISTANCE_RELEVES_JOURS)
-
-        if nb_heures_retard <= 0:
-            releves_extraits[jeu_donnees.value] = []
-            continue
-
         releves_jeu_donnees = []
         try:
-            print(
-                "Extraction des données dans l'intervalle de temps : "
-                + f"]{date_dernier_releve.isoformat()}; {date.isoformat()}]"
-            )
-
             url_jeu_donnees = (
                 constantes.URL_SONDES_HQ
                 if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES
@@ -163,12 +123,10 @@ def extraire_releves(app: Flask) -> dict[str, list[dict]]:
             releves_jeu_donnees = _formatter_donnees_extraites(
                 donnees_jeu,
                 jeu_donnees,
-                date_min=date_dernier_releve,
-                date_max=date,
             )
 
         except requests.exceptions.RequestException:
-            print(f"Échec de la récupération des relevés d'Hydro-Québec pour le jeu {jeu_donnees.value}.")
+            print(f"Échec de la récupération des relevés du jeu {jeu_donnees.value}.")
             # Arrêter l'extraction des relevés pour ce jeu
             continue
 

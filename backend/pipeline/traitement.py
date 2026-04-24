@@ -37,7 +37,12 @@ def _determiner_type_donnee(donnee: str, type_releve: TypeReleve) -> TypeDonnee:
     return TypeDonnee.INCONNU
 
 
-def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeReleve) -> int:
+def traiter_releves(
+    app: Flask,
+    lst_releves: list[dict],
+    type_releves: TypeReleve,
+    reconstruire_table: bool | None = False,
+) -> int:
     """
     Traite et charge les relevés en base de données.
 
@@ -45,6 +50,7 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
         app (Flask): L'application Flask.
         lst_releves (list[dict]): La liste des relevés extraits.
         type_releves (TypeReleve): Le type de relevés.
+        reconstruire_table (bool): Si la table des relevés doit être reconstruite.
 
     Returns:
         (int): Le nombre de relevés créés.
@@ -54,6 +60,10 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
 
     with app.app_context():
         try:
+            # Si le traitement est fait sur la première portion de données
+            if reconstruire_table:
+                db.session.query(Releve).delete()
+
             for donees_releve in lst_releves:
                 id_installation = donees_releve.get("id")
                 if not id_installation:
@@ -100,34 +110,3 @@ def traiter_releves(app: Flask, lst_releves: list[dict], type_releves: TypeRelev
             raise
 
     return nb_releves_crees
-
-
-def supprimer_anciens_releves(app: Flask) -> int:
-    """
-    Supprime tous les relevés vieux de plus d'une semaine.
-
-    Parameters:
-        app (Flask): L'application Flask.
-
-    Returns:
-        (int): Le nombre de relevés supprimés.
-    """
-
-    nb_releves_supprimes = 0
-
-    with app.app_context():
-        date_semaine_precedente = datetime.now(FUSEAU_HORAIRE) - timedelta(
-            days=constantes.PERSISTANCE_RELEVES_JOURS,
-            hours=1,
-        )
-
-        try:
-            nb_releves_supprimes = Releve.query.filter(Releve.date < date_semaine_precedente).delete()
-
-            db.session.commit()
-
-        except Exception:
-            db.session.rollback()
-            raise
-
-    return nb_releves_supprimes

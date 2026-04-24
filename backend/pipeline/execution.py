@@ -4,7 +4,7 @@ from flask import Flask
 from enums import JeuDonnees, TypeReleve
 
 from .extraction import extraire_releves
-from .traitement import supprimer_anciens_releves, traiter_releves
+from .traitement import traiter_releves
 
 
 def executer_pipeline(app: Flask):
@@ -19,21 +19,19 @@ def executer_pipeline(app: Flask):
 
     print("Exécution de la pipeline ETL.")
 
-    donnees_extraites = extraire_releves(app)
-
-    # Si des données ont été extraites de chaque jeu de données, alors l'extraction est valide
-    # et les relevés vieux de plus d'une semaine peuvent être supprimer
-    extraction_valide = all(len(donnees) > 0 for donnees in donnees_extraites.values())
-    if extraction_valide:
-        nb_releves_supprimes = supprimer_anciens_releves(app)
-        print(f"{nb_releves_supprimes} aciens relevés supprimés.")
+    donnees_extraites = extraire_releves()
 
     for jeu_donnees, donnees in donnees_extraites.items():
         jeu_donnees = JeuDonnees(jeu_donnees)
 
         match jeu_donnees:
             case JeuDonnees.HYDROMETEOROLOGIQUES:
-                traiter_releves(app, lst_releves=donnees, type_releves=TypeReleve.HYDROMETEOROLOGIQUE)
+                traiter_releves(
+                    app,
+                    lst_releves=donnees,
+                    type_releves=TypeReleve.HYDROMETEOROLOGIQUE,
+                    reconstruire_table=True,
+                )
             case JeuDonnees.HYDROMETRIQUES:
                 traiter_releves(app, lst_releves=donnees, type_releves=TypeReleve.HYDROMETRIQUE)
 
