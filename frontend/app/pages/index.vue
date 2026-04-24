@@ -1,56 +1,56 @@
 <template>
-  <div class="w-svw h-svh">
+  <div class="w-svw h-svh relative">
+    <div
+      class="absolute py-4 left-4 z-1000 flex flex-col items-center justify-between h-full"
+    >
+      <ControleZoom
+        @zoom-in="map.leafletObject.zoomIn()"
+        @zoom-out="map.leafletObject.zoomOut()"
+      />
+      <div class="flex flex-col items-center justify-center gap-2.5">
+        <ControleCouches
+          v-model="layerStates"
+        />
+        <CentrerQuebec
+          @center="centerOnQuebec()"
+        />
+      </div>
+    </div>
+    <div class="flex flex-col items-center justify-center gap-2.5 absolute top-4 right-4 z-1000">
+      <InfosCredits />
+    </div>
+    <div class="flex items-center justify-center gap-2.5 absolute top-4 left-1/2 -translate-x-1/2 z-1000 w-full pointer-events-none">
+      <DonneesElectricite
+        :data="elecricityData"
+        :disabled="!elecricityData"
+        :dragging="dragging"
+      />
+    </div>
     <LMap
       ref="map"
-      :zoom="5"
+      :zoom="zoom"
       :center="[0, 0]"
       :options="mapOptions"
       @ready="onMapReady"
     >
       <LTileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/copyright&quot; target=&quot;_blank&quot;>OpenStreetMap</a> contributors &amp;copy; <a href=&quot;https://www.hydroquebec.com/documents-donnees/donnees-ouvertes/licence.html&quot; target=&quot;_blank&quot;>Hydro-Québec</a>"
+        attribution="&amp;copy; <a href=&quot;https://www.openstreetmap.org/copyright&quot; target=&quot;_blank&quot;>OpenStreetMap</a> contributors</a>"
         layer-type="base"
         name="OpenStreetMap"
         no-wrap
       />
       <div
-        v-if="geojson.data"
+        v-if="geojson"
       >
         <LGeoJson
-          v-for="([layerName, features]) in Object.entries(geojson.data)"
+          v-for="([layerName, features]) in Object.entries(geojson)"
           :key="layerName"
           :geojson="features"
           :options="layerOptions"
           :visible="layerStates[layerName]"
         />
       </div>
-      <LControl position="topleft">
-        <ControleZoom
-          @zoom-in="map.leafletObject.zoomIn()"
-          @zoom-out="map.leafletObject.zoomOut()"
-        />
-        <div class="flex flex-col items-center justify-center gap-2.5 mt-2.5">
-          <SourceProductionElectricite />
-          <DemandeElectricite />
-          <ExportationElectricite />
-        </div>
-      </LControl>
-      <LControl position="bottomleft">
-        <div class="flex flex-col items-center justify-center gap-2.5 mb-4.25 sm:mb-0">
-          <ControleCouches
-            v-model="layerStates"
-          />
-          <CentrerQuebec
-            @center="centerOnQuebec()"
-          />
-        </div>
-      </LControl>
-      <LControl position="topright">
-        <div class="flex flex-col items-center justify-center gap-2.5">
-          <InfosCredits />
-        </div>
-      </LControl>
     </LMap>
     <PanelInstallation
       v-model="panelInstallationOpen"
@@ -77,6 +77,8 @@
         panelInstallationData = ref({});
 
   const activeMarker = ref(null);
+
+  const elecricityData = ref(null);
 
   const layerStates = ref({
     centrale: true,
@@ -136,10 +138,10 @@
   watch(panelInstallationOpen, (newValue) => {
     if (newValue === false) {
       if (activeMarker.value) {
-        const currentMarker = activeMarker.value.feature,
-              currentType = currentMarker.properties.type.toLowerCase();
+        const marker = activeMarker.value.feature,
+              markerType = marker.properties.type.toLowerCase();
 
-        activeMarker.value.setIcon(markerIcons[currentType].default);
+        activeMarker.value.setIcon(markerIcons[markerType].default);
         activeMarker.value = null;
       }
     }
@@ -161,14 +163,20 @@
     maxBoundsViscosity: 1.0,
   };
 
-  const map = ref(null);
+  const map = ref(null),
+        zoom = ref(5),
+        dragging = ref(false);
 
-  const {
-    data: geojson,
-  } = await useFetch("/api/carte/installations", {
-    // Empêcher la réactivité du GeoJSON et ainsi éviter des problèmes de performance
-    transform: rawData => markRaw(rawData),
-  });
+  const mapRes = await $fetch("/api/carte/installations");
+  if (mapRes.status !== 200) {
+    throw createError({
+      statusCode: mapRes.status,
+      message: mapRes.message,
+    });
+  }
+
+  // Empêcher la réactivité du GeoJSON et ainsi éviter des problèmes de performance
+  const geojson = markRaw(mapRes.data);
 
   const layerOptions = {
     pointToLayer: function (feature, latlng) {
@@ -181,30 +189,42 @@
         title: feature.properties?.nom || "Inconnu",
         icon: markerIcons[markerType].default,
         zIndexOffset: markerZIndex[markerType] || 0,
-      }).on("click", function () {
-        if (activeMarker.value) {
-          const previousMarker = activeMarker.value.feature,
-                previousMarkerType = previousMarker.properties.type.toLowerCase();
-
-          activeMarker.value.setIcon(markerIcons[previousMarkerType].default);
-        }
-
-        this.setIcon(markerIcons[markerType].active);
-        activeMarker.value = this;
-
-        panelInstallationOpen.value = true;
-        panelInstallationData.value = feature.properties;
+      }).on("click", async function () {
+        await openInstallation(this, feature);
       });
     },
   };
 
+  async function openInstallation(marker, feature) {
+    if (panelInstallationOpen.value) {
+      panelInstallationOpen.value = false;
+      await nextTick();
+    }
+
+    const markerType = feature.properties.type.toLowerCase();
+
+    marker.setIcon(markerIcons[markerType].active);
+    activeMarker.value = marker;
+
+    panelInstallationData.value = feature.properties;
+    panelInstallationOpen.value = true;
+  }
+
   function onMapReady() {
     centerOnQuebec();
 
-    if (installationId && installationType) {
-      if (!geojson.value.data[installationType]) return;
+    map.value.leafletObject.on("dragstart", () => {
+      dragging.value = true;
+    });
 
-      const selectedFeature = geojson.value.data[installationType].features.find((feature) => {
+    map.value.leafletObject.on("dragend", () => {
+      dragging.value = false;
+    });
+
+    if (installationId && installationType) {
+      if (!geojson[installationType]) return;
+
+      const selectedFeature = geojson[installationType].features.find((feature) => {
         return feature.properties.objectid === installationId;
       });
 
@@ -222,11 +242,21 @@
     });
   };
 
-  onMounted(() => {
+  onMounted(async () => {
     const storedLayerStates = localStorage.getItem("layerStates");
     if (storedLayerStates) {
       layerStates.value = JSON.parse(storedLayerStates);
     }
+
+    const elecricityRes = await $fetch("/api/electricite");
+    if (elecricityRes.status !== 200) {
+      throw createError({
+        statusCode: elecricityRes.status,
+        message: elecricityRes.message,
+      });
+    }
+
+    elecricityData.value = elecricityRes.data;
   });
 
   watch(layerStates, (newValue) => {

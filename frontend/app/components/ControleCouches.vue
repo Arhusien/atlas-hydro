@@ -5,7 +5,7 @@
     }"
     :content="{
       side: 'right',
-      sideOffset: 16,
+      sideOffset: 10,
     }"
   >
     <UTooltip

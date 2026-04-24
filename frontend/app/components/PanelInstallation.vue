@@ -3,9 +3,9 @@
     v-model:open="open"
     side="right"
     inset
-    :overlay="true"
+    :overlay="$device.isMobile"
+    :modal="$device.isMobile"
     :ui="{
-      overlay: 'sm:hidden',
       header: 'px-5',
       content: 'ring-0 sm:ring-0',
       body: 'flex-1 overflow-hidden p-0 sm:p-0',
@@ -15,7 +15,7 @@
     <template #header="{ close }">
       <div class="flex w-full items-center gap-2">
         <div class="flex w-full min-w-0 items-center gap-2">
-          <h2 class="overflow-hidden text-ellipsis whitespace-nowrap text-highlighted font-medium">
+          <h2 class="truncate text-highlighted font-medium">
             {{ installationData?.nom || defaultData.nom || 'Inconnu' }}
           </h2>
           <UBadge
@@ -65,9 +65,9 @@
           <template #infos>
             <div class="flex-col gap-5 sm:gap-6 flex">
               <div class="flex flex-col gap-2.5 sm:gap-3">
-                <h2 class="text-highlighted font-medium">
+                <h3 class="text-highlighted font-medium">
                   Détails de l'installation
-                </h2>
+                </h3>
                 <div class="flex flex-col justify-center gap-2.5 sm:gap-3">
                   <div class="flex items-center justify-between text-sm">
                     <span>Identifiant</span>
@@ -111,9 +111,9 @@
                 v-if="computedReleves.length > 0"
                 class="flex flex-col gap-2.5 sm:gap-3"
               >
-                <h2 class="text-highlighted font-medium">
+                <h3 class="text-highlighted font-medium">
                   Dernières mesures
-                </h2>
+                </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   <UCard
                     v-for="({ type_releves, releves }) in computedReleves"
@@ -146,31 +146,31 @@
                     <span class="text-sm text-muted text-center">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
                   </UCard>
                 </div>
-                <div
-                  v-if="['CENTRALE', 'BARRAGE'].includes(installationData?.type) && installationData?.sondes?.length > 0"
-                  class="flex flex-col gap-2.5 sm:gap-3"
+              </div>
+              <div
+                v-if="installationData?.sondes && installationData.sondes.length > 0"
+                class="flex flex-col gap-2.5 sm:gap-3"
+              >
+                <h3 class="text-highlighted font-medium">
+                  Sondes associées
+                </h3>
+                <UCard
+                  v-for="(sonde, index) in installationData.sondes"
+                  :key="index"
+                  as="button"
+                  variant="soft"
+                  :ui="{
+                    root: 'rounded-md cursor-pointer has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
+                    body: 'sm:p-4 text-sm font-normal flex items-center justify-between w-full',
+                  }"
+                  @click="updateData(sonde.id);"
                 >
-                  <h2 class="text-highlighted font-medium">
-                    Sondes associées
-                  </h2>
-                  <UCard
-                    v-for="(sonde, index) in installationData.sondes"
-                    :key="index"
-                    as="button"
-                    variant="soft"
-                    :ui="{
-                      root: 'rounded-md cursor-pointer has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
-                      body: 'sm:p-4 text-sm font-normal flex items-center justify-between w-full',
-                    }"
-                    @click="updateData(sonde.id);"
-                  >
-                    <span class="text-left text-default">{{ sonde.nom || 'Inconnu' }}</span>
-                    <span class="text-muted text-right">{{ getDistance(
-                      { latitude: installationData.y, longitude: installationData.x },
-                      { latitude: sonde.y, longitude: sonde.x },
-                    ) }} mètres</span>
-                  </UCard>
-                </div>
+                  <span class="text-left text-default">{{ sonde.nom || 'Inconnu' }}</span>
+                  <span class="text-muted text-right">{{ getDistance(
+                    { latitude: installationData.y, longitude: installationData.x },
+                    { latitude: sonde.y, longitude: sonde.x },
+                  ) }} mètres</span>
+                </UCard>
               </div>
             </div>
           </template>
@@ -179,9 +179,9 @@
               v-if="computedReleves.length > 0"
               class="flex flex-col gap-2.5 sm:gap-3"
             >
-              <h2 class="text-highlighted font-medium">
+              <h3 class="text-highlighted font-medium">
                 Mesures
-              </h2>
+              </h3>
               <UAccordion
                 v-for="({ type_releves, releves }) in computedReleves"
                 :key="type_releves"
@@ -248,9 +248,9 @@
               v-if="computedReleves.length > 0"
               class="flex flex-col gap-2.5 sm:gap-3"
             >
-              <h2 class="text-highlighted font-medium">
+              <h3 class="text-highlighted font-medium">
                 Graphiques
-              </h2>
+              </h3>
               <div class="flex flex-col gap-2.5 sm:gap-3">
                 <UCard
                   v-for="({ type_releves, chartPoints }) in computedReleves.filter((e) => !excludedDataTypesForDifference.includes(e.type_releves))"
@@ -356,7 +356,7 @@
     close-icon="lucide:x"
     :ui="{
       header: 'p-5',
-      content: 'w-[calc(100vw-2rem)] max-w-xl',
+      content: 'w-[calc(100vw-2rem)] max-w-xl ring-0',
       close: 'cursor-pointer rounded',
       body: 'p-5',
     }"
@@ -410,21 +410,16 @@
             }"
           />
         </UCard>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
-          <UCard
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 sm:my-1.5">
+          <UILabeledNumber
             v-for="([key, value]) in Object.entries(chartStats).filter(([_, value]) => typeof value === 'number')"
             :key="key"
-            variant="soft"
-            :ui="{
-              root: 'rounded-md',
-              body: 'sm:p-4 text-sm font-normal flex flex-col items-center justify-center w-full h-full gap-0.25',
-            }"
-          >
-            <span class="text-muted text-xs">{{ bigChartStatsMapping[key] || key }}</span>
-            <span class="text-lg font-medium text-default text-center">{{ value.toFixed(2) }}</span>
-            <span class="text-xs text-muted text-center">{{ computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending?.[0]?.unite_valeur || '' }}</span>
-          </UCard>
+            :label="bigChartStatsMapping[key] || key"
+            :value="Number(value.toFixed(2)).toLocaleString()"
+            :unit="computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending?.[0]?.unite_valeur || ''"
+          />
         </div>
+        <div class="h-px bg-border w-full" />
         <div class="flex items-center justify-between text-[13px] text-muted leading-tight sm:leading-none">
           <span class="text-left">Sur {{ bigChartPoints.length }} mesures</span>
           <span class="text-right">Du {{ chartStats.dateRange[0] }} au {{ chartStats.dateRange[1] }}</span>
@@ -505,34 +500,6 @@
         localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
         installationCache = new Map();
 
-  async function fetchInstallationData(id) {
-    if (installationCache.has(id)) {
-      return installationCache.get(id);
-    }
-
-    const response = await $fetch(`/api/installations/${id}`),
-          installationData = markRaw(response.data);
-
-    installationCache.set(id, installationData);
-
-    return installationData;
-  }
-
-  async function openInstallation(id) {
-    pendingData.value = true;
-    bigChartModalOpen.value = false;
-    bigChartType.value = null;
-    bigChartPoints.value = [];
-
-    try {
-      installationData.value = await fetchInstallationData(id);
-      activeTab.value = "0";
-    }
-    finally {
-      pendingData.value = false;
-    }
-  }
-
   watch(() => props.modelValue, (newValue) => {
     open.value = newValue;
   });
@@ -556,14 +523,22 @@
     emit("update:modelValue", newValue);
 
     if (newValue === true) {
+      const installationId = props.defaultData?.objectid;
+      if (!installationId) {
+        pendingData.value = false;
+        return;
+      }
+
+      if (installationData.value?.id === installationId && !pendingData.value) {
+        return;
+      }
+
       installationData.value = null;
 
-      await openInstallation(props.defaultData.objectid);
+      await loadInstallation(installationId);
     }
     else {
-      bigChartModalOpen.value = false;
-      bigChartType.value = null;
-      bigChartPoints.value = [];
+      resetStates();
       pendingData.value = false;
 
       router.replace({
@@ -692,11 +667,43 @@
     return calculateChartStats(bigChartPoints.value, localTimezone);
   });
 
+  async function fetchInstallation(id) {
+    if (installationCache.has(id)) {
+      return installationCache.get(id);
+    }
+
+    const response = await $fetch(`/api/installations/${id}`),
+          installationData = markRaw(response.data);
+
+    installationCache.set(id, installationData);
+
+    return installationData;
+  }
+
+  function resetStates() {
+    bigChartModalOpen.value = false;
+    bigChartType.value = null;
+    bigChartPoints.value = [];
+    activeTab.value = "0";
+  }
+
+  async function loadInstallation(id) {
+    pendingData.value = true;
+    resetStates();
+
+    try {
+      installationData.value = await fetchInstallation(id);
+    }
+    finally {
+      pendingData.value = false;
+    }
+  }
+
   async function updateData(id) {
     if (!id || !installationData.value || pendingData.value) return;
     if (installationData.value.id === id) return;
 
-    await openInstallation(id);
+    await loadInstallation(id);
   }
 
   function zoomInChart(type_releves, releves) {

@@ -20,6 +20,8 @@ URL_SONDES_HQ = (
     "https://www.hydroquebec.com/data/documents-donnees/donnees-ouvertes/json/Donnees_VUE_STATIONS_ET_TARAGES.json"
 )
 
+URL_ELECTRICITE_HQ = "https://donnees.solutions.hydroquebec.com/donnees-ouvertes/data/json/ges-electricite.json"
+
 FUSEAU_HORAIRE = "UTC"
 PERSISTANCE_RELEVES_JOURS = 7
 ATTENTE_REQUETE_SECONDES = 10
