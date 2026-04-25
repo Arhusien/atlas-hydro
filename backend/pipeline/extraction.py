@@ -72,7 +72,7 @@ def _formatter_donnees_extraites(
 
             for date_brute, valeur in donnees_releve.items():
                 date = _convertir_date(date_brute)
-                if date is None:  # or not (date_min < date <= date_max):
+                if date is None:
                     continue
 
                 lst_releves.append(

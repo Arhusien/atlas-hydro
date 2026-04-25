@@ -28,3 +28,14 @@
 .leaflet-control-attribution {
     user-select: none;
 }
+
+@supports (-webkit-touch-callout: none) {
+
+    .leaflet-container,
+    .leaflet-tile,
+    .leaflet-marker-icon,
+    .leaflet-marker-shadow {
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+    }
+}

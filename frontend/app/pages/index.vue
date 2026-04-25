@@ -1,9 +1,17 @@
 <template>
-  <div class="w-svw h-svh relative">
-    <div
-      class="absolute py-4 left-4 z-1000 flex flex-col items-center justify-between h-full"
-    >
+  <div
+    class="w-svw h-svh relative"
+    style="contain: layout paint;"
+  >
+    <div class="hidden md:flex flex-col items-center justify-center gap-2.5 absolute top-4 left-4 z-1000">
       <ControleZoom
+        @zoom-in="map.leafletObject.zoomIn()"
+        @zoom-out="map.leafletObject.zoomOut()"
+      />
+    </div>
+    <div class="flex flex-col items-center justify-center gap-2.5 absolute bottom-4 left-4 z-1000">
+      <ControleZoom
+        class="flex md:hidden"
         @zoom-in="map.leafletObject.zoomIn()"
         @zoom-out="map.leafletObject.zoomOut()"
       />
@@ -28,6 +36,7 @@
     </div>
     <LMap
       ref="map"
+      class="isolate"
       :zoom="zoom"
       :center="[0, 0]"
       :options="mapOptions"
@@ -41,10 +50,10 @@
         no-wrap
       />
       <div
-        v-if="geojson"
+        v-if="displayedGeojson"
       >
         <LGeoJson
-          v-for="([layerName, features]) in Object.entries(geojson)"
+          v-for="([layerName, features]) in Object.entries(displayedGeojson)"
           :key="layerName"
           :geojson="features"
           :options="layerOptions"
@@ -177,12 +186,21 @@
 
   // Empêcher la réactivité du GeoJSON et ainsi éviter des problèmes de performance
   const geojson = markRaw(mapRes.data);
+  const displayedGeojson = markRaw(
+    Object.fromEntries(
+      Object.entries(geojson).map(([layerName, featureCollection]) => [
+        layerName,
+        {
+          ...featureCollection,
+          // Conserver seulement les installations indépendantes d'un ouvrage
+          features: featureCollection.features.filter(feature => !feature.properties.ouvrage_id),
+        },
+      ]),
+    ),
+  );
 
   const layerOptions = {
     pointToLayer: function (feature, latlng) {
-      // Ne pas afficher les installations associées à un ouvrage
-      if (feature.properties.ouvrage_id) return;
-
       const markerType = feature.properties.type.toLowerCase();
 
       return L.marker(latlng, {

@@ -6,6 +6,7 @@
     :overlay="$device.isMobile"
     :modal="$device.isMobile"
     :ui="{
+      overlay: 'md:hidden',
       header: 'px-5',
       content: 'ring-0 sm:ring-0',
       body: 'flex-1 overflow-hidden p-0 sm:p-0',
@@ -219,15 +220,10 @@
                     :data="item.content"
                     :columns="columns"
                     :ui="{
+                      base: 'border-t border-(--ui-border-accented)',
                       thead: 'hidden',
                     }"
-                  >
-                    <template #body-top>
-                      <div class="h-px w-full">
-                        <div class="absolute left-0 w-full h-px bg-(--ui-border-accented)" />
-                      </div>
-                    </template>
-                  </UTable>
+                  />
                 </template>
               </UAccordion>
             </div>
@@ -253,7 +249,7 @@
               </h3>
               <div class="flex flex-col gap-2.5 sm:gap-3">
                 <UCard
-                  v-for="({ type_releves, chartPoints }) in computedReleves.filter((e) => !excludedDataTypesForDifference.includes(e.type_releves))"
+                  v-for="({ type_releves, chartPoints }) in computedChartPoints.filter((e) => !excludedDataTypesForDifference.includes(e.type_releves))"
                   :key="type_releves"
                   variant="soft"
                   :ui="{
@@ -646,21 +642,26 @@
   const computedReleves = computed(() => {
     return Object.entries(relevesByDataType.value)
       .map(([type_releves, releves]) => {
-        const relevesAscending = [...releves].reverse(),
-              points = markRaw(
-                relevesAscending.map(releve => ({
-                  x: new Date(releve.date),
-                  y: releve.valeur,
-                })),
-              );
+        const relevesAscending = [...releves].reverse();
 
         return {
           type_releves,
           releves,
           relevesAscending,
-          chartPoints: points,
         };
       });
+  });
+
+  const computedChartPoints = computed(() => {
+    return computedReleves.value.map(({ type_releves, relevesAscending }) => ({
+      type_releves,
+      chartPoints: markRaw(
+        relevesAscending.map(releve => ({
+          x: new Date(releve.date),
+          y: releve.valeur,
+        })),
+      ),
+    }));
   });
 
   const chartStats = computed(() => {
