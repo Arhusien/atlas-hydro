@@ -24,12 +24,12 @@ const faviconLinks = faviconPaths.flatMap((name) => {
     return [
         {
             ...baseLink,
-            href: `/favicon/dark/${name}`,
+            href: `/img/favicon/dark/${name}`,
             media: "(prefers-color-scheme: light)",
         },
         {
             ...baseLink,
-            href: `/favicon/light/${name}`,
+            href: `/img/favicon/light/${name}`,
             media: "(prefers-color-scheme: dark)",
         },
     ];
@@ -73,6 +73,15 @@ export default defineNuxtConfig({
         "./app/assets/css/main.css",
     ],
     routeRules: {
+        "/api/static/**/*.geojson": {
+            headers: {
+                "Content-Type": "application/json",
+                "Content-Disposition": "inline",
+            },
+        },
+        "/api/static/**": {
+            proxy: `${process.env.NUXT_BACKEND_API_BASE}/static/**`,
+        },
         "/api/**": {
             proxy: `${process.env.NUXT_BACKEND_API_BASE}/api/**`,
         },

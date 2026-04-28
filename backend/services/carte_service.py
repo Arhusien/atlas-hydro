@@ -1,3 +1,6 @@
+import geopandas as gpd
+import pandas as pd
+
 from models import Installation
 
 
@@ -49,3 +52,65 @@ def generer_geojson_installations() -> dict:
         )
 
     return points_installations_par_types
+
+
+def generer_geojons_regions() -> dict:
+    """
+    Récupère les régions dans lesquelles opère Hydro-Québec et génère un objet GeoJSON.
+
+    Returns:
+        (dict): Un dictionnaire GeoJSON contenant les régions du réseau d'Hydro-Québec.
+    """
+
+    # Récupérer les frontières internes des États-Unis
+    url_us = "https://raw.githubusercontent.com/PublicaMundi/MappingAPI/master/data/geojson/us-states.json"
+    regions_us = gpd.read_file(url_us)
+
+    # Récupérer les frontières de New York
+    new_york = regions_us[regions_us["name"] == "New York"].copy()
+    new_york["region"] = "New York"
+
+    # Liste des états de la Nouvelle-Angleterre
+    etats_na = [
+        "Maine",
+        "New Hampshire",
+        "Vermont",
+        "Massachusetts",
+        "Rhode Island",
+        "Connecticut",
+    ]
+    nouvelle_angleterre = regions_us[regions_us["name"].isin(etats_na)].copy()
+    nouvelle_angleterre["region"] = "Nouvelle-Angleterre"
+
+    # Fusionner les frontières des états de la Nouvelle-Angleterre
+    nouvelle_angleterre = nouvelle_angleterre.dissolve(by="region").reset_index()
+
+    # Récupérer les frontières internes du Canada
+    url_canada = "https://raw.githubusercontent.com/codeforamerica/click_that_hood/master/public/data/canada.geojson"
+    regions_ca = gpd.read_file(url_canada)
+
+    provinces_ca = regions_ca[
+        regions_ca["name"].isin(
+            [
+                "Quebec",
+                "Ontario",
+                "New Brunswick",
+            ]
+        )
+    ].copy()
+
+    # Uniformiser le nom de la colonne
+    provinces_ca = provinces_ca.rename(columns={"name": "region"})
+
+    # Combiner les données en un seul objet
+    donnees_regions = pd.concat(
+        [
+            new_york[["region", "geometry"]],
+            nouvelle_angleterre[["region", "geometry"]],
+            provinces_ca[["region", "geometry"]],
+        ]
+    )
+
+    regions = gpd.GeoDataFrame(donnees_regions, geometry="geometry").to_geo_dict()
+
+    return regions

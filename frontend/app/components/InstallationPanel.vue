@@ -3,10 +3,11 @@
     v-model:open="open"
     side="right"
     inset
-    :overlay="$device.isMobile"
-    :modal="$device.isMobile"
+    dismissible
+    overlay
+    modal
     :ui="{
-      overlay: 'md:hidden',
+      overlay: 'md:bg-transparent',
       header: 'px-5',
       content: 'ring-0 sm:ring-0',
       body: 'flex-1 overflow-hidden p-0 sm:p-0',
@@ -41,7 +42,7 @@
     </template>
     <template #body>
       <div
-        v-if="pendingData"
+        v-if="isPending"
         class="flex items-center justify-center h-full"
       >
         <LoaderCircle class="animate-spin" />
@@ -59,7 +60,7 @@
           :ui="{
             root: 'gap-0',
             list: 'px-5 sm:px-6 shrink-0',
-            content: 'flex-1 min-h-0 h-full overflow-y-auto py-5 sm:py-6 pl-5 sm:pl-6 pr-[15px] sm:pr-[19px] mt-px content-scrollbar',
+            content: 'flex-1 min-h-0 h-full overflow-y-auto py-5 sm:py-6 pl-5 sm:pl-6 pr-3.75 sm:pr-4.75 mt-px content-scrollbar',
             trigger: 'w-full px-0 cursor-pointer',
           }"
         >
@@ -194,7 +195,10 @@
                 ]"
                 :ui="{
                   trigger: 'p-4 bg-elevated/50 font-normal rounded-md cursor-pointer data-[state=open]:rounded-b-none transition hover:bg-elevated gap-2',
-                  content: 'bg-elevated/50 rounded-b-md data-[state=open]:animate-none data-[state=closed]:animate-none',
+                  content: `bg-elevated/50 rounded-b-md data-[state=open]:animate-[accordion-down_var(--duration)_ease-out] data-[state=closed]:animate-[accordion-up_var(--duration)_ease-out]`,
+                }"
+                :style="{
+                  '--duration': `${Math.min(150 + (releves.length * 10), 500)}ms`,
                 }"
               >
                 <template
@@ -257,7 +261,7 @@
                     body: 'sm:p-4 p-4 text-sm font-normal flex flex-col justify-center w-full h-full gap-4',
                   }"
                 >
-                  <div class="flex items-center gap-1.5">
+                  <div class="flex items-center gap-2">
                     <span class="text-left text-default">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
                     <UTooltip
                       :delay-duration="0"
@@ -484,7 +488,7 @@
 
   const open = ref(props.modelValue),
         installationData = ref(null),
-        pendingData = ref(true),
+        isPending = ref(true),
         activeTab = ref("0"),
         bigChartType = ref(null),
         bigChartPoints = ref([]),
@@ -521,11 +525,11 @@
     if (newValue === true) {
       const installationId = props.defaultData?.objectid;
       if (!installationId) {
-        pendingData.value = false;
+        isPending.value = false;
         return;
       }
 
-      if (installationData.value?.id === installationId && !pendingData.value) {
+      if (installationData.value?.id === installationId && !isPending.value) {
         return;
       }
 
@@ -535,7 +539,7 @@
     }
     else {
       resetStates();
-      pendingData.value = false;
+      isPending.value = false;
 
       router.replace({
         query: {
@@ -552,20 +556,17 @@
       label: "Informations",
       // icon: "lucide:info",
       slot: "infos",
-      trailingIcon: "lucide:chevron-down",
     },
     {
       label: "Mesures",
       // icon: "lucide:activity",
       slot: "data",
-      trailingIcon: "lucide:chevron-down",
 
     },
     {
       label: "Graphiques",
       // icon: "lucide:satellite-dish",
       slot: "stats",
-      trailingIcon: "lucide:chevron-down",
     },
   ];
 
@@ -689,19 +690,19 @@
   }
 
   async function loadInstallation(id) {
-    pendingData.value = true;
+    isPending.value = true;
     resetStates();
 
     try {
       installationData.value = await fetchInstallation(id);
     }
     finally {
-      pendingData.value = false;
+      isPending.value = false;
     }
   }
 
   async function updateData(id) {
-    if (!id || !installationData.value || pendingData.value) return;
+    if (!id || !installationData.value || isPending.value) return;
     if (installationData.value.id === id) return;
 
     await loadInstallation(id);
