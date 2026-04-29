@@ -8,6 +8,31 @@ import constantes
 
 FUSEAU_HORAIRE = ZoneInfo(constantes.FUSEAU_HORAIRE)
 
+nom_region_cle = {
+    "new_york": "NewYork",
+    "nouveau_brunswick": "NewBrunswick",
+    "nouvelle_angleterre": "NewEngland",
+    "ontario": "Ontario",
+    "quebec": "Quebec",
+}
+
+nom_energie_cle = {
+    "Biomasse - solide": "biomasse_solide",
+    "Nucléaire": "nucleaire",
+    "Autres fossiles": "autres_fossiles",
+    "Hydro": "hydraulique",
+    "Solaire": "solaire",
+    "Géothermique": "geothermique",
+    "Biomasse - biocarburant gazeux": "biomasse_gazeux",
+    "Charbon": "charbon",
+    "Électricité": "electricite",
+    "Autres": "autres",
+    "Biomasse - biocarburant liquide": "biomasse_liquide",
+    "Pétrole": "petrole",
+    "Gaz naturel": "gaz_naturel",
+    "Éolien": "eolien",
+}
+
 
 def _cumuler_donnees_cycles(cumulatif: dict, initial: dict) -> dict:
     """
@@ -37,7 +62,7 @@ def _cumuler_donnees_cycles(cumulatif: dict, initial: dict) -> dict:
 
 def obtenir_donnees_electricite() -> dict:
     """
-    Récupère des données concernant l'électricité produite par dHydro-Québec.
+    Récupère des données concernant l'électricité du réseau d'Hydro-Québec.
 
     Returns:
         (dict): Un dictionnaire contenant les données.
@@ -79,3 +104,45 @@ def obtenir_donnees_electricite() -> dict:
         "production": cumul_donnees.get("Quebec_Production_Sources", {}),
         "estimation_ges": cumul_donnees.get("Quebec_Estimation_Consommation_GES"),
     }
+
+
+def obtenir_emissions_ges() -> dict:
+    """
+    Récupère les facteurs d'émission (en tCO2eq/MWh) des diverses sources d'énergie du réseau d'Hydro-Québec.
+
+    Returns:
+        (dict): Un dictionnaire contenant les facteurs d'émission.
+    """
+
+    reponse = requests.get(
+        constantes.URL_GES_HQ,
+        headers=constantes.HEADERS,
+        timeout=constantes.ATTENTE_REQUETE_SECONDES,
+    )
+    reponse.encoding = "UTF-8"
+    reponse.raise_for_status()
+
+    facteurs_ges = reponse.json()
+
+    donnees_facteurs_ges_regions = {
+        cle: {} for cle in nom_region_cle.values()
+    }  # fmt: off
+    for regions in facteurs_ges.get("results", []):
+        nom_energie = regions.get("sources_d_energie")
+        if nom_energie not in nom_energie_cle:
+            continue
+
+        for nom_region, facteur_ges in regions.items():
+            if nom_region not in nom_region_cle:
+                continue
+
+            cle_region = nom_region_cle[nom_region]
+            cle_energie = nom_energie_cle[nom_energie]
+
+            donnees_facteurs_ges_regions[cle_region].update(
+                {
+                    cle_energie: facteur_ges,
+                }
+            )
+
+    return donnees_facteurs_ges_regions

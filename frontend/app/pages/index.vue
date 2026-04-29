@@ -1,33 +1,41 @@
 <template>
-  <div class="w-svw h-svh relative">
-    <div
-      class="absolute py-4 left-4 z-1000 flex flex-col items-center justify-between h-full"
-    >
+  <div
+    class="w-svw h-svh relative"
+    style="contain: layout paint;"
+  >
+    <div class="flex flex-col items-center justify-center gap-2.5 absolute top-4 left-4 z-1000">
       <ControleZoom
         @zoom-in="map.leafletObject.zoomIn()"
         @zoom-out="map.leafletObject.zoomOut()"
       />
-      <div class="flex flex-col items-center justify-center gap-2.5">
-        <ControleCouches
-          v-model="layerStates"
-        />
-        <CentrerQuebec
-          @center="centerOnQuebec()"
-        />
-      </div>
+    </div>
+    <div class="flex flex-col items-center justify-center gap-2.5 absolute bottom-4 left-4 z-1000">
+      <ControleCouches
+        v-model="layerStates"
+      />
+      <CentrerQuebec
+        @center="centerOnQuebec()"
+      />
     </div>
     <div class="flex flex-col items-center justify-center gap-2.5 absolute top-4 right-4 z-1000">
       <InfosCredits />
     </div>
-    <div class="flex items-center justify-center gap-2.5 absolute top-4 left-1/2 -translate-x-1/2 z-1000 w-full pointer-events-none">
-      <DonneesElectricite
-        :data="elecricityData"
-        :disabled="!elecricityData"
-        :dragging="dragging"
+    <div class="flex items-center justify-center gap-2.5 absolute top-4 left-1/2 -translate-x-1/2 z-1000">
+      <UTabs
+        v-model="mapMode"
+        color="neutral"
+        variant="pill"
+        :content="false"
+        :items="mapModeTabs"
+        :ui="{
+          list: 'bg-default',
+          trigger: 'cursor-pointer',
+        }"
       />
     </div>
     <LMap
       ref="map"
+      class="isolate"
       :zoom="zoom"
       :center="[0, 0]"
       :options="mapOptions"
@@ -40,45 +48,89 @@
         name="OpenStreetMap"
         no-wrap
       />
-      <div
-        v-if="geojson"
-      >
+      <LGeoJson
+        ref="regionLayers"
+        :geojson="geojsonRegions"
+        :options="regionsLayerOptions"
+        :options-style="regionsStyle"
+        :visible="mapMode === 'regions'"
+      />
+      <div v-if="displayedGeojson">
         <LGeoJson
-          v-for="([layerName, features]) in Object.entries(geojson)"
+          v-for="([layerName, features]) in Object.entries(displayedGeojson)"
           :key="layerName"
           :geojson="features"
-          :options="layerOptions"
-          :visible="layerStates[layerName]"
+          :options="mapLayerOptions"
+          :visible="layerStates[layerName] && mapMode === 'installations'"
         />
       </div>
     </LMap>
-    <PanelInstallation
-      v-model="panelInstallationOpen"
-      :default-data="panelInstallationData"
+    <InstallationPanel
+      v-model="installationPanelOpen"
+      :default-data="installationPanelData"
+    />
+    <ElectricityPanel
+      v-model="electricityPanelOpen"
+      :region="activeRegion"
+      :data="elecricityData"
     />
   </div>
 </template>
 
 <script setup>
   import L from "leaflet";
-  import satellitePin from "~/assets/img/satellitePin.svg?url";
-  import satellitePinActive from "~/assets/img/satellitePinActive.svg?url";
-  import factoryPin from "~/assets/img/factoryPin.svg?url";
-  import factoryPinActive from "~/assets/img/factoryPinActive.svg?url";
-  import damPin from "~/assets/img/damPin.svg?url";
-  import damPinActive from "~/assets/img/damPinActive.svg?url";
-  import pinShadow from "~/assets/img/pinShadow.svg?url";
+  import satellitePin from "~/assets/img/pins/satellitePin.svg?url";
+  import satellitePinActive from "~/assets/img/pins/satellitePinActive.svg?url";
+  import factoryPin from "~/assets/img/pins/factoryPin.svg?url";
+  import factoryPinActive from "~/assets/img/pins/factoryPinActive.svg?url";
+  import damPin from "~/assets/img/pins/damPin.svg?url";
+  import damPinActive from "~/assets/img/pins/damPinActive.svg?url";
+  import pinShadow from "~/assets/img/pins/pinShadow.svg?url";
+
+  const validMapModes = [
+    "installations",
+    "regions",
+  ];
 
   const route = useRoute(),
+        router = useRouter(),
         installationId = route.query.installation,
-        installationType = route.query.type;
+        installationType = route.query.type,
+        regionId = route.query.region;
 
-  const panelInstallationOpen = ref(false),
-        panelInstallationData = ref({});
-
-  const activeMarker = ref(null);
+  const installationPanelOpen = ref(false),
+        installationPanelData = ref({}),
+        electricityPanelOpen = ref(false);
 
   const elecricityData = ref(null);
+
+  const activeMarker = ref(null),
+        activeRegion = ref(null),
+        activeRegionLayer = ref(null);
+
+  const mapMode = computed({
+    get() {
+      return validMapModes.includes(route.query.map) ? route.query.map : "installations";
+    },
+    set(tab) {
+      router.replace({
+        query: {
+          map: tab,
+        },
+      });
+    },
+  });
+
+  const mapModeTabs = [
+    {
+      label: "Installations",
+      value: "installations",
+    },
+    {
+      label: "Régions",
+      value: "regions",
+    },
+  ];
 
   const layerStates = ref({
     centrale: true,
@@ -135,7 +187,7 @@
     sonde: 0,
   };
 
-  watch(panelInstallationOpen, (newValue) => {
+  watch(installationPanelOpen, (newValue) => {
     if (newValue === false) {
       if (activeMarker.value) {
         const marker = activeMarker.value.feature,
@@ -143,6 +195,14 @@
 
         activeMarker.value.setIcon(markerIcons[markerType].default);
         activeMarker.value = null;
+      }
+    }
+  });
+
+  watch(electricityPanelOpen, (newValue) => {
+    if (newValue === false) {
+      if (activeRegionLayer.value) {
+        resetRegionStyle(activeRegionLayer.value);
       }
     }
   });
@@ -165,7 +225,7 @@
 
   const map = ref(null),
         zoom = ref(5),
-        dragging = ref(false);
+        regionLayers = ref(null);
 
   const mapRes = await $fetch("/api/carte/installations");
   if (mapRes.status !== 200) {
@@ -175,14 +235,32 @@
     });
   }
 
+  const regionsRes = await $fetch("/api/carte/regions");
+  if (regionsRes.status !== 200) {
+    throw createError({
+      statusCode: regionsRes.status,
+      message: regionsRes.message,
+    });
+  }
+
   // Empêcher la réactivité du GeoJSON et ainsi éviter des problèmes de performance
-  const geojson = markRaw(mapRes.data);
+  const geojsonMap = markRaw(mapRes.data),
+        geojsonRegions = markRaw(regionsRes.data);
+  const displayedGeojson = markRaw(
+    Object.fromEntries(
+      Object.entries(geojsonMap).map(([layerName, featureCollection]) => [
+        layerName,
+        {
+          ...featureCollection,
+          // Conserver seulement les installations indépendantes d'un ouvrage
+          features: featureCollection.features.filter(feature => !feature.properties.ouvrage_id),
+        },
+      ]),
+    ),
+  );
 
-  const layerOptions = {
+  const mapLayerOptions = {
     pointToLayer: function (feature, latlng) {
-      // Ne pas afficher les installations associées à un ouvrage
-      if (feature.properties.ouvrage_id) return;
-
       const markerType = feature.properties.type.toLowerCase();
 
       return L.marker(latlng, {
@@ -195,9 +273,37 @@
     },
   };
 
+  const regionsLayerOptions = {
+    onEachFeature: function (feature, layer) {
+      layer.on({
+        mouseover: (e) => {
+          highlightRegion(e.target);
+        },
+        mouseout: () => {
+          const layers = regionLayers.value?.leafletObject;
+          if (!layers) return;
+
+          layers.eachLayer((l) => {
+            if (!electricityPanelOpen.value || activeRegionLayer.value?._leaflet_id !== l._leaflet_id) {
+              resetRegionStyle(l);
+            }
+          });
+        },
+        click: async (e) => {
+          await openRegion(feature, e.target);
+        },
+      });
+    },
+  };
+
   async function openInstallation(marker, feature) {
-    if (panelInstallationOpen.value) {
-      panelInstallationOpen.value = false;
+    if (electricityPanelOpen.value) {
+      electricityPanelOpen.value = false;
+      await nextTick();
+    }
+
+    if (installationPanelOpen.value) {
+      installationPanelOpen.value = false;
       await nextTick();
     }
 
@@ -206,32 +312,74 @@
     marker.setIcon(markerIcons[markerType].active);
     activeMarker.value = marker;
 
-    panelInstallationData.value = feature.properties;
-    panelInstallationOpen.value = true;
+    installationPanelData.value = feature.properties;
+    installationPanelOpen.value = true;
+  }
+
+  async function openRegion(feature, layer) {
+    if (installationPanelOpen.value) {
+      installationPanelOpen.value = false;
+      await nextTick();
+    }
+
+    if (activeRegionLayer.value && activeRegionLayer.value !== layer) {
+      resetRegionStyle(activeRegionLayer.value);
+    }
+
+    activeRegion.value = feature.properties.region;
+    activeRegionLayer.value = layer;
+
+    electricityPanelOpen.value = true;
+    highlightRegion(layer);
+  }
+
+  function regionsStyle() {
+    return {
+      fillColor: "var(--ui-color-neutral-500)",
+      fillOpacity: 0.2,
+      color: "var(--ui-color-neutral-600)",
+      opacity: 0.8,
+      weight: 1,
+    };
+  }
+
+  function highlightRegion(layer) {
+    layer.setStyle({
+      fillOpacity: 0.35,
+      opacity: 0.75,
+    });
+    layer.bringToFront();
+  }
+
+  function resetRegionStyle(layer) {
+    layer.setStyle(regionsStyle());
   }
 
   function onMapReady() {
     centerOnQuebec();
 
-    map.value.leafletObject.on("dragstart", () => {
-      dragging.value = true;
-    });
+    if (mapMode.value === "installations" && (installationId && installationType)) {
+      if (!geojsonMap[installationType]) return;
 
-    map.value.leafletObject.on("dragend", () => {
-      dragging.value = false;
-    });
-
-    if (installationId && installationType) {
-      if (!geojson[installationType]) return;
-
-      const selectedFeature = geojson[installationType].features.find((feature) => {
+      const selectedFeature = geojsonMap[installationType].features.find((feature) => {
         return feature.properties.objectid === installationId;
       });
 
       if (selectedFeature) {
-        panelInstallationData.value = selectedFeature.properties;
-        panelInstallationOpen.value = true;
+        installationPanelData.value = selectedFeature.properties;
+        installationPanelOpen.value = true;
       }
+    }
+
+    if (mapMode.value === "regions" && regionId) {
+      const layers = regionLayers.value?.leafletObject;
+      if (!layers) return;
+
+      layers.eachLayer((layer) => {
+        if (layer.feature.properties.region === regionId) {
+          openRegion(layer.feature, layer);
+        }
+      });
     }
   };
 

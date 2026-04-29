@@ -32,7 +32,7 @@ export const valueTypeMapping = {
     MAXIMUM: "Valeurs maximales",
     MINIMUM: "Valeurs minimales",
     MOYENNE: "Valeurs moyennes",
-    SOMME: "Sommations",
+    SOMME: "Valeurs cumulées",
 };
 
 export const bigChartStatsMapping = {
@@ -42,7 +42,7 @@ export const bigChartStatsMapping = {
     standardDeviation: "Écart-type",
 };
 
-export const electicityTypeMapping = {
+export const electricityTypeMapping = {
     hydraulique: "Hydraulique",
     hydro: "Hydraulique",
     wind: "Éolien",
@@ -60,6 +60,31 @@ export const electicityTypeMapping = {
     oil: "Pétrole",
     other: "Autres",
     unknown: "Inconnu",
+};
+
+export const regionNameMapping = {
+    NewBrunswick: "Nouveau-Brunswick",
+    NewEngland: "Nouvelle-Angleterre",
+    NewYork: "New York",
+    Ontario: "Ontario",
+    Quebec: "Québec",
+};
+
+export const ghgEnergySourceNamesMapping = {
+    hydraulique: "Hydraulique",
+    eolien: "Éolien",
+    solaire: "Solaire",
+    geothermique: "Géothermique",
+    biomasse_solide: "Biomasse (solide)",
+    biomasse_liquide: "Biomasse (liquide)",
+    biomasse_gazeux: "Biomasse (gazeuse)",
+    nucleaire: "Nucléaire",
+    gaz_naturel: "Gaz naturel",
+    petrole: "Pétrole",
+    charbon: "Charbon",
+    autres_fossiles: "Autres fossiles",
+    autres: "Autres",
+    electricite: "Moyenne du réseau",
 };
 
 export const renewableElectricityTypes = [

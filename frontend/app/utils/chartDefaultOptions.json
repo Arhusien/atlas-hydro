@@ -16,6 +16,9 @@
             },
             "bodyFont": {
                 "weight": "400"
+            },
+            "animation": {
+                "duration": 250
             }
         }
     },

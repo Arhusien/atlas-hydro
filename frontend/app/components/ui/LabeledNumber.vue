@@ -8,10 +8,10 @@
     </span>
     <div class="inline leading-none">
       <span
-        class="text-lg text-default"
+        class="text-default"
         :class="{
-          'sm:text-xl font-medium': size === 'md',
-          'sm:text-2xl font-semibold': size === 'lg',
+          'text-lg sm:text-xl font-medium': size === 'md',
+          'text-xl sm:text-2xl font-semibold': size === 'lg',
           'text-2xl sm:text-3xl font-semibold': size === 'xl',
         }"
       >

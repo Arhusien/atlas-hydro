@@ -22,6 +22,8 @@ URL_SONDES_HQ = (
 
 URL_ELECTRICITE_HQ = "https://donnees.solutions.hydroquebec.com/donnees-ouvertes/data/json/ges-electricite.json"
 
+URL_GES_HQ = "https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/facteurges/records?limit=100"
+
 FUSEAU_HORAIRE = "UTC"
 PERSISTANCE_RELEVES_JOURS = 7
 ATTENTE_REQUETE_SECONDES = 10
