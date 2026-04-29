@@ -11,6 +11,7 @@
     </div>
     <div class="flex flex-col items-center justify-center gap-2.5 absolute bottom-4 left-4 z-1000">
       <ControleCouches
+        v-if="mapMode === 'installations'"
         v-model="layerStates"
       />
       <CentrerQuebec
@@ -29,7 +30,7 @@
         :items="mapModeTabs"
         :ui="{
           list: 'bg-default',
-          trigger: 'cursor-pointer',
+          trigger: 'cursor-pointer user-select-none',
         }"
       />
     </div>
