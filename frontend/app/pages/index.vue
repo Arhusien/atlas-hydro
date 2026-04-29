@@ -30,7 +30,7 @@
         :items="mapModeTabs"
         :ui="{
           list: 'bg-default',
-          trigger: 'cursor-pointer user-select-none',
+          trigger: 'cursor-pointer select-none',
         }"
       />
     </div>
