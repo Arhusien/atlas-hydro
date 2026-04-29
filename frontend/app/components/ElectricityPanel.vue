@@ -86,17 +86,10 @@
         <UEmpty
           icon="lucide:circle-off"
           title="Aucune donnée"
-          description="Atlas Hydro n'a pas pu récupérer de données électriques pour cette région."
+          description="Atlas Hydro n'a pas pu récupérer de données liées à cette région."
           variant="naked"
+          class="mb-[calc(65px/2)]"
         />
-      </div>
-    </template>
-    <template
-      v-if="hasData"
-      #footer
-    >
-      <div class="flex w-full items-center justify-end text-[13px] text-muted leading-tight sm:leading-none">
-        <span class="text-right">Sur les dernières 24 heures</span>
       </div>
     </template>
   </USlideover>
@@ -107,7 +100,6 @@
     electricityTypeMapping,
     ghgEnergySourceNamesMapping,
     regionNameMapping,
-    regionNameToIdMapping,
   } from "~/utils/mapping.ts";
 
   const props = defineProps({
@@ -129,14 +121,13 @@
     "update:modelValue",
   ]);
 
+  const route = useRoute(),
+        router = useRouter();
+
   const open = ref(false);
 
-  const regionId = computed(() => {
-    return regionNameToIdMapping[props.region] || props.region;
-  });
-
   const regionTitle = computed(() => {
-    return regionNameMapping[regionId.value] || props.region || "Inconnu";
+    return regionNameMapping[props.region] || props.region || "Inconnu";
   });
 
   const usageData = computed(() => {
@@ -156,7 +147,7 @@
   });
 
   const ghgData = computed(() => {
-    return filterEntries(props.data?.facteurs_ges?.[regionId.value] || {}, true).map(([key, value]) => ({
+    return filterEntries(props.data?.facteurs_ges?.[props.region] || {}, true).map(([key, value]) => ({
       key,
       label: ghgEnergySourceNamesMapping[key] || key,
       value,
@@ -164,11 +155,11 @@
   });
 
   const ghgTotal = computed(() => {
-    return Number(props.data?.facteurs_ges?.[regionId.value]?.electricite ?? 0);
+    return Number(props.data?.facteurs_ges?.[props.region]?.electricite ?? 0);
   });
 
   const importData = computed(() => {
-    return filterEntries(props.data?.importation?.[regionId.value] || {}).map(([key, value]) => ({
+    return filterEntries(props.data?.importation?.[props.region] || {}).map(([key, value]) => ({
       key,
       label: electricityTypeMapping[key] || key,
       value,
@@ -176,11 +167,11 @@
   });
 
   const importTotal = computed(() => {
-    return Number(props.data?.importation?.[regionId.value]?.total ?? 0);
+    return Number(props.data?.importation?.[props.region]?.total ?? 0);
   });
 
   const exportTotal = computed(() => {
-    const value = Number(props.data?.exportation?.[regionId.value] ?? 0);
+    const value = Number(props.data?.exportation?.[props.region] ?? 0);
 
     return value > 0 ? value : 0;
   });
@@ -192,7 +183,7 @@
       allData.push({
         type: "export",
         label: "Exportation",
-        description: "Quantité d'électricité exportée vers la région par Hydro-Québec.",
+        description: "Quantité d'électricité exportée vers la région par Hydro-Québec au cours des dernières 24 heures.",
         total: exportTotal.value,
         data: [],
       });
@@ -202,23 +193,23 @@
       allData.push({
         type: "import",
         label: "Importation",
-        description: "Quantité d'électricité importée au Québec par Hydro-Québec.",
+        description: "Quantité d'électricité importée au Québec par Hydro-Québec au cours des dernières 24 heures.",
         total: importTotal.value,
         data: importData.value,
       });
     }
 
-    if (regionId.value === "Quebec") {
+    if (props.region === "Quebec") {
       allData.push({
         type: "production",
         label: "Production",
-        description: "Quantité d'électricité produite au Québec par Hydro-Québec.",
+        description: "Quantité d'électricité produite au Québec par Hydro-Québec au cours des dernières 24 heures.",
         total: props.data?.production?.total ?? 0,
         data: productionData.value,
       }, {
         type: "usage",
         label: "Consommation",
-        description: "Quantité d'électricité produite par Hydro-Québec et consommée au Québec.",
+        description: "Quantité d'électricité produite par Hydro-Québec et consommée au Québec au cours des dernières 24 heures.",
         total: props.data?.consommation?.total ?? 0,
         data: usageData.value,
       });
@@ -247,6 +238,27 @@
 
   watch(open, async (newValue) => {
     emit("update:modelValue", newValue);
+
+    if (!newValue) {
+      router.replace({
+        query: {
+          ...route.query,
+          region: undefined,
+          installation: undefined,
+          type: undefined,
+        },
+      });
+    }
+    else {
+      router.replace({
+        query: {
+          ...route.query,
+          region: props.region,
+          installation: undefined,
+          type: undefined,
+        },
+      });
+    }
   });
 
   function filterEntries(data, isGhg = false) {

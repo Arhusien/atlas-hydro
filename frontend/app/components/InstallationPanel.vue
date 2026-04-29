@@ -514,6 +514,7 @@
           ...route.query,
           installation: installationId,
           type: installationType,
+          region: undefined,
         },
       });
     }
@@ -546,6 +547,7 @@
           ...route.query,
           installation: undefined,
           type: undefined,
+          region: undefined,
         },
       });
     }

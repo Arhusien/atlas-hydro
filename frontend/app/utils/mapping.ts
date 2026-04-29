@@ -70,17 +70,6 @@ export const regionNameMapping = {
     Quebec: "Québec",
 };
 
-export const regionNameToIdMapping = {
-    "Nouveau-Brunswick": "NewBrunswick",
-    "New Brunswick": "NewBrunswick",
-    "Nouvelle-Angleterre": "NewEngland",
-    "New England": "NewEngland",
-    "New York": "NewYork",
-    "Ontario": "Ontario",
-    "Québec": "Quebec",
-    "Quebec": "Quebec",
-};
-
 export const ghgEnergySourceNamesMapping = {
     hydraulique: "Hydraulique",
     eolien: "Éolien",

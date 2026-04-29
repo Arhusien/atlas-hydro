@@ -3,32 +3,35 @@
     class="w-svw h-svh relative"
     style="contain: layout paint;"
   >
-    <div class="hidden md:flex flex-col items-center justify-center gap-2.5 absolute top-4 left-4 z-1000">
+    <div class="flex flex-col items-center justify-center gap-2.5 absolute top-4 left-4 z-1000">
       <ControleZoom
         @zoom-in="map.leafletObject.zoomIn()"
         @zoom-out="map.leafletObject.zoomOut()"
       />
     </div>
     <div class="flex flex-col items-center justify-center gap-2.5 absolute bottom-4 left-4 z-1000">
-      <ControleZoom
-        class="flex md:hidden"
-        @zoom-in="map.leafletObject.zoomIn()"
-        @zoom-out="map.leafletObject.zoomOut()"
+      <ControleCouches
+        v-model="layerStates"
       />
-      <div class="flex flex-col items-center justify-center gap-2.5">
-        <ControleCouches
-          v-model="layerStates"
-        />
-        <CentrerQuebec
-          @center="centerOnQuebec()"
-        />
-      </div>
+      <CentrerQuebec
+        @center="centerOnQuebec()"
+      />
     </div>
     <div class="flex flex-col items-center justify-center gap-2.5 absolute top-4 right-4 z-1000">
       <InfosCredits />
     </div>
-    <div class="flex items-center justify-center gap-2.5 absolute top-4 left-1/2 -translate-x-1/2 z-1000 w-full pointer-events-none">
-      <!-- TODO: Ajouter le switch mode -->
+    <div class="flex items-center justify-center gap-2.5 absolute top-4 left-1/2 -translate-x-1/2 z-1000">
+      <UTabs
+        v-model="mapMode"
+        color="neutral"
+        variant="pill"
+        :content="false"
+        :items="mapModeTabs"
+        :ui="{
+          list: 'bg-default',
+          trigger: 'cursor-pointer',
+        }"
+      />
     </div>
     <LMap
       ref="map"
@@ -50,6 +53,7 @@
         :geojson="geojsonRegions"
         :options="regionsLayerOptions"
         :options-style="regionsStyle"
+        :visible="mapMode === 'regions'"
       />
       <div v-if="displayedGeojson">
         <LGeoJson
@@ -57,7 +61,7 @@
           :key="layerName"
           :geojson="features"
           :options="mapLayerOptions"
-          :visible="layerStates[layerName]"
+          :visible="layerStates[layerName] && mapMode === 'installations'"
         />
       </div>
     </LMap>
@@ -83,9 +87,16 @@
   import damPinActive from "~/assets/img/pins/damPinActive.svg?url";
   import pinShadow from "~/assets/img/pins/pinShadow.svg?url";
 
+  const validMapModes = [
+    "installations",
+    "regions",
+  ];
+
   const route = useRoute(),
+        router = useRouter(),
         installationId = route.query.installation,
-        installationType = route.query.type;
+        installationType = route.query.type,
+        regionId = route.query.region;
 
   const installationPanelOpen = ref(false),
         installationPanelData = ref({}),
@@ -95,7 +106,31 @@
 
   const activeMarker = ref(null),
         activeRegion = ref(null),
-        activeRegionZone = ref(null);
+        activeRegionLayer = ref(null);
+
+  const mapMode = computed({
+    get() {
+      return validMapModes.includes(route.query.map) ? route.query.map : "installations";
+    },
+    set(tab) {
+      router.replace({
+        query: {
+          map: tab,
+        },
+      });
+    },
+  });
+
+  const mapModeTabs = [
+    {
+      label: "Installations",
+      value: "installations",
+    },
+    {
+      label: "Régions",
+      value: "regions",
+    },
+  ];
 
   const layerStates = ref({
     centrale: true,
@@ -166,8 +201,8 @@
 
   watch(electricityPanelOpen, (newValue) => {
     if (newValue === false) {
-      if (activeRegionZone.value) {
-        resetRegionStyle(activeRegionZone.value);
+      if (activeRegionLayer.value) {
+        resetRegionStyle(activeRegionLayer.value);
       }
     }
   });
@@ -249,7 +284,7 @@
           if (!layers) return;
 
           layers.eachLayer((l) => {
-            if (!electricityPanelOpen.value || l._leaflet_id !== activeRegionZone.value?._leaflet_id) {
+            if (!electricityPanelOpen.value || activeRegionLayer.value?._leaflet_id !== l._leaflet_id) {
               resetRegionStyle(l);
             }
           });
@@ -260,16 +295,6 @@
       });
     },
   };
-
-  function regionsStyle() {
-    return {
-      fillColor: "var(--ui-color-neutral-500)",
-      fillOpacity: 0.2,
-      color: "var(--ui-color-neutral-600)",
-      opacity: 0.8,
-      weight: 1,
-    };
-  }
 
   async function openInstallation(marker, feature) {
     if (electricityPanelOpen.value) {
@@ -291,21 +316,31 @@
     installationPanelOpen.value = true;
   }
 
-  async function openRegion(feature, zone) {
+  async function openRegion(feature, layer) {
     if (installationPanelOpen.value) {
       installationPanelOpen.value = false;
       await nextTick();
     }
 
-    if (activeRegionZone.value && activeRegionZone.value !== zone) {
-      resetRegionStyle(activeRegionZone.value);
+    if (activeRegionLayer.value && activeRegionLayer.value !== layer) {
+      resetRegionStyle(activeRegionLayer.value);
     }
 
     activeRegion.value = feature.properties.region;
-    activeRegionZone.value = zone;
+    activeRegionLayer.value = layer;
 
     electricityPanelOpen.value = true;
-    highlightRegion(zone);
+    highlightRegion(layer);
+  }
+
+  function regionsStyle() {
+    return {
+      fillColor: "var(--ui-color-neutral-500)",
+      fillOpacity: 0.2,
+      color: "var(--ui-color-neutral-600)",
+      opacity: 0.8,
+      weight: 1,
+    };
   }
 
   function highlightRegion(layer) {
@@ -323,7 +358,7 @@
   function onMapReady() {
     centerOnQuebec();
 
-    if (installationId && installationType) {
+    if (mapMode.value === "installations" && (installationId && installationType)) {
       if (!geojsonMap[installationType]) return;
 
       const selectedFeature = geojsonMap[installationType].features.find((feature) => {
@@ -334,6 +369,17 @@
         installationPanelData.value = selectedFeature.properties;
         installationPanelOpen.value = true;
       }
+    }
+
+    if (mapMode.value === "regions" && regionId) {
+      const layers = regionLayers.value?.leafletObject;
+      if (!layers) return;
+
+      layers.eachLayer((layer) => {
+        if (layer.feature.properties.region === regionId) {
+          openRegion(layer.feature, layer);
+        }
+      });
     }
   };
 

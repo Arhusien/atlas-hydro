@@ -68,7 +68,7 @@ def generer_geojons_regions() -> dict:
 
     # Récupérer les frontières de New York
     new_york = regions_us[regions_us["name"] == "New York"].copy()
-    new_york["region"] = "New York"
+    new_york["region"] = "NewYork"
 
     # Liste des états de la Nouvelle-Angleterre
     etats_na = [
@@ -80,7 +80,7 @@ def generer_geojons_regions() -> dict:
         "Connecticut",
     ]
     nouvelle_angleterre = regions_us[regions_us["name"].isin(etats_na)].copy()
-    nouvelle_angleterre["region"] = "Nouvelle-Angleterre"
+    nouvelle_angleterre["region"] = "NewEngland"
 
     # Fusionner les frontières des états de la Nouvelle-Angleterre
     nouvelle_angleterre = nouvelle_angleterre.dissolve(by="region").reset_index()
@@ -101,6 +101,7 @@ def generer_geojons_regions() -> dict:
 
     # Uniformiser le nom de la colonne
     provinces_ca = provinces_ca.rename(columns={"name": "region"})
+    provinces_ca["region"] = provinces_ca["region"].str.replace(" ", "")
 
     # Combiner les données en un seul objet
     donnees_regions = pd.concat(
