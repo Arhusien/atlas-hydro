@@ -200,6 +200,7 @@
                 :style="{
                   '--duration': `${Math.min(150 + (releves.length * 10), 500)}ms`,
                 }"
+                trailing-icon="lucide:chevron-down"
               >
                 <template
                   v-if="valueTypeMapping[releves[0].type_valeur]"
