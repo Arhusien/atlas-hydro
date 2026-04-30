@@ -4,10 +4,10 @@
     side="right"
     inset
     dismissible
-    overlay
-    modal
+    :overlay="$device.isMobile"
+    :modal="$device.isMobile"
     :ui="{
-      overlay: 'md:bg-transparent',
+      overlay: 'sm:bg-transparent',
       header: 'px-5',
       content: 'ring-0 sm:ring-0',
       body: 'flex-1 overflow-hidden p-0 sm:p-0',
@@ -61,7 +61,7 @@
             root: 'gap-0',
             list: 'px-5 sm:px-6 shrink-0',
             content: 'flex-1 min-h-0 h-full overflow-y-auto py-5 sm:py-6 pl-5 sm:pl-6 pr-3.75 sm:pr-4.75 mt-px content-scrollbar',
-            trigger: 'w-full px-0 cursor-pointer',
+            trigger: 'w-full cursor-pointer',
           }"
         >
           <template #infos>
