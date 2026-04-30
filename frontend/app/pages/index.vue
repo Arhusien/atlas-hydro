@@ -19,7 +19,7 @@
       />
     </div>
     <div class="flex flex-col items-center justify-center gap-2.5 absolute top-4 right-4 z-1000">
-      <InfosCredits />
+      <InformationModel />
     </div>
     <div class="flex items-center justify-center gap-2.5 absolute top-4 left-1/2 -translate-x-1/2 z-1000">
       <UTabs
@@ -54,7 +54,7 @@
         :geojson="geojsonRegions"
         :options="regionsLayerOptions"
         :options-style="regionsStyle"
-        :visible="mapMode === 'regions'"
+        :visible="mapMode === 'territoires'"
       />
       <div v-if="displayedGeojson">
         <LGeoJson
@@ -90,7 +90,7 @@
 
   const validMapModes = [
     "installations",
-    "regions",
+    "territoires",
   ];
 
   const route = useRoute(),
@@ -128,8 +128,8 @@
       value: "installations",
     },
     {
-      label: "Régions",
-      value: "regions",
+      label: "Territoires",
+      value: "territoires",
     },
   ];
 
@@ -372,7 +372,7 @@
       }
     }
 
-    if (mapMode.value === "regions" && regionId) {
+    if (mapMode.value === "territoires" && regionId) {
       const layers = regionLayers.value?.leafletObject;
       if (!layers) return;
 

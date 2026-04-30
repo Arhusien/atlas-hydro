@@ -86,15 +86,3 @@ export const ghgEnergySourceNamesMapping = {
     autres: "Autres",
     electricite: "Moyenne du réseau",
 };
-
-export const renewableElectricityTypes = [
-    "hydraulique",
-    "hydro",
-    "wind",
-    "eolien",
-    "solaire",
-    "solar",
-    "geothermique",
-    "biomasse",
-    "biomass",
-];
