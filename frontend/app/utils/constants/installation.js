@@ -36,7 +36,7 @@ export const installationTabs = [
     },
 ];
 
-export function buildRelevesTableColumns(releves, timezone) {
+export function buildRelevesTableColumns(releves, chartReleves, timezone) {
     return [
         {
             id: "date",
@@ -52,7 +52,7 @@ export function buildRelevesTableColumns(releves, timezone) {
             id: "difference",
             header: "Différence",
             cell: ({ row }) => {
-                const delta = calculateDifference(row.original, releves);
+                const delta = calculateDifference(row.original, chartReleves);
 
                 if (excludedDataTypesForStats.includes(row.original.type_donnee) || delta === null) {
                     return h("div", {

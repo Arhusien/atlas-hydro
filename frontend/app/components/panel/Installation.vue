@@ -187,12 +187,13 @@
                 Mesures
               </h3>
               <UAccordion
-                v-for="[type_releves, { releves }] in Object.entries(groupedReleves)"
+                v-for="[type_releves, { chartReleves, releves }] in Object.entries(groupedReleves)"
                 :key="type_releves"
                 :items="[
                   {
                     label: dataTypeReleveMapping[type_releves] || 'Inconnu',
-                    content: releves,
+                    releves,
+                    chartReleves,
                   },
                 ]"
                 :ui="{
@@ -221,8 +222,8 @@
                 </template>
                 <template #content="{ item }">
                   <UTable
-                    :data="item.content"
-                    :columns="buildRelevesTableColumns(item.content, localTimezone)"
+                    :data="item.releves"
+                    :columns="buildRelevesTableColumns(item.releves, item.chartReleves, localTimezone)"
                     :ui="{
                       base: 'border-t border-(--ui-border-accented)',
                       thead: 'hidden',
