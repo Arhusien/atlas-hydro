@@ -1,6 +1,6 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <div class="w-svw h-svh relative">
+  <div class="w-full h-full relative">
     <div class="flex flex-col items-center justify-center gap-2.5 absolute top-4 left-4 z-1000">
       <ControlZoom
         @zoom-in="map.leafletObject.zoomIn()"
@@ -84,6 +84,10 @@
   } from "~/utils/constants/map.js";
 
   const props = defineProps({
+    appReady: {
+      type: Boolean,
+      default: false,
+    },
     installationOpen: {
       type: Boolean,
       default: false,
@@ -97,6 +101,7 @@
   const emit = defineEmits([
     "open-installation",
     "open-region",
+    "map-ready",
   ]);
 
   const route = useRoute(),
@@ -251,6 +256,10 @@
   function onMapReady() {
     centerOnQuebec(map.value.leafletObject);
 
+    emit("map-ready");
+  };
+
+  function onAppReady() {
     if (activeMapView.value === "installations" && (queryInstallationId && queryInstallationType)) {
       if (!geojsonInstallations[queryInstallationType]) return;
 
@@ -282,7 +291,7 @@
         }
       });
     }
-  };
+  }
 
   onMounted(async () => {
     const storedLayerStates = localStorage.getItem("layerStates");
@@ -295,5 +304,11 @@
     localStorage.setItem("layerStates", JSON.stringify(newValue));
   }, {
     deep: true,
+  });
+
+  watch(() => props.appReady, (newValue) => {
+    if (newValue === true) {
+      onAppReady();
+    }
   });
 </script>
