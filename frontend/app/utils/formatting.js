@@ -1,4 +1,3 @@
-// @ts-nocheck
 import {
     decimalToSexagesimal,
 } from "geolib";
@@ -12,7 +11,7 @@ import {
  * @param {boolean} isLat - Si la coordonnée est une latitude.
  * @returns {string | null} La coordonnée au format degrés minutes et secondes.
  */
-export function convertToDMS(coord: number, isLat: boolean = true): string | null {
+export function convertToDMS(coord, isLat) {
     if (typeof coord !== "number") return null;
 
     const dms = decimalToSexagesimal(Math.abs(coord)).replace(/\s/g, ""),
@@ -30,7 +29,7 @@ export function convertToDMS(coord: number, isLat: boolean = true): string | nul
  * @param {any} options - Les options de formatage supplémentaires.
  * @returns {string} La date formatée.
  */
-export function formatToLocalDate(utcDate: string, timezone: string, options: any = {}): string {
+export function formatToLocalDate(utcDate, timezone, options = {}) {
     return DateTime.fromISO(utcDate, {
         zone: "utc",
     })

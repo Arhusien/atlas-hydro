@@ -1,5 +1,4 @@
-// @ts-nocheck
-export function calculateDifference(releve: object, releves: Array<object>): number | null {
+export function calculateDifference(releve, releves) {
     if (!releves || releves.length === 0) {
         return null;
     }
@@ -23,7 +22,7 @@ export function calculateDifference(releve: object, releves: Array<object>): num
     return delta;
 }
 
-export function calculateChartStats(chartPoints: Array<object>, localTimezone: string) {
+export function calculateChartStats(chartPoints, localTimezone) {
     if (!chartPoints || chartPoints.length === 0) {
         return {
             minimum: 0,

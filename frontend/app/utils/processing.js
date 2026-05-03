@@ -1,5 +1,4 @@
-// @ts-nocheck
-export function processReleves(releves: Array<object>): object {
+export function processReleves(releves) {
     let relevesByDataType = {};
 
     for (const releve of releves) {
