@@ -289,13 +289,14 @@
             </div>
             <div
               v-else
-              class="flex flex-col items-center justify-center"
+              class="flex h-full justify-center items-center"
             >
               <UEmpty
                 icon="lucide:circle-off"
                 title="Aucune donnée"
                 description="Atlas Hydro n'a pas pu récupérer de données liées à cette installation."
                 variant="naked"
+                class="sm:absolute sm:-translate-y-1/2 sm:top-1/2"
               />
             </div>
           </template>
