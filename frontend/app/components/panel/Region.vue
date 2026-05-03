@@ -5,7 +5,7 @@
     inset
     dismissible
     :overlay="$device.isMobile"
-    :modal="$device.isMobile"
+    modal
     :ui="{
       overlay: 'sm:bg-transparent',
       header: 'px-5',
@@ -18,7 +18,7 @@
       <div class="flex w-full items-center gap-2">
         <div class="flex w-full min-w-0 items-center gap-2">
           <h2 class="truncate text-highlighted font-medium">
-            {{ regionTitle }}
+            {{ regionName }}
           </h2>
         </div>
         <UButton
@@ -35,10 +35,11 @@
     </template>
     <template #body>
       <div
-        v-if="hasData"
+        v-if="regionHasData"
         class="h-full min-h-0 flex flex-col"
       >
         <UTabs
+          v-model="activeTab"
           :items="regionData"
           color="neutral"
           variant="link"
@@ -81,14 +82,14 @@
       </div>
       <div
         v-else
-        class="flex h-full items-center justify-center"
+        class="flex h-full justify-center items-center"
       >
         <UEmpty
           icon="lucide:circle-off"
           title="Aucune donnée"
           description="Atlas Hydro n'a pas pu récupérer de données liées à cette région."
           variant="naked"
-          class="mb-[calc(65px/2)]"
+          class="sm:absolute sm:-translate-y-1/2 sm:top-1/2"
         />
       </div>
     </template>
@@ -100,7 +101,7 @@
     electricityTypeMapping,
     ghgEnergySourceNamesMapping,
     regionNameMapping,
-  } from "~/utils/mapping.ts";
+  } from "~/utils/constants/mapping.js";
 
   const props = defineProps({
     modelValue: {
@@ -124,111 +125,83 @@
   const route = useRoute(),
         router = useRouter();
 
-  const open = ref(false);
+  const open = ref(props.modelValue),
+        activeTab = ref("0");
 
-  const regionTitle = computed(() => {
+  const regionName = computed(() => {
     return regionNameMapping[props.region] || props.region || "Inconnu";
   });
 
-  const usageData = computed(() => {
-    return filterEntries(props.data?.consommation || {}).map(([key, value]) => ({
-      key,
-      label: electricityTypeMapping[key] || key,
-      value,
-    }));
+  const data = computed(() => {
+    return {
+      consommation: filterData(props.data.consommation || {}, electricityTypeMapping),
+      production: filterData(props.data.production || {}, electricityTypeMapping),
+      facteurs_ges: filterData(props.data.facteurs_ges?.[props.region] || {}, ghgEnergySourceNamesMapping, true),
+      importation: filterData(props.data.importation?.[props.region] || {}, electricityTypeMapping),
+    };
   });
 
-  const productionData = computed(() => {
-    return filterEntries(props.data?.production || {}).map(([key, value]) => ({
-      key,
-      label: electricityTypeMapping[key] || key,
-      value,
-    }));
-  });
-
-  const ghgData = computed(() => {
-    return filterEntries(props.data?.facteurs_ges?.[props.region] || {}, true).map(([key, value]) => ({
-      key,
-      label: ghgEnergySourceNamesMapping[key] || key,
-      value,
-    }));
-  });
-
-  const ghgTotal = computed(() => {
-    return Number(props.data?.facteurs_ges?.[props.region]?.electricite ?? 0);
-  });
-
-  const importData = computed(() => {
-    return filterEntries(props.data?.importation?.[props.region] || {}).map(([key, value]) => ({
-      key,
-      label: electricityTypeMapping[key] || key,
-      value,
-    }));
-  });
-
-  const importTotal = computed(() => {
-    return Number(props.data?.importation?.[props.region]?.total ?? 0);
-  });
-
-  const exportTotal = computed(() => {
-    const value = Number(props.data?.exportation?.[props.region] ?? 0);
-
-    return value > 0 ? value : 0;
+  const total = computed(() => {
+    return {
+      facteurs_ges: Number(props.data?.facteurs_ges?.[props.region]?.electricite ?? 0),
+      importation: Number(props.data?.importation?.[props.region]?.total ?? 0),
+      exportation: Number(props.data?.exportation?.[props.region] ?? 0),
+    };
   });
 
   const regionData = computed(() => {
-    const allData = [];
+    const chunks = [];
 
-    if (exportTotal.value > 0) {
-      allData.push({
+    if (total.value.exportation > 0) {
+      chunks.push({
         type: "export",
         label: "Exportation",
         description: "Quantité d'électricité exportée vers la région par Hydro-Québec au cours des dernières 24 heures.",
-        total: exportTotal.value,
+        total: total.value.exportation,
         data: [],
       });
     }
 
-    if (importTotal.value > 0) {
-      allData.push({
+    if (total.value.importation > 0) {
+      chunks.push({
         type: "import",
         label: "Importation",
         description: "Quantité d'électricité importée au Québec par Hydro-Québec au cours des dernières 24 heures.",
-        total: importTotal.value,
-        data: importData.value,
+        total: total.value.importation,
+        data: data.value.importation,
       });
     }
 
     if (props.region === "Quebec") {
-      allData.push({
+      chunks.push({
         type: "production",
         label: "Production",
         description: "Quantité d'électricité produite au Québec par Hydro-Québec au cours des dernières 24 heures.",
         total: props.data?.production?.total ?? 0,
-        data: productionData.value,
+        data: data.value.production,
       }, {
         type: "usage",
         label: "Consommation",
         description: "Quantité d'électricité produite par Hydro-Québec et consommée au Québec au cours des dernières 24 heures.",
         total: props.data?.consommation?.total ?? 0,
-        data: usageData.value,
+        data: data.value.consommation,
       });
     }
 
-    if (ghgTotal.value > 0) {
-      allData.push({
+    if (total.value.facteurs_ges > 0) {
+      chunks.push({
         type: "ghg",
         label: "Émissions",
         description: "Quantité d'émissions directes de gaz à effet de serre générée pour chaque kilowattheure d'électricité produit.",
-        total: ghgTotal.value,
-        data: ghgData.value,
+        total: total.value.facteurs_ges,
+        data: data.value.facteurs_ges,
       });
     }
 
-    return allData;
+    return chunks;
   });
 
-  const hasData = computed(() => {
+  const regionHasData = computed(() => {
     return regionData.value.length > 0;
   });
 
@@ -243,17 +216,19 @@
       router.replace({
         query: {
           ...route.query,
-          region: undefined,
+          territoire: undefined,
           installation: undefined,
           type: undefined,
         },
       });
+
+      activeTab.value = "0";
     }
     else {
       router.replace({
         query: {
           ...route.query,
-          region: props.region,
+          territoire: props.region,
           installation: undefined,
           type: undefined,
         },
@@ -261,10 +236,15 @@
     }
   });
 
-  function filterEntries(data, isGhg = false) {
+  function filterData(data, mapping, isGhg = false) {
     return Object.entries(data)
       .filter(([key, value]) => key !== "total" && Number(value) > 0 && (!isGhg || (key !== "electricite" && Number(value) > 0.005)))
-      .sort((a, b) => b[1] - a[1]);
+      .sort((a, b) => b[1] - a[1])
+      .map(([key, value]) => ({
+        key,
+        label: mapping[key] || key,
+        value,
+      }));
   }
 
   function formatValue(value, isGhg = false) {

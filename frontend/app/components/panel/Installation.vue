@@ -5,7 +5,7 @@
     inset
     dismissible
     :overlay="$device.isMobile"
-    :modal="$device.isMobile"
+    modal
     :ui="{
       overlay: 'sm:bg-transparent',
       header: 'px-5',
@@ -53,7 +53,7 @@
       >
         <UTabs
           v-model="activeTab"
-          :items="tabs"
+          :items="installationTabs"
           color="neutral"
           variant="link"
           class="h-full min-h-0 flex flex-col"
@@ -110,7 +110,7 @@
                 </div>
               </div>
               <div
-                v-if="computedReleves.length > 0"
+                v-if="installationHasData"
                 class="flex flex-col gap-2.5 sm:gap-3"
               >
                 <h3 class="text-highlighted font-medium">
@@ -118,7 +118,7 @@
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   <UCard
-                    v-for="({ type_releves, releves }) in computedReleves"
+                    v-for="[type_releves, { releves }] in Object.entries(groupedReleves)"
                     :key="type_releves"
                     variant="soft"
                     :ui="{
@@ -150,7 +150,7 @@
                 </div>
               </div>
               <div
-                v-if="installationData?.sondes && installationData.sondes.length > 0"
+                v-if="installationHasSondes"
                 class="flex flex-col gap-2.5 sm:gap-3"
               >
                 <h3 class="text-highlighted font-medium">
@@ -165,40 +165,40 @@
                     root: 'rounded-md cursor-pointer has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
                     body: 'sm:p-4 text-sm font-normal flex items-center justify-between w-full',
                   }"
-                  @click="updateData(sonde.id);"
+                  @click="updateInstallation(sonde.id);"
                 >
                   <span class="text-left text-default">{{ sonde.nom || 'Inconnu' }}</span>
-                  <span class="text-muted text-right">{{ getDistance(
-                    { latitude: installationData.y, longitude: installationData.x },
-                    { latitude: sonde.y, longitude: sonde.x },
-                  ) }} mètres</span>
+                  <span class="text-muted text-right">{{
+                    getDistance(
+                      { latitude: installationData.y, longitude: installationData.x },
+                      { latitude: sonde.y, longitude: sonde.x },
+                    )
+                  }} mètres</span>
                 </UCard>
               </div>
             </div>
           </template>
           <template #data>
             <div
-              v-if="computedReleves.length > 0"
+              v-if="installationHasData"
               class="flex flex-col gap-2.5 sm:gap-3"
             >
               <h3 class="text-highlighted font-medium">
                 Mesures
               </h3>
               <UAccordion
-                v-for="({ type_releves, releves }) in computedReleves"
+                v-for="[type_releves, { chartReleves, releves }] in Object.entries(groupedReleves)"
                 :key="type_releves"
                 :items="[
                   {
                     label: dataTypeReleveMapping[type_releves] || 'Inconnu',
-                    content: releves,
+                    releves,
+                    chartReleves,
                   },
                 ]"
                 :ui="{
                   trigger: 'p-4 bg-elevated/50 font-normal rounded-md cursor-pointer data-[state=open]:rounded-b-none transition hover:bg-elevated gap-2',
-                  content: `bg-elevated/50 rounded-b-md data-[state=open]:animate-[accordion-down_var(--duration)_ease-out] data-[state=closed]:animate-[accordion-up_var(--duration)_ease-out]`,
-                }"
-                :style="{
-                  '--duration': `${Math.min(150 + (releves.length * 10), 500)}ms`,
+                  content: `bg-elevated/50 rounded-b-md data-[state=open]:animate-none data-[state=closed]:animate-none`,
                 }"
                 trailing-icon="lucide:chevron-down"
               >
@@ -222,8 +222,8 @@
                 </template>
                 <template #content="{ item }">
                   <UTable
-                    :data="item.content"
-                    :columns="columns"
+                    :data="item.releves"
+                    :columns="buildRelevesTableColumns(item.releves, item.chartReleves, localTimezone)"
                     :ui="{
                       base: 'border-t border-(--ui-border-accented)',
                       thead: 'hidden',
@@ -234,19 +234,20 @@
             </div>
             <div
               v-else
-              class="flex flex-col items-center justify-center"
+              class="flex h-full justify-center items-center"
             >
               <UEmpty
                 icon="lucide:circle-off"
                 title="Aucune donnée"
                 description="Atlas Hydro n'a pas pu récupérer de données liées à cette installation."
                 variant="naked"
+                class="sm:absolute sm:-translate-y-1/2 sm:top-1/2"
               />
             </div>
           </template>
           <template #stats>
             <div
-              v-if="computedReleves.length > 0"
+              v-if="installationHasData"
               class="flex flex-col gap-2.5 sm:gap-3"
             >
               <h3 class="text-highlighted font-medium">
@@ -254,7 +255,7 @@
               </h3>
               <div class="flex flex-col gap-2.5 sm:gap-3">
                 <UCard
-                  v-for="({ type_releves, chartPoints }) in computedChartPoints.filter((e) => !excludedDataTypesForDifference.includes(e.type_releves))"
+                  v-for="[type_releves, { chartPoints }] in Object.entries(groupedReleves).filter((e) => !excludedDataTypesForStats.includes(e.type_releves))"
                   :key="type_releves"
                   variant="soft"
                   :ui="{
@@ -275,48 +276,13 @@
                       <UIcon
                         name="lucide:zoom-in"
                         class="size-4.5 cursor-pointer"
-                        @click="zoomInChart(type_releves, chartPoints)"
+                        @click="openDetailedChart(type_releves, chartPoints)"
                       />
                     </UTooltip>
                   </div>
                   <Line
-                    :data="{
-                      datasets: [
-                        {
-                          ...chartDefaultOptionsDataset,
-                          label: dataTypeReleveMapping[type_releves] || 'Inconnu',
-                          data: chartPoints,
-                        },
-                      ],
-                    }"
-                    :options="{
-                      ...chartDefaultOptions,
-                      plugins: {
-                        ...chartDefaultOptions.plugins,
-                        tooltip: {
-                          ...chartDefaultOptions.plugins.tooltip,
-                          callbacks: {
-                            title: (ctx) => createTooltipTitle(ctx, type_releves),
-                            label: (ctx) => createTooltipLabel(ctx, type_releves),
-                          },
-                        },
-                      },
-                      scales: {
-                        ...chartDefaultOptions.scales,
-                        x: {
-                          ...chartDefaultOptions.scales.x,
-                          ticks: {
-                            ...chartDefaultOptions.scales.x.ticks,
-                            display: false,
-                          },
-                          adapters: {
-                            date: {
-                              locale: fr,
-                            },
-                          },
-                        },
-                      },
-                    }"
+                    :data="buildChartData(chartPoints, type_releves)"
+                    :options="buildChartOptions(groupedReleves[type_releves].chartReleves, localTimezone, chartStats[type_releves])"
                   />
                 </UCard>
               </div>
@@ -337,7 +303,7 @@
       </div>
     </template>
     <template
-      v-if="installationData && installationData.ouvrage_id"
+      v-if="installationHasOuvrage"
       #footer
     >
       <UButton
@@ -345,129 +311,57 @@
         color="neutral"
         variant="ghost"
         class="cursor-pointer rounded"
-        @click="updateData(installationData.ouvrage_id);"
+        @click="updateInstallation(installationData.ouvrage_id)"
       >
         Retour
       </UButton>
     </template>
   </USlideover>
-  <UModal
-    v-model:open="bigChartModalOpen"
-    :title="dataTypeReleveMapping[bigChartType] || 'Inconnu'"
-    close-icon="lucide:x"
-    :ui="{
-      header: 'p-5',
-      content: 'w-[calc(100vw-2rem)] max-w-xl ring-0',
-      close: 'cursor-pointer rounded',
-      body: 'p-5',
-    }"
-  >
-    <template #body>
-      <div
-        v-if="bigChartPoints.length > 0"
-        class="flex flex-col gap-2.5 sm:gap-3"
-      >
-        <UCard
-          variant="soft"
-          :ui="{
-            root: 'rounded-md',
-            body: 'sm:p-4 p-4 text-sm font-normal flex flex-col justify-center w-full h-full gap-4',
-          }"
-        >
-          <Line
-            :data="{
-              datasets: [
-                {
-                  ...chartDefaultOptionsDataset,
-                  label: dataTypeReleveMapping[bigChartType] || 'Inconnu',
-                  data: bigChartPoints,
-                },
-              ],
-            }"
-            :options="{
-              ...chartDefaultOptions,
-              plugins: {
-                ...chartDefaultOptions.plugins,
-                tooltip: {
-                  ...chartDefaultOptions.plugins.tooltip,
-                  callbacks: {
-                    title: (ctx) => createTooltipTitle(ctx, bigChartType, true),
-                    label: (ctx) => createTooltipLabel(ctx, bigChartType, true),
-                    afterLabel: (ctx) => createTooltipAfterLabel(ctx, bigChartType),
-                  },
-                },
-              },
-              scales: {
-                ...chartDefaultOptions.scales,
-                x: {
-                  ...chartDefaultOptions.scales.x,
-                  adapters: {
-                    date: {
-                      locale: fr,
-                    },
-                  },
-                },
-              },
-            }"
-          />
-        </UCard>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 sm:my-1.5">
-          <UILabeledNumber
-            v-for="([key, value]) in Object.entries(chartStats).filter(([_, value]) => typeof value === 'number')"
-            :key="key"
-            :label="bigChartStatsMapping[key] || key"
-            :value="Number(value.toFixed(2)).toLocaleString()"
-            :unit="computedReleves.find(e => e.type_releves === bigChartType)?.relevesAscending?.[0]?.unite_valeur || ''"
-          />
-        </div>
-        <div class="h-px bg-border w-full" />
-        <div class="flex items-center justify-between text-[13px] text-muted leading-tight sm:leading-none">
-          <span class="text-left">Sur {{ bigChartPoints.length }} mesures</span>
-          <span class="text-right">Du {{ chartStats.dateRange[0] }} au {{ chartStats.dateRange[1] }}</span>
-        </div>
-      </div>
-    </template>
-  </UModal>
+  <ModalDetailedChart
+    v-model="detailedChartModalOpen"
+    :releves-type="detailedChartType"
+    :releves="groupedReleves[detailedChartType]?.chartReleves"
+    :points="detailedChartPoints"
+    :stats="chartStats"
+    :timezone="localTimezone"
+    :unit="groupedReleves[detailedChartType]?.unit || ''"
+  />
 </template>
 
 <script setup>
-  import chartDefaultOptionsDataset from "~/utils/chartDefaultOptionsDataset.json";
-  import chartDefaultOptions from "~/utils/chartDefaultOptions.json";
   import {
     LoaderCircle,
-    TrendingUp,
-    TrendingDown,
-    Minus,
   } from "@lucide/vue";
   import {
     getDistance,
   } from "geolib";
   import {
-    DateTime,
-  } from "luxon";
-  import {
     installationTypeMapping,
     dataTypeReleveMapping,
     valueTypeMapping,
-    bigChartStatsMapping,
-  } from "~/utils/mapping.ts";
+  } from "~/utils/constants/mapping.js";
   import {
-    calculateDifference,
     calculateChartStats,
-  } from "~/utils/calculations.ts";
+  } from "~/utils/calculations.js";
   import {
     convertToDMS,
-    formatToLocalDate,
-  } from "~/utils/formatting.ts";
+  } from "~/utils/formatting.js";
   import {
     processReleves,
-  } from "~/utils/processing.ts";
+  } from "~/utils/processing.js";
   import {
     Line,
   } from "vue-chartjs";
   import {
-    fr,
-  } from "date-fns/locale";
+    buildChartData,
+    buildChartOptions,
+  } from "~/utils/chart.js";
+  import {
+    buildRelevesTableColumns,
+    shouldDisplayMeasureAlert,
+    excludedDataTypesForStats,
+    installationTabs,
+  } from "~/utils/constants/installation.js";
 
   const props = defineProps({
     modelValue: {
@@ -491,14 +385,11 @@
         installationData = ref(null),
         isPending = ref(true),
         activeTab = ref("0"),
-        bigChartType = ref(null),
-        bigChartPoints = ref([]),
-        bigChartModalOpen = ref(false);
+        detailedChartType = ref(null),
+        detailedChartPoints = ref([]),
+        detailedChartModalOpen = ref(false);
 
-  const excludedDataTypesForDifference = [
-          "DIRECTION_VENT",
-        ],
-        localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
+  const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone,
         installationCache = new Map();
 
   watch(() => props.modelValue, (newValue) => {
@@ -515,7 +406,7 @@
           ...route.query,
           installation: installationId,
           type: installationType,
-          region: undefined,
+          territoire: undefined,
         },
       });
     }
@@ -531,11 +422,13 @@
         return;
       }
 
-      if (installationData.value?.id === installationId && !isPending.value) {
+      // Si on (re)ouvre le panneau pour une même installation
+      if (!isPending.value && installationData.value?.id === installationId) {
         return;
       }
 
       installationData.value = null;
+      resetStates();
 
       await loadInstallation(installationId);
     }
@@ -548,94 +441,21 @@
           ...route.query,
           installation: undefined,
           type: undefined,
-          region: undefined,
+          territoire: undefined,
         },
       });
     }
   });
 
-  const tabs = [
-    {
-      label: "Informations",
-      // icon: "lucide:info",
-      slot: "infos",
-    },
-    {
-      label: "Mesures",
-      // icon: "lucide:activity",
-      slot: "data",
-
-    },
-    {
-      label: "Graphiques",
-      // icon: "lucide:satellite-dish",
-      slot: "stats",
-    },
-  ];
-
-  const columns = [
-    {
-      id: "date",
-      accessorKey: "date",
-      header: "Date",
-      cell: ({ row }) => {
-        return row.getValue("date")
-          ? formatToLocalDate(row.getValue("date"), localTimezone)
-          : "Inconnu";
-      },
-    },
-    {
-      id: "difference",
-      header: "Différence",
-      cell: ({ row }) => {
-        const relevesOfSameType = computedReleves.value.find(e => e.type_releves === row.original.type_donnee)?.relevesAscending || [],
-              delta = calculateDifference(row.original, relevesOfSameType);
-
-        if (excludedDataTypesForDifference.includes(row.original.type_donnee) || delta === null) {
-          return h("div", {
-            class: "flex items-center gap-2",
-          }, [
-            h(Minus, {
-              class: "size-4.5 text-toned",
-            }),
-            h("span", {
-              class: "text-toned",
-            }, "S. O."),
-          ]);
-        }
-
-        return h("div", {
-          class: "flex items-center gap-2",
-        }, [
-          delta > 0 && h(TrendingUp, {
-            class: "size-4.5 text-green-500",
-          }),
-          delta < 0 && h(TrendingDown, {
-            class: "size-4.5 text-red-500",
-          }),
-          delta === 0 && h(Minus, {
-            class: "size-4.5 text-toned",
-          }),
-          h("span", {
-            class: "text-toned",
-          }, `${Math.abs(delta).toFixed(2)} ${row.original.unite_valeur}`),
-        ]);
-      },
-    },
-    {
-      id: "valeur",
-      accessorKey: "valeur",
-      header: "Valeur",
-      cell: ({ row }) => {
-        return `${row.getValue("valeur").toFixed(2)} ${row.original.unite_valeur}`;
-      },
-      meta: {
-        class: {
-          td: "text-toned",
-        },
-      },
-    },
-  ];
+  const installationHasData = computed(() => {
+          return installationData.value && installationData.value.releves && installationData.value.releves.length > 0;
+        }),
+        installationHasSondes = computed(() => {
+          return installationData.value && installationData.value.sondes && installationData.value.sondes.length > 0;
+        }),
+        installationHasOuvrage = computed(() => {
+          return installationData.value && installationData.value.ouvrage_id;
+        });
 
   const relevesByDataType = computed(() => {
     if (!installationData.value || !installationData.value.releves) return {};
@@ -643,33 +463,32 @@
     return processReleves(installationData.value.releves);
   });
 
-  const computedReleves = computed(() => {
-    return Object.entries(relevesByDataType.value)
-      .map(([type_releves, releves]) => {
-        const relevesAscending = [...releves].reverse();
+  const groupedReleves = computed(() => {
+    return Object.fromEntries(
+      Object.entries(relevesByDataType.value)
+        .map(([type_releves, releves]) => {
+          const chartReleves = [...releves].reverse(),
+                firstReleve = releves[0];
 
-        return {
-          type_releves,
-          releves,
-          relevesAscending,
-        };
-      });
-  });
-
-  const computedChartPoints = computed(() => {
-    return computedReleves.value.map(({ type_releves, relevesAscending }) => ({
-      type_releves,
-      chartPoints: markRaw(
-        relevesAscending.map(releve => ({
-          x: new Date(releve.date),
-          y: releve.valeur,
-        })),
-      ),
-    }));
+          return [
+            type_releves,
+            {
+              type_releves,
+              releves,
+              chartReleves,
+              chartPoints: chartReleves.map(releve => ({
+                x: new Date(releve.date),
+                y: releve.valeur,
+              })),
+              unit: firstReleve?.unite_valeur || "",
+            },
+          ];
+        }),
+    );
   });
 
   const chartStats = computed(() => {
-    return calculateChartStats(bigChartPoints.value, localTimezone);
+    return calculateChartStats(detailedChartPoints.value, localTimezone);
   });
 
   async function fetchInstallation(id) {
@@ -685,16 +504,8 @@
     return installationData;
   }
 
-  function resetStates() {
-    bigChartModalOpen.value = false;
-    bigChartType.value = null;
-    bigChartPoints.value = [];
-    activeTab.value = "0";
-  }
-
   async function loadInstallation(id) {
     isPending.value = true;
-    resetStates();
 
     try {
       installationData.value = await fetchInstallation(id);
@@ -704,72 +515,25 @@
     }
   }
 
-  async function updateData(id) {
+  async function updateInstallation(id) {
     if (!id || !installationData.value || isPending.value) return;
     if (installationData.value.id === id) return;
 
     await loadInstallation(id);
   }
 
-  function zoomInChart(type_releves, releves) {
-    bigChartType.value = type_releves;
-    bigChartPoints.value = releves;
-
-    bigChartModalOpen.value = true;
+  function resetStates() {
+    detailedChartModalOpen.value = false;
+    detailedChartType.value = null;
+    detailedChartPoints.value = [];
+    activeTab.value = "0";
   }
 
-  function shouldDisplayMeasureAlert(releveDate) {
-    const releveHour = DateTime.fromISO(releveDate.split(":")[0]).setZone("UTC"),
-          thresholdHour = DateTime.fromISO(
-            DateTime.now().minus({ hours: 3 }).setZone("UTC").toISO().split(":")[0],
-          );
+  function openDetailedChart(type_releves, releves) {
+    detailedChartType.value = type_releves;
+    detailedChartPoints.value = releves;
 
-    return releveHour <= thresholdHour;
-  }
-
-  function createTooltipTitle(ctx, type_releves, detailed = false) {
-    const relevesAscending = computedReleves.value.find(e => e.type_releves === type_releves)?.relevesAscending || [],
-          releve = relevesAscending[ctx[0].dataIndex];
-
-    if (!detailed) {
-      return releve ? formatToLocalDate(releve.date, localTimezone) : "";
-    }
-
-    return releve
-      ? formatToLocalDate(releve.date, localTimezone, {
-        year: "numeric",
-        month: "long",
-      })
-      : "";
-  }
-
-  function createTooltipLabel(ctx, type_releves, detailed = false) {
-    const relevesAscending = computedReleves.value.find(e => e.type_releves === type_releves)?.relevesAscending || [],
-          releve = relevesAscending[ctx.dataIndex];
-
-    if (!detailed) {
-      return releve ? `${ctx.parsed.y} ${releve.unite_valeur || ""}` : "";
-    }
-
-    return releve ? `${ctx.parsed.y.toFixed(2)} ${releve.unite_valeur || ""}` : "";
-  }
-
-  function createTooltipAfterLabel(ctx, type_releves) {
-    const relevesAscending = computedReleves.value.find(e => e.type_releves === type_releves)?.relevesAscending || [],
-          releve = relevesAscending[ctx.dataIndex];
-
-    const difference = calculateDifference(releve, relevesAscending),
-          zScore = (releve.valeur - chartStats.value.average) / (chartStats.value.standardDeviation || 1);
-
-    let labels = [];
-    if (difference !== null) {
-      labels.push(`Différence : ${difference === 0 ? "" : difference > 0 ? "+" : "-"}${Math.abs(difference).toFixed(2)} ${releve.unite_valeur || ""}`);
-    }
-    if (isFinite(zScore)) {
-      labels.push(`Cote Z : ${zScore === 0 ? "" : zScore > 0 ? "+" : "-"}${Math.abs(zScore).toFixed(2)}`);
-    }
-
-    return labels.length > 0 ? labels.join("\n") : "";
+    detailedChartModalOpen.value = true;
   }
 </script>
 

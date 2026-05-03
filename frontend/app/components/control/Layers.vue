@@ -1,8 +1,5 @@
 <template>
   <UPopover
-    :ui="{
-      //content: 'rounded',
-    }"
     :content="{
       side: 'right',
       sideOffset: 10,

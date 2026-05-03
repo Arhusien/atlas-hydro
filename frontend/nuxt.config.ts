@@ -48,7 +48,7 @@ export default defineNuxtConfig({
         "@nuxtjs/device",
         "@vueuse/nuxt",
     ],
-    ssr: false,
+    ssr: true,
     components: [
         {
             path: "~/components/ui",

@@ -35,7 +35,7 @@ export const valueTypeMapping = {
     SOMME: "Valeurs cumulées",
 };
 
-export const bigChartStatsMapping = {
+export const detailedChartStatsMapping = {
     average: "Moyenne",
     minimum: "Minimum",
     maximum: "Maximum",
