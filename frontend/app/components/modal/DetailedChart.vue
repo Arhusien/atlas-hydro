@@ -4,10 +4,11 @@
     :title="dataTypeReleveMapping[relevesType] || 'Inconnu'"
     close-icon="lucide:x"
     :ui="{
-      header: 'p-5',
+      header: 'sm:px-6 p-5',
+      title: 'font-medium',
       content: 'w-[calc(100vw-2rem)] max-w-xl ring-0',
       close: 'cursor-pointer rounded',
-      body: 'p-5',
+      body: 'p-5 sm:p-6',
     }"
   >
     <template #body>
