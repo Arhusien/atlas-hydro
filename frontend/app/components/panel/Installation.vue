@@ -397,10 +397,24 @@
     open.value = newValue;
   });
 
-  watch(installationData, (newData) => {
-    if (newData) {
-      const installationId = newData.id,
-            installationType = newData.type.toLowerCase();
+  watch(open, async (newValue) => {
+    emit("update:modelValue", newValue);
+
+    if (newValue === true) {
+      const installationId = props.defaultData?.objectid,
+            installationType = props.defaultData?.type?.toLowerCase();
+      if (!installationId) {
+        isPending.value = false;
+        return;
+      }
+
+      // Si l'installation est différente de celle déjà chargée
+      if (installationData.value?.id !== installationId) {
+        installationData.value = null;
+        resetStates();
+
+        await loadInstallation(installationId);
+      }
 
       router.replace({
         query: {
@@ -410,28 +424,6 @@
           territoire: undefined,
         },
       });
-    }
-  });
-
-  watch(open, async (newValue) => {
-    emit("update:modelValue", newValue);
-
-    if (newValue === true) {
-      const installationId = props.defaultData?.objectid;
-      if (!installationId) {
-        isPending.value = false;
-        return;
-      }
-
-      // Si on (re)ouvre le panneau pour une même installation
-      if (!isPending.value && installationData.value?.id === installationId) {
-        return;
-      }
-
-      installationData.value = null;
-      resetStates();
-
-      await loadInstallation(installationId);
     }
     else {
       resetStates();

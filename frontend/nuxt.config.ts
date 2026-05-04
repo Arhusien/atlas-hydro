@@ -72,6 +72,9 @@ export default defineNuxtConfig({
     css: [
         "./app/assets/css/main.css",
     ],
+    colorMode: {
+        preference: "dark",
+    },
     routeRules: {
         "/api/static/**/*.geojson": {
             headers: {

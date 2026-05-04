@@ -232,7 +232,7 @@
   }
 
   function openRegion(feature, layer) {
-    if (activeRegionLayer.value && activeRegionLayer.value !== layer) {
+    if (activeRegionLayer.value && activeRegionLayer.value?._leaflet_id !== layer._leaflet_id) {
       setRegionInactive(activeRegionLayer.value);
     }
 

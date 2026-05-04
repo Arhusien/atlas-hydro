@@ -17,7 +17,7 @@
           class="h-full w-full fixed bg-default z-9999 top-0 left-0 flex items-center justify-center will-change-[opacity]"
         >
           <div class="flex flex-col gap-6 items-center justify-center">
-            <UIWordmark class="w-56 sm:w-68 xl:w-80 h-auto text-highlighted animate-pulse" />
+            <BrandLogoType class="w-48 sm:w-60 xl:w-72 h-auto text-highlighted animate-pulse" />
           </div>
         </div>
       </Transition>
