@@ -53,10 +53,11 @@
             <h4 class="text-highlighted text-sm font-medium">
               Jeux de données
             </h4>
-            <ul class="flex flex-col gap-1.5 text-sm">
+            <ul class="flex flex-col gap-2 text-sm">
               <li
                 v-for="dataset in datasets"
                 :key="dataset.url"
+                class="flex items-center"
               >
                 <a
                   :href="dataset.url"
