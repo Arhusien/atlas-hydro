@@ -115,7 +115,8 @@ export default defineNuxtConfig({
     seo: {
         meta: {
             themeColor: "#171717",
-            ogImage: "https://www.atlashydro.ca/img/OgImage.png",
+            ogImage: "https://www.atlashydro.ca/img/Logo.png",
+            twitterCard: "summary",
         },
     },
     sitemap: {
