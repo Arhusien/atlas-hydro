@@ -36,10 +36,10 @@
             Introduction
           </h3>
           <p class="text-sm">
-            La carte interactive Atlas Hydro répertorie, d'une part, les différentes installations du réseau d'Hydro-Québec et, d'autre part, les territoires en relation avec le réseau.
+            La carte interactive Atlas Hydro répertorie les différentes installations du réseau d'Hydro-Québec, ainsi que les territoires en relation avec ce dernier.
             <br>
             <br>
-            Chaque installation possède ses propres données, incluant notamment des mesures hydrométriques et hydrométéorologiques, en plus de quelques détails la concernant. Les territoires disposent, quant à eux, de données concernant leur production, leur exportation et leur consommation d'électricité, ainsi que leur taux d'émissions directes de gaz à effet de serre par kilowattheure.
+            Chaque installation possède des données, incluant notamment des mesures hydrométriques et hydrométéorologiques, en plus de quelques détails la concernant. Les territoires disposent, quant à eux, de données concernant leur production, leur exportation et leur consommation d'électricité, ainsi que leur taux d'émissions directes de gaz à effet de serre par kilowattheure.
           </p>
         </div>
         <div class="flex flex-col gap-2.5 sm:gap-3">
