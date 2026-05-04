@@ -76,7 +76,7 @@
         </div>
         <div class="flex flex-col gap-2.5 sm:gap-3">
           <h3 class="text-highlighted font-medium">
-            Contact
+            Contact et liens utiles
           </h3>
           <span class="flex gap-1.5 text-sm items-center">
             <UIcon
@@ -90,6 +90,19 @@
               contact@atlashydro.ca
             </a>
           </span>
+          <span class="flex gap-1.5 text-sm items-center">
+            <UIcon
+              name="lucide:link"
+              class="size-4 text-toned group-hover:text-highlighted transition shrink-0"
+            />
+            <a
+              href="https://www.donneesquebec.ca/recherche/showcase/atlas-hydro"
+              target="_blank"
+              class="text-toned hover:text-highlighted transition"
+            >
+              Vitrine sur le portail Données Québec
+            </a>
+          </span>
         </div>
       </div>
     </template>
@@ -99,20 +112,20 @@
 <script setup>
   const datasets = [
     {
-      label: "Données hydrométéorologiques",
-      url: "https://www.donneesquebec.ca/recherche/dataset/donnees-hydrometeorologiques",
-    },
-    {
-      label: "Données hydrométriques",
-      url: "https://www.donneesquebec.ca/recherche/dataset/donnees-hydrometriques",
-    },
-    {
       label: "Sources de l'électricité produite au Québec",
       url: "https://www.donneesquebec.ca/recherche/dataset/sources-production-electricite-quebec",
     },
     {
       label: "Demande d'électricité au Québec",
       url: "https://www.donneesquebec.ca/recherche/dataset/demande-electricite-quebec",
+    },
+    {
+      label: "Données hydrométéorologiques",
+      url: "https://www.donneesquebec.ca/recherche/dataset/donnees-hydrometeorologiques",
+    },
+    {
+      label: "Données hydrométriques",
+      url: "https://www.donneesquebec.ca/recherche/dataset/donnees-hydrometriques",
     },
     {
       label: "HackQC22 - Livraison spéciale",
