@@ -1,6 +1,6 @@
 {
     "name": "Atlas Hydro",
-    "description": "Atlas Hydro répertorie les installations d'Hydro-Québec et les territoires liés au réseau.",
+    "description": "Carte interactive répertoriant les installations d'Hydro-Québec et les territoires liés au réseau.",
     "start_url": "/",
     "display": "standalone",
     "theme_color": "#171717",

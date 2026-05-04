@@ -55,7 +55,7 @@ export default defineNuxtConfig({
     site: {
         url: "https://www.atlashydro.ca",
         name: "Atlas Hydro",
-        description: "Atlas Hydro répertorie les installations d'Hydro-Québec et les territoires liés au réseau.",
+        description: "Carte interactive répertoriant les installations d'Hydro-Québec et les territoires liés au réseau.",
         defaultLocale: "fr",
     },
     ui: {
