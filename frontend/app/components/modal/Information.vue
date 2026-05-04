@@ -37,8 +37,8 @@
           </h3>
           <p class="text-sm">
             La carte interactive Atlas Hydro répertorie les différentes installations du réseau d'Hydro-Québec, ainsi que les territoires en relation avec ce dernier.
-            <br>
-            <br>
+          </p>
+          <p class="text-sm">
             Chaque installation possède des données, incluant notamment des mesures hydrométriques et hydrométéorologiques, en plus de quelques détails la concernant. Les territoires disposent, quant à eux, de données concernant leur production, leur exportation et leur consommation d'électricité, ainsi que leur taux d'émissions directes de gaz à effet de serre par kilowattheure.
           </p>
         </div>
@@ -49,24 +49,29 @@
           <p class="text-sm">
             Les informations présentées sur Atlas Hydro proviennent de jeux de données publics du gouvernement du Québec et d'Hydro-Québec. Elles sont actualisées régulièrement, bien que la fréquence de ces mises à jour puisse varier selon les jeux.
           </p>
-          <ul class="flex flex-col gap-1.5 text-sm">
-            <li
-              v-for="dataset in datasets"
-              :key="dataset.url"
-            >
-              <a
-                :href="dataset.url"
-                target="_blank"
-                class="group inline-flex items-center gap-1.5 text-toned hover:text-highlighted transition"
+          <div class="flex flex-col gap-2.5 sm:gap-3">
+            <h4 class="text-highlighted text-sm font-medium">
+              Jeux de données
+            </h4>
+            <ul class="flex flex-col gap-1.5 text-sm">
+              <li
+                v-for="dataset in datasets"
+                :key="dataset.url"
               >
-                <UIcon
-                  name="lucide:database"
-                  class="size-4 text-toned group-hover:text-highlighted transition shrink-0"
-                />
-                <span>{{ dataset.label }}</span>
-              </a>
-            </li>
-          </ul>
+                <a
+                  :href="dataset.url"
+                  target="_blank"
+                  class="group flex gap-1.5 text-toned hover:text-highlighted transition"
+                >
+                  <UIcon
+                    name="lucide:database"
+                    class="size-4 text-toned group-hover:text-highlighted transition shrink-0"
+                  />
+                  <span>{{ dataset.label }}</span>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </template>
