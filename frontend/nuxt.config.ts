@@ -1,40 +1,5 @@
 import tailwindcss from "@tailwindcss/vite";
 
-const faviconPaths = [
-    "android-chrome-192x192.png",
-    "android-chrome-512x512.png",
-    "apple-touch-icon.png",
-    "favicon-16x16.png",
-    "favicon-32x32.png",
-    "favicon.ico",
-];
-
-const faviconLinks = faviconPaths.flatMap((name) => {
-    const isIco = name.endsWith(".ico"),
-        type = isIco ? "image/x-icon" : "image/png",
-        rel = name.includes("apple-touch-icon") ? "apple-touch-icon" : "icon",
-        size = isIco ? undefined : name.match(/(\d+x\d+)/)?.[0];
-
-    const baseLink = {
-        rel,
-        type,
-        size,
-    };
-
-    return [
-        {
-            ...baseLink,
-            href: `/img/favicon/dark/${name}`,
-            media: "(prefers-color-scheme: light)",
-        },
-        {
-            ...baseLink,
-            href: `/img/favicon/light/${name}`,
-            media: "(prefers-color-scheme: dark)",
-        },
-    ];
-});
-
 export default defineNuxtConfig({
     modules: [
         "@nuxt/eslint",
@@ -43,8 +8,7 @@ export default defineNuxtConfig({
         "@nuxt/ui",
         "@nuxtjs/leaflet",
         "@nuxtjs/i18n",
-        "@nuxtjs/robots",
-        "@nuxtjs/sitemap",
+        "@nuxtjs/seo",
         "@nuxtjs/device",
         "@vueuse/nuxt",
     ],
@@ -62,29 +26,42 @@ export default defineNuxtConfig({
     },
     app: {
         head: {
-            title: "Atlas Hydro",
+            htmlAttrs: {
+                class: "dark",
+                style: "color-scheme: dark;",
+            },
+            meta: [
+                {
+                    name: "color-scheme",
+                    content: "dark",
+                },
+            ],
             link: [
-                ...faviconLinks,
+                {
+                    rel: "icon",
+                    href: "/favicon-dark.ico",
+                    type: "image/x-icon",
+                },
+                {
+                    rel: "manifest",
+                    href: "/app.webmanifest",
+                },
             ],
         },
-
     },
     css: [
         "./app/assets/css/main.css",
     ],
-    colorMode: {
-        preference: "dark",
+    site: {
+        url: "https://www.atlashydro.ca",
+        name: "Atlas Hydro",
+        description: "Atlas Hydro répertorie les installations d'Hydro-Québec et les territoires liés au réseau.",
+        defaultLocale: "fr",
+    },
+    ui: {
+        colorMode: false,
     },
     routeRules: {
-        "/api/static/**/*.geojson": {
-            headers: {
-                "Content-Type": "application/json",
-                "Content-Disposition": "inline",
-            },
-        },
-        "/api/static/**": {
-            proxy: `${process.env.NUXT_BACKEND_API_BASE}/static/**`,
-        },
         "/api/**": {
             proxy: `${process.env.NUXT_BACKEND_API_BASE}/api/**`,
         },
@@ -131,5 +108,17 @@ export default defineNuxtConfig({
         clientBundle: {
             scan: true,
         },
+    },
+    ogImage: {
+        zeroRuntime: true,
+    },
+    seo: {
+        meta: {
+            themeColor: "#171717",
+            ogImage: "https://www.atlashydro.ca/img/OgImage.png",
+        },
+    },
+    sitemap: {
+        xsl: false,
     },
 });

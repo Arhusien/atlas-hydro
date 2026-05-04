@@ -76,33 +76,35 @@
         </div>
         <div class="flex flex-col gap-2.5 sm:gap-3">
           <h3 class="text-highlighted font-medium">
-            Contact et liens utiles
+            Liens
           </h3>
-          <span class="flex gap-1.5 text-sm items-center">
-            <UIcon
-              name="lucide:mail"
-              class="size-4 text-toned group-hover:text-highlighted transition shrink-0"
-            />
-            <a
-              href="mailto:contact@atlashydro.ca"
-              class="text-toned hover:text-highlighted transition"
-            >
-              contact@atlashydro.ca
-            </a>
-          </span>
-          <span class="flex gap-1.5 text-sm items-center">
-            <UIcon
-              name="lucide:link"
-              class="size-4 text-toned group-hover:text-highlighted transition shrink-0"
-            />
-            <a
-              href="https://www.donneesquebec.ca/recherche/showcase/atlas-hydro"
-              target="_blank"
-              class="text-toned hover:text-highlighted transition"
-            >
-              Vitrine sur le portail Données Québec
-            </a>
-          </span>
+          <div class="flex flex-col gap-2 text-sm">
+            <span class="flex gap-1.5 text-sm items-center">
+              <UIcon
+                name="lucide:mail"
+                class="size-4 text-toned group-hover:text-highlighted transition shrink-0"
+              />
+              <a
+                href="mailto:contact@atlashydro.ca"
+                class="text-toned hover:text-highlighted transition"
+              >
+                contact@atlashydro.ca
+              </a>
+            </span>
+            <span class="flex gap-1.5 text-sm items-center">
+              <UIcon
+                name="lucide:link"
+                class="size-4 text-toned group-hover:text-highlighted transition shrink-0"
+              />
+              <a
+                href="https://www.donneesquebec.ca/recherche/showcase/atlas-hydro"
+                target="_blank"
+                class="text-toned hover:text-highlighted transition"
+              >
+                Vitrine sur le portail Données Québec
+              </a>
+            </span>
+          </div>
         </div>
       </div>
     </template>

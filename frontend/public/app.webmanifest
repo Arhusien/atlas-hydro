@@ -1,0 +1,31 @@
+{
+    "name": "Atlas Hydro",
+    "description": "Atlas Hydro répertorie les installations d'Hydro-Québec et les territoires liés au réseau.",
+    "start_url": "/",
+    "display": "standalone",
+    "theme_color": "#171717",
+    "background_color": "#171717",
+    "orientation": "portrait",
+    "icons": [
+        {
+            "src": "/icon-32x32-dark.png",
+            "sizes": "32x32",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-16x16-dark.png",
+            "sizes": "16x16",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-192x192-dark.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512x512-dark.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
