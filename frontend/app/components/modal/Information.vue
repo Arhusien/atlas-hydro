@@ -62,7 +62,7 @@
                 <a
                   :href="dataset.url"
                   target="_blank"
-                  class="group flex gap-1.5 text-toned hover:text-highlighted transition"
+                  class="group flex gap-1.5 items-center text-toned hover:text-highlighted transition"
                 >
                   <UIcon
                     name="lucide:database"
@@ -73,6 +73,23 @@
               </li>
             </ul>
           </div>
+        </div>
+        <div class="flex flex-col gap-2.5 sm:gap-3">
+          <h3 class="text-highlighted font-medium">
+            Contact
+          </h3>
+          <span class="flex gap-1.5 text-sm items-center">
+            <UIcon
+              name="lucide:mail"
+              class="size-4 text-toned group-hover:text-highlighted transition shrink-0"
+            />
+            <a
+              href="mailto:contact@atlashydro.ca"
+              class="text-toned hover:text-highlighted transition"
+            >
+              contact@atlashydro.ca
+            </a>
+          </span>
         </div>
       </div>
     </template>
