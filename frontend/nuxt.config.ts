@@ -41,6 +41,13 @@ export default defineNuxtConfig({
                     rel: "icon",
                     href: "/favicon-dark.ico",
                     type: "image/x-icon",
+                    media: "(prefers-color-scheme: dark)",
+                },
+                {
+                    rel: "icon",
+                    href: "/favicon-light.ico",
+                    type: "image/x-icon",
+                    media: "(prefers-color-scheme: light)",
                 },
                 {
                     rel: "manifest",
