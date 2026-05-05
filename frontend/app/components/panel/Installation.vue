@@ -1,308 +1,260 @@
 <template>
-  <USlideover
-    v-model:open="open"
-    side="right"
-    inset
-    dismissible
-    :overlay="$device.isMobile"
-    modal
-    :ui="{
-      overlay: 'sm:bg-transparent',
-      header: 'px-5',
-      content: 'ring-0 sm:ring-0',
-      body: 'flex-1 overflow-hidden p-0 sm:p-0',
-      footer: 'px-4 sm:px-4 min-h-16',
-    }"
+  <UIPanel
+    v-model="open"
+    :title="installationName"
+    :badge="installationType"
+    :is-loading="isPending"
   >
-    <template #header="{ close }">
-      <div class="flex w-full items-center gap-2">
-        <div class="flex w-full min-w-0 items-center gap-2">
-          <h2 class="truncate text-highlighted font-medium">
-            {{ installationData?.nom || defaultData.nom || 'Inconnu' }}
-          </h2>
-          <UBadge
-            color="neutral"
-            variant="soft"
-            class="rounded"
-          >
-            {{ installationTypeMapping[installationData?.type || defaultData.type] || 'Inconnu' }}
-          </UBadge>
-        </div>
-        <UButton
-          icon="lucide:x"
-          color="neutral"
-          variant="ghost"
-          square
-          class="cursor-pointer rounded -mr-2"
-          @click="close"
-        >
-          <span class="sr-only">Fermer</span>
-        </UButton>
-      </div>
-    </template>
-    <template #body>
-      <div
-        v-if="isPending"
-        class="flex items-center justify-center h-full"
-      >
-        <LoaderCircle class="animate-spin" />
-      </div>
-      <div
-        v-else
-        class="h-full min-h-0 flex flex-col"
-      >
-        <UTabs
-          v-model="activeTab"
-          :items="installationTabs"
-          color="neutral"
-          variant="link"
-          class="h-full min-h-0 flex flex-col"
-          :ui="{
-            root: 'gap-0',
-            list: 'px-5 sm:px-6 shrink-0',
-            content: 'flex-1 min-h-0 h-full overflow-y-auto py-5 sm:py-6 pl-5 sm:pl-6 pr-3.75 sm:pr-4.75 mt-px content-scrollbar',
-            trigger: 'w-full cursor-pointer',
-          }"
-        >
-          <template #infos>
-            <div class="flex-col gap-5 sm:gap-6 flex">
-              <div class="flex flex-col gap-2.5 sm:gap-3">
-                <h3 class="text-highlighted font-medium">
-                  Détails de l'installation
-                </h3>
-                <div class="flex flex-col justify-center gap-2.5 sm:gap-3">
-                  <div class="flex items-center justify-between text-sm">
-                    <span>Identifiant</span>
-                    <span>{{ installationData?.id || 'Inconnu' }}</span>
-                  </div>
-                  <div class="flex items-center justify-between text-sm">
-                    <span>Nom</span>
-                    <span>{{ installationData?.nom || 'Inconnu' }}</span>
-                  </div>
-                  <div class="flex items-center justify-between text-sm">
-                    <span>Type</span>
-                    <span>{{ installationTypeMapping[installationData?.type] || 'Inconnu' }}</span>
-                  </div>
-                  <div class="flex items-center justify-between text-sm">
-                    <span>Région</span>
-                    <div class="flex items-center justify-end">
-                      <span>{{ installationData?.nom_region || 'Inconnu' }}</span>
-                      <span class="text-muted select-none">&nbsp;&middot;&nbsp;</span>
-                      <span class="text-muted">{{ installationData?.code_region || 'Inconnu' }}</span>
-                    </div>
-                  </div>
-                  <div class="flex items-center justify-between text-sm">
-                    <span>Latitude</span>
-                    <div class="flex items-center justify-end">
-                      <span>{{ convertToDMS(installationData?.y, true) || 'Inconnu' }}</span>
-                      <span class="text-muted select-none">&nbsp;&middot;&nbsp;</span>
-                      <span class="text-muted">{{ installationData?.y || 'Inconnu' }}</span>
-                    </div>
-                  </div>
-                  <div class="flex items-center justify-between text-sm">
-                    <span>Longitude</span>
-                    <div class="flex items-center justify-end">
-                      <span>{{ convertToDMS(installationData?.x, false) || 'Inconnu' }}</span>
-                      <span class="text-muted select-none">&nbsp;&middot;&nbsp;</span>
-                      <span class="text-muted">{{ installationData?.x || 'Inconnu' }}</span>
-                    </div>
-                  </div>
+    <UTabs
+      v-model="activeTab"
+      :items="installationTabs"
+      color="neutral"
+      variant="link"
+      class="h-full min-h-0 flex flex-col"
+      :ui="{
+        root: 'gap-0',
+        list: 'px-5 sm:px-6 shrink-0',
+        content: 'flex-1 min-h-0 h-full overflow-y-auto py-5 sm:py-6 pl-5 sm:pl-6 pr-3.75 sm:pr-4.75 mt-px content-scrollbar',
+        trigger: 'w-full cursor-pointer',
+      }"
+    >
+      <template #informations>
+        <div class="flex-col gap-5 sm:gap-6 flex">
+          <div class="flex flex-col gap-2.5 sm:gap-3">
+            <h3 class="text-highlighted font-medium">
+              Détails de l'installation
+            </h3>
+            <div class="flex flex-col justify-center gap-2.5 sm:gap-3">
+              <div class="flex items-center justify-between text-sm">
+                <span>Identifiant</span>
+                <span>{{ installationData?.id || 'Inconnu' }}</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span>Nom</span>
+                <span>{{ installationName }}</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span>Type</span>
+                <span>{{ installationType }}</span>
+              </div>
+              <div class="flex items-center justify-between text-sm">
+                <span>Région</span>
+                <div class="flex items-center justify-end">
+                  <span>{{ installationData?.nom_region || 'Inconnu' }}</span>
+                  <span class="text-muted select-none">&nbsp;&middot;&nbsp;</span>
+                  <span class="text-muted">{{ installationData?.code_region || 'Inconnu' }}</span>
                 </div>
               </div>
-              <div
-                v-if="installationHasData"
-                class="flex flex-col gap-2.5 sm:gap-3"
-              >
-                <h3 class="text-highlighted font-medium">
-                  Dernières mesures
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-                  <UCard
-                    v-for="[type_releves, { releves }] in Object.entries(groupedReleves)"
-                    :key="type_releves"
-                    variant="soft"
-                    :ui="{
-                      root: 'rounded-md',
-                      body: 'sm:p-4 text-sm font-normal flex flex-col items-center justify-center w-full h-full gap-0.25',
-                    }"
-                  >
-                    <div class="flex items-center justify-center gap-1.5">
-                      <UTooltip
-                        :delay-duration="0"
-                        text="Mesure ancienne"
-                        :content="{
-                          side: 'top',
-                          sideOffset: 5,
-                        }"
-                      >
-                        <UIcon
-                          v-if="shouldDisplayMeasureAlert(releves[0].date)"
-                          name="lucide:triangle-alert"
-                          class="size-4.5 text-warning-500 cursor-pointer"
-                        />
-                      </UTooltip>
-                      <span class="text-lg font-medium text-default text-center">
-                        {{ `${releves[0].valeur.toFixed(2)} ${releves[0]?.unite_valeur || ''}` }}
-                      </span>
-                    </div>
-                    <span class="text-sm text-muted text-center">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
-                  </UCard>
+              <div class="flex items-center justify-between text-sm">
+                <span>Latitude</span>
+                <div class="flex items-center justify-end">
+                  <span>{{ convertToDMS(installationData?.y, true) || 'Inconnu' }}</span>
+                  <span class="text-muted select-none">&nbsp;&middot;&nbsp;</span>
+                  <span class="text-muted">{{ installationData?.y || 'Inconnu' }}</span>
                 </div>
               </div>
-              <div
-                v-if="installationHasSondes"
-                class="flex flex-col gap-2.5 sm:gap-3"
-              >
-                <h3 class="text-highlighted font-medium">
-                  Sondes associées
-                </h3>
-                <UCard
-                  v-for="(sonde, index) in installationData.sondes"
-                  :key="index"
-                  as="button"
-                  variant="soft"
-                  :ui="{
-                    root: 'rounded-md cursor-pointer has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
-                    body: 'sm:p-4 text-sm font-normal flex items-center justify-between w-full',
-                  }"
-                  @click="updateInstallation(sonde.id);"
-                >
-                  <span class="text-left text-default">{{ sonde.nom || 'Inconnu' }}</span>
-                  <span class="text-muted text-right">{{
-                    getDistance(
-                      { latitude: installationData.y, longitude: installationData.x },
-                      { latitude: sonde.y, longitude: sonde.x },
-                    )
-                  }} mètres</span>
-                </UCard>
+              <div class="flex items-center justify-between text-sm">
+                <span>Longitude</span>
+                <div class="flex items-center justify-end">
+                  <span>{{ convertToDMS(installationData?.x, false) || 'Inconnu' }}</span>
+                  <span class="text-muted select-none">&nbsp;&middot;&nbsp;</span>
+                  <span class="text-muted">{{ installationData?.x || 'Inconnu' }}</span>
+                </div>
               </div>
             </div>
-          </template>
-          <template #data>
-            <div
-              v-if="installationHasData"
-              class="flex flex-col gap-2.5 sm:gap-3"
-            >
-              <h3 class="text-highlighted font-medium">
-                Mesures
-              </h3>
-              <UAccordion
-                v-for="[type_releves, { chartReleves, releves }] in Object.entries(groupedReleves)"
+          </div>
+          <div
+            v-if="installationHasData"
+            class="flex flex-col gap-2.5 sm:gap-3"
+          >
+            <h3 class="text-highlighted font-medium">
+              Dernières mesures
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+              <UCard
+                v-for="[type_releves, { releves }] in Object.entries(groupedReleves)"
                 :key="type_releves"
-                :items="[
-                  {
-                    label: dataTypeReleveMapping[type_releves] || 'Inconnu',
-                    releves,
-                    chartReleves,
-                  },
-                ]"
+                variant="soft"
                 :ui="{
-                  trigger: 'p-4 bg-elevated/50 font-normal rounded-md cursor-pointer data-[state=open]:rounded-b-none transition hover:bg-elevated gap-2',
-                  content: `bg-elevated/50 rounded-b-md data-[state=open]:animate-none data-[state=closed]:animate-none`,
+                  root: 'rounded-md',
+                  body: 'sm:p-4 text-sm font-normal flex flex-col items-center justify-center w-full h-full gap-0.25',
                 }"
-                trailing-icon="lucide:chevron-down"
               >
-                <template
-                  v-if="valueTypeMapping[releves[0].type_valeur]"
-                  #leading
-                >
+                <div class="flex items-center justify-center gap-1.5">
                   <UTooltip
                     :delay-duration="0"
-                    :text="valueTypeMapping[releves[0].type_valeur]"
+                    text="Mesure ancienne"
                     :content="{
                       side: 'top',
                       sideOffset: 5,
                     }"
                   >
                     <UIcon
-                      name="lucide:info"
-                      class="size-4.5"
+                      v-if="shouldDisplayMeasureAlert(releves[0].date)"
+                      name="lucide:triangle-alert"
+                      class="size-4.5 text-warning-500 cursor-pointer"
                     />
                   </UTooltip>
-                </template>
-                <template #content="{ item }">
-                  <UTable
-                    :data="item.releves"
-                    :columns="buildRelevesTableColumns(item.releves, item.chartReleves, localTimezone)"
-                    :ui="{
-                      base: 'border-t border-(--ui-border-accented)',
-                      thead: 'hidden',
-                    }"
-                  />
-                </template>
-              </UAccordion>
+                  <span class="text-lg font-medium text-default text-center">
+                    {{ `${releves[0].valeur.toFixed(2)} ${releves[0].unite_valeur || ''}` }}
+                  </span>
+                </div>
+                <span class="text-sm text-muted text-center">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
+              </UCard>
             </div>
-            <div
-              v-else
-              class="flex h-full justify-center items-center"
+          </div>
+          <div
+            v-if="installationHasSondes"
+            class="flex flex-col gap-2.5 sm:gap-3"
+          >
+            <h3 class="text-highlighted font-medium">
+              Sondes associées
+            </h3>
+            <UCard
+              v-for="(sonde, index) in installationData.sondes"
+              :key="index"
+              as="button"
+              variant="soft"
+              :ui="{
+                root: 'rounded-md cursor-pointer has-focus-visible:ring-2 transition hover:bg-elevated has-focus-visible:ring-inverted',
+                body: 'sm:p-4 text-sm font-normal flex items-center justify-between w-full',
+              }"
+              @click="updateInstallation(sonde.id);"
             >
-              <UEmpty
-                icon="lucide:circle-off"
-                title="Aucune donnée"
-                description="Atlas Hydro n'a pas pu récupérer de données liées à cette installation."
-                variant="naked"
-                class="sm:absolute sm:-translate-y-1/2 sm:top-1/2"
+              <span class="text-left text-default">{{ sonde.nom || 'Inconnu' }}</span>
+              <span class="text-muted text-right">{{
+                getDistance(
+                  { latitude: installationData.y, longitude: installationData.x },
+                  { latitude: sonde.y, longitude: sonde.x },
+                )
+              }} mètres</span>
+            </UCard>
+          </div>
+        </div>
+      </template>
+      <template #mesures>
+        <div
+          v-if="installationHasData"
+          class="flex flex-col gap-2.5 sm:gap-3"
+        >
+          <h3 class="text-highlighted font-medium">
+            Mesures
+          </h3>
+          <UAccordion
+            v-for="[type_releves, { chartReleves, releves }] in Object.entries(groupedReleves)"
+            :key="type_releves"
+            :items="[
+              {
+                label: dataTypeReleveMapping[type_releves] || 'Inconnu',
+                releves,
+                chartReleves,
+              },
+            ]"
+            :ui="{
+              trigger: 'p-4 bg-elevated/50 font-normal rounded-md cursor-pointer data-[state=open]:rounded-b-none transition hover:bg-elevated gap-2',
+              content: `bg-elevated/50 rounded-b-md data-[state=open]:animate-none data-[state=closed]:animate-none`,
+            }"
+            trailing-icon="lucide:chevron-down"
+          >
+            <template
+              v-if="valueTypeMapping[releves[0].type_valeur]"
+              #leading
+            >
+              <UTooltip
+                :delay-duration="0"
+                :text="valueTypeMapping[releves[0].type_valeur]"
+                :content="{
+                  side: 'top',
+                  sideOffset: 5,
+                }"
+              >
+                <UIcon
+                  name="lucide:info"
+                  class="size-4.5"
+                />
+              </UTooltip>
+            </template>
+            <template #content="{ item }">
+              <UTable
+                :data="item.releves"
+                :columns="buildRelevesTableColumns(item.releves, item.chartReleves, localTimezone)"
+                :ui="{
+                  base: 'border-t border-(--ui-border-accented)',
+                  thead: 'hidden',
+                }"
               />
-            </div>
-          </template>
-          <template #stats>
-            <div
-              v-if="installationHasData"
-              class="flex flex-col gap-2.5 sm:gap-3"
+            </template>
+          </UAccordion>
+        </div>
+        <div
+          v-else
+          class="flex h-full justify-center items-center"
+        >
+          <UEmpty
+            icon="lucide:circle-off"
+            title="Aucune donnée"
+            description="Atlas Hydro n'a pas pu récupérer de données liées à cette installation."
+            variant="naked"
+            class="sm:absolute sm:-translate-y-1/2 sm:top-1/2"
+          />
+        </div>
+      </template>
+      <template #graphiques>
+        <div
+          v-if="installationHasData"
+          class="flex flex-col gap-2.5 sm:gap-3"
+        >
+          <h3 class="text-highlighted font-medium">
+            Graphiques
+          </h3>
+          <div class="flex flex-col gap-2.5 sm:gap-3">
+            <UCard
+              v-for="[type_releves, { chartPoints }] in Object.entries(groupedReleves).filter(([type_releves]) => !excludedDataTypesForStats.includes(type_releves))"
+              :key="type_releves"
+              variant="soft"
+              :ui="{
+                root: 'rounded-md',
+                body: 'sm:p-4 p-4 text-sm font-normal flex flex-col justify-center w-full h-full gap-4',
+              }"
             >
-              <h3 class="text-highlighted font-medium">
-                Graphiques
-              </h3>
-              <div class="flex flex-col gap-2.5 sm:gap-3">
-                <UCard
-                  v-for="[type_releves, { chartPoints }] in Object.entries(groupedReleves).filter((e) => !excludedDataTypesForStats.includes(e.type_releves))"
-                  :key="type_releves"
-                  variant="soft"
-                  :ui="{
-                    root: 'rounded-md',
-                    body: 'sm:p-4 p-4 text-sm font-normal flex flex-col justify-center w-full h-full gap-4',
+              <div class="flex items-center gap-2">
+                <span class="text-left text-default">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
+                <UTooltip
+                  :delay-duration="0"
+                  text="Afficher en vue détaillée"
+                  :content="{
+                    side: 'top',
+                    sideOffset: 5,
                   }"
                 >
-                  <div class="flex items-center gap-2">
-                    <span class="text-left text-default">{{ dataTypeReleveMapping[type_releves] || 'Inconnu' }}</span>
-                    <UTooltip
-                      :delay-duration="0"
-                      text="Afficher en vue détaillée"
-                      :content="{
-                        side: 'top',
-                        sideOffset: 5,
-                      }"
-                    >
-                      <UIcon
-                        name="lucide:zoom-in"
-                        class="size-4.5 cursor-pointer"
-                        @click="openDetailedChart(type_releves, chartPoints)"
-                      />
-                    </UTooltip>
-                  </div>
-                  <Line
-                    :data="buildChartData(chartPoints, type_releves)"
-                    :options="buildChartOptions(groupedReleves[type_releves].chartReleves, localTimezone, chartStats[type_releves])"
+                  <UIcon
+                    name="lucide:zoom-in"
+                    class="size-4.5 cursor-pointer"
+                    @click="openDetailedChart(type_releves, chartPoints)"
                   />
-                </UCard>
+                </UTooltip>
               </div>
-            </div>
-            <div
-              v-else
-              class="flex h-full justify-center items-center"
-            >
-              <UEmpty
-                icon="lucide:circle-off"
-                title="Aucune donnée"
-                description="Atlas Hydro n'a pas pu récupérer de données liées à cette installation."
-                variant="naked"
-                class="sm:absolute sm:-translate-y-1/2 sm:top-1/2"
+              <Line
+                :data="buildChartData(chartPoints, type_releves)"
+                :options="buildChartOptions(groupedReleves[type_releves].chartReleves, localTimezone, chartStats[type_releves])"
               />
-            </div>
-          </template>
-        </UTabs>
-      </div>
-    </template>
+            </UCard>
+          </div>
+        </div>
+        <div
+          v-else
+          class="flex h-full justify-center items-center"
+        >
+          <UEmpty
+            icon="lucide:circle-off"
+            title="Aucune donnée"
+            description="Atlas Hydro n'a pas pu récupérer de données liées à cette installation."
+            variant="naked"
+            class="sm:absolute sm:-translate-y-1/2 sm:top-1/2"
+          />
+        </div>
+      </template>
+    </UTabs>
     <template
       v-if="installationHasOuvrage"
       #footer
@@ -317,7 +269,7 @@
         Retour
       </UButton>
     </template>
-  </USlideover>
+  </UIPanel>
   <ModalDetailedChart
     v-model="detailedChartModalOpen"
     :releves-type="detailedChartType"
@@ -330,9 +282,6 @@
 </template>
 
 <script setup>
-  import {
-    LoaderCircle,
-  } from "@lucide/vue";
   import {
     getDistance,
   } from "geolib";
@@ -411,7 +360,6 @@
       // Si l'installation est différente de celle déjà chargée
       if (installationData.value?.id !== installationId) {
         installationData.value = null;
-        resetStates();
 
         await loadInstallation(installationId);
       }
@@ -426,8 +374,8 @@
       });
     }
     else {
-      resetStates();
       isPending.value = false;
+      activeTab.value = "0";
 
       router.replace({
         query: {
@@ -438,6 +386,22 @@
         },
       });
     }
+  });
+
+  const installationName = computed(() => {
+    if (!installationData.value) {
+      return props.defaultData.nom || "Inconnu";
+    }
+
+    return installationData.value.nom;
+  });
+
+  const installationType = computed(() => {
+    if (!installationData.value) {
+      return installationTypeMapping[props.defaultData.type] || "Inconnu";
+    }
+
+    return installationTypeMapping[installationData.value.type];
   });
 
   const installationHasData = computed(() => {
@@ -513,13 +477,6 @@
     if (installationData.value.id === id) return;
 
     await loadInstallation(id);
-  }
-
-  function resetStates() {
-    detailedChartModalOpen.value = false;
-    detailedChartType.value = null;
-    detailedChartPoints.value = [];
-    activeTab.value = "0";
   }
 
   function openDetailedChart(type_releves, releves) {
