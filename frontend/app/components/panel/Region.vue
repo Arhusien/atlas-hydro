@@ -1,99 +1,68 @@
 <template>
-  <USlideover
-    v-model:open="open"
-    side="right"
-    inset
-    dismissible
-    :overlay="$device.isMobile"
-    modal
-    :ui="{
-      overlay: 'sm:bg-transparent',
-      header: 'px-5',
-      content: 'ring-0 sm:ring-0',
-      body: 'flex-1 overflow-hidden p-0 sm:p-0',
-      footer: 'px-4 sm:px-4 min-h-16',
-    }"
+  <UIPanel
+    v-model="open"
+    :title="regionName"
+    :is-loading="!data"
   >
-    <template #header="{ close }">
-      <div class="flex w-full items-center gap-2">
-        <div class="flex w-full min-w-0 items-center gap-2">
-          <h2 class="truncate text-highlighted font-medium">
-            {{ regionName }}
-          </h2>
-        </div>
-        <UButton
-          icon="lucide:x"
-          color="neutral"
-          variant="ghost"
-          square
-          class="cursor-pointer rounded -mr-2"
-          @click="close"
-        >
-          <span class="sr-only">Fermer</span>
-        </UButton>
-      </div>
-    </template>
-    <template #body>
-      <div
-        v-if="regionHasData"
+    <div
+      v-if="regionHasData"
+      class="h-full min-h-0 flex flex-col"
+    >
+      <UTabs
+        v-model="activeTab"
+        :items="regionData"
+        color="neutral"
+        variant="link"
         class="h-full min-h-0 flex flex-col"
+        :ui="{
+          root: 'gap-0',
+          list: 'px-5 sm:px-6 shrink-0',
+          content: 'flex-1 min-h-0 h-full overflow-y-auto py-5 sm:py-6 pl-5 sm:pl-6 pr-3.75 sm:pr-4.75 mt-px content-scrollbar',
+          trigger: 'w-full cursor-pointer',
+        }"
       >
-        <UTabs
-          v-model="activeTab"
-          :items="regionData"
-          color="neutral"
-          variant="link"
-          class="h-full min-h-0 flex flex-col"
-          :ui="{
-            root: 'gap-0',
-            list: 'px-5 sm:px-6 shrink-0',
-            content: 'flex-1 min-h-0 h-full overflow-y-auto py-5 sm:py-6 pl-5 sm:pl-6 pr-3.75 sm:pr-4.75 mt-px content-scrollbar',
-            trigger: 'w-full cursor-pointer',
-          }"
-        >
-          <template #content="{ item }">
-            <div class="flex flex-col gap-2.5 sm:gap-3">
-              <div class="flex flex-col gap-1.5">
-                <span class="text-highlighted font-medium">
-                  {{ item.label }}
-                </span>
-                <p class="text-sm">
-                  {{ item.description }}
-                </p>
-              </div>
-              <UILabeledNumber
-                :value="formatValue(item.total, item.type === 'ghg')"
-                :label="item.type === 'ghg' ? 'Moyenne réseau' : 'Total'"
-                :unit="item.type === 'ghg' ? 'gCO2eq/kWh' : 'MW'"
-                size="lg"
-              />
-              <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
-                <UILabeledNumber
-                  v-for="value in item.data"
-                  :key="value.key"
-                  :label="value.label"
-                  :value="formatValue(value.value, item.type === 'ghg')"
-                  :unit="item.type === 'ghg' ? 'gCO2eq/kWh' : 'MW'"
-                />
-              </div>
+        <template #content="{ item }">
+          <div class="flex flex-col gap-2.5 sm:gap-3">
+            <div class="flex flex-col gap-1.5">
+              <span class="text-highlighted font-medium">
+                {{ item.label }}
+              </span>
+              <p class="text-sm">
+                {{ item.description }}
+              </p>
             </div>
-          </template>
-        </UTabs>
-      </div>
-      <div
-        v-else
-        class="flex h-full justify-center items-center"
-      >
-        <UEmpty
-          icon="lucide:circle-off"
-          title="Aucune donnée"
-          description="Atlas Hydro n'a pas pu récupérer de données liées à cette région."
-          variant="naked"
-          class="sm:absolute sm:-translate-y-1/2 sm:top-1/2"
-        />
-      </div>
-    </template>
-  </USlideover>
+            <UILabeledNumber
+              :value="formatValue(item.total, item.type === 'ghg')"
+              :label="item.type === 'ghg' ? 'Moyenne réseau' : 'Total'"
+              :unit="item.type === 'ghg' ? 'gCO2eq/kWh' : 'MW'"
+              size="lg"
+            />
+            <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
+              <UILabeledNumber
+                v-for="value in item.data"
+                :key="value.key"
+                :label="value.label"
+                :value="formatValue(value.value, item.type === 'ghg')"
+                :unit="item.type === 'ghg' ? 'gCO2eq/kWh' : 'MW'"
+              />
+            </div>
+          </div>
+        </template>
+      </UTabs>
+    </div>
+    <div
+      v-else
+      class="flex h-full justify-center items-center"
+    >
+      <UEmpty
+        icon="lucide:circle-off"
+        title="Aucune donnée"
+        description="Atlas Hydro n'a pas pu récupérer de données liées à cette région."
+        variant="naked"
+        class="sm:absolute sm:-translate-y-1/2 sm:top-1/2"
+      />
+    </div>
+  </UIpanel>
 </template>
 
 <script setup>

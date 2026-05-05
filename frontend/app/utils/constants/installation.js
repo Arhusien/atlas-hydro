@@ -21,18 +21,18 @@ export const installationTabs = [
     {
         label: "Informations",
         // icon: "lucide:info",
-        slot: "infos",
+        slot: "informations",
     },
     {
         label: "Mesures",
         // icon: "lucide:activity",
-        slot: "data",
+        slot: "mesures",
 
     },
     {
         label: "Graphiques",
         // icon: "lucide:satellite-dish",
-        slot: "stats",
+        slot: "graphiques",
     },
 ];
 
