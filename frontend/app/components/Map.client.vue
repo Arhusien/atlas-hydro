@@ -51,7 +51,7 @@
         ref="regionLayers"
         :geojson="geojsonRegions"
         :options="regionsLayerOptions"
-        :options-style="() => regionStyle.default"
+        :options-style="regionDefaultStyle"
         :visible="activeMapView === 'territoires'"
       />
       <LGeoJson
@@ -163,6 +163,7 @@
     if (newValue === false) {
       if (activeRegionLayer.value) {
         setRegionInactive(activeRegionLayer.value);
+        activeRegionLayer.value = null;
       }
     }
   });
@@ -207,7 +208,7 @@
           if (!layers) return;
 
           layers.eachLayer((l) => {
-            if (!props.regionOpen || activeLayerId !== l._leaflet_id) {
+            if (activeLayerId !== l._leaflet_id) {
               setRegionInactive(l);
             }
           });
@@ -291,6 +292,10 @@
         }
       });
     }
+  }
+
+  function regionDefaultStyle() {
+    return regionStyle.default;
   }
 
   onMounted(async () => {
