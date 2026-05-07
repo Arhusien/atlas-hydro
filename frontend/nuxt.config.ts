@@ -39,6 +39,11 @@ export default defineNuxtConfig({
             link: [
                 {
                     rel: "icon",
+                    href: "/favicon-light.ico",
+                    type: "image/x-icon",
+                },
+                {
+                    rel: "icon",
                     href: "/favicon-dark.ico",
                     type: "image/x-icon",
                     media: "(prefers-color-scheme: dark)",
