@@ -2,7 +2,7 @@
 
 Au Québec, la production d'électricité est gérée par Hydro-Québec. En tant que société d'État, elle met à la disposition de tous de nombreux jeux de données.
 
-La carte interactive Atlas Hydro répertorie les différentes installations du réseau d'Hydro-Québec, ainsi que les territoires en relation avec ce dernier.
+La carte interactive **Atlas Hydro** répertorie les différentes installations du réseau d'Hydro-Québec, ainsi que les territoires en relation avec ce dernier.
 
 Chaque installation possède des données, incluant notamment des mesures hydrométriques et hydrométéorologiques, en plus de quelques détails la concernant. Les territoires disposent, quant à eux, de données concernant leur production, leur exportation et leur consommation d'électricité, ainsi que leur taux d'émissions directes de gaz à effet de serre par kilowattheure.
 
