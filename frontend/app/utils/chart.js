@@ -8,6 +8,12 @@ import {
     fr,
 } from "date-fns/locale";
 
+/**
+ * Construit un objet de données pour un graphique Chart.js.
+ * @param {Array} chartPoints - Les coordonnées (x; y) à inclure dans le graphique.
+ * @param {string} type_releves - Le type de relevés pour lequel est construit le graphique.
+ * @returns {Object} Un objet de données formaté pour Chart.js.
+ */
 export function buildChartData(chartPoints, type_releves) {
     return {
         datasets: [
@@ -20,14 +26,22 @@ export function buildChartData(chartPoints, type_releves) {
     };
 }
 
+/**
+ * Construit un objet d'options pour un graphique Chart.js.
+ * @param {Array} releves - Les relevés pour lesquels construire le graphique.
+ * @param {string} timezone - Le fuseau horaire cible.
+ * @param {Object} stats - Les statistiques des relevés.
+ * @param {boolean} isDetailedChart - Si le graphique est sous sa forme détaillé.
+ * @returns {Object} Un objet d'options formaté pour Chart.js.
+ */
 export function buildChartOptions(releves, timezone, stats, isDetailedChart = false) {
     return merge({}, chartOptions, {
         plugins: {
             tooltip: {
                 callbacks: {
-                    title: ctx => createTooltipTitle(ctx, releves, timezone, isDetailedChart),
-                    label: ctx => createTooltipLabel(ctx, releves, timezone, isDetailedChart),
-                    afterLabel: ctx => isDetailedChart ? createTooltipAfterLabel(ctx, releves, stats) : undefined,
+                    title: ctx => _createTooltipTitle(ctx, releves, timezone, isDetailedChart),
+                    label: ctx => _createTooltipLabel(ctx, releves, timezone, isDetailedChart),
+                    afterLabel: ctx => isDetailedChart ? _createTooltipAfterLabel(ctx, releves, stats) : undefined,
                 },
             },
         },
@@ -46,7 +60,7 @@ export function buildChartOptions(releves, timezone, stats, isDetailedChart = fa
     });
 }
 
-export function createTooltipTitle(ctx, releves, timezone, detailed = false) {
+function _createTooltipTitle(ctx, releves, timezone, detailed = false) {
     const releve = releves[ctx[0].dataIndex];
 
     if (!detailed) {
@@ -61,7 +75,7 @@ export function createTooltipTitle(ctx, releves, timezone, detailed = false) {
         : "";
 }
 
-export function createTooltipLabel(ctx, releves, detailed = false) {
+function _createTooltipLabel(ctx, releves, detailed = false) {
     const releve = releves[ctx.dataIndex];
 
     if (!detailed) {
@@ -71,9 +85,10 @@ export function createTooltipLabel(ctx, releves, detailed = false) {
     return releve ? `${ctx.parsed.y.toFixed(2)} ${releve.unite_valeur || ""}` : "";
 }
 
-export function createTooltipAfterLabel(ctx, releves, stats) {
+function _createTooltipAfterLabel(ctx, releves, stats) {
     const releve = releves[ctx.dataIndex];
 
+    // Calcul des statistiques du relevé
     const difference = calculateDifference(releve, releves),
         zScore = (releve.valeur - stats.average) / (stats.standardDeviation || 1);
 

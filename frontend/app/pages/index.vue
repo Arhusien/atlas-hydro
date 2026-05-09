@@ -1,5 +1,6 @@
 <template>
   <div class="w-svw h-svh relative">
+    <!-- Écran de chargement -->
     <Teleport
       to="body"
     >
@@ -26,8 +27,8 @@
       :app-ready="appReady"
       :installation-open="installationPanelOpen"
       :region-open="regionPanelOpen"
-      @open-installation="openInstallation"
-      @open-region="openRegion"
+      @open-installation="openPanel('installation', $event)"
+      @open-region="openPanel('region', $event)"
       @map-ready="onMapReady"
     />
     <PanelInstallation
@@ -53,7 +54,10 @@
   const mapReady = ref(false),
         appReady = ref(false);
 
-  async function openInstallation(data) {
+  async function openPanel(type, data) {
+    // Si un panneau est déjà ouvert,
+    // le fermer, attendre la fin de l'animation,
+    // puis ouvrir le nouveau panneau
     if (regionPanelOpen.value) {
       regionPanelOpen.value = false;
       await nextTick();
@@ -64,18 +68,21 @@
       await nextTick();
     }
 
-    installationPanelData.value = data;
-    installationPanelOpen.value = true;
-  }
+    /* eslint-disable vue/script-indent */
+    switch (type) {
+      case "installation":
+        installationPanelData.value = data;
+        installationPanelOpen.value = true;
 
-  async function openRegion(region) {
-    if (installationPanelOpen.value) {
-      installationPanelOpen.value = false;
-      await nextTick();
+        break;
+      case "region":
+        activeRegion.value = data;
+        regionPanelOpen.value = true;
+
+        break;
+      default:
+        break;
     }
-
-    activeRegion.value = region;
-    regionPanelOpen.value = true;
   }
 
   async function onMapReady() {
@@ -85,6 +92,7 @@
   }
 
   onMounted(async () => {
+    // Récupérer les données des régions
     const elecricityResponse = await $fetch("/api/electricite");
     if (elecricityResponse.status !== 200) {
       throw createError({

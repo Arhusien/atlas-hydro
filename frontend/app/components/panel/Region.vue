@@ -181,7 +181,21 @@
   watch(open, async (newValue) => {
     emit("update:modelValue", newValue);
 
-    if (!newValue) {
+    // Si le panneau est ouvert
+    if (newValue === true) {
+      // Mettre à jour les paramètres de l'URL d'après la région sélectionnée
+      router.replace({
+        query: {
+          ...route.query,
+          territoire: props.region,
+          installation: undefined,
+          type: undefined,
+        },
+      });
+    }
+    // Si le panneau est fermé
+    else {
+      // Réinitialiser les paramètres de l'URL
       router.replace({
         query: {
           ...route.query,
@@ -193,21 +207,13 @@
 
       activeTab.value = "0";
     }
-    else {
-      router.replace({
-        query: {
-          ...route.query,
-          territoire: props.region,
-          installation: undefined,
-          type: undefined,
-        },
-      });
-    }
   });
 
   function filterData(data, mapping, isGhg = false) {
     return Object.entries(data)
+      // Exclure les données globales et les données nulles (ou insignifiantes pour les émissions de gaz à effet de serre)
       .filter(([key, value]) => key !== "total" && Number(value) > 0 && (!isGhg || (key !== "electricite" && Number(value) > 0.005)))
+      // Trier les données par ordre décroissant de valeur
       .sort((a, b) => b[1] - a[1])
       .map(([key, value]) => ({
         key,
@@ -218,9 +224,11 @@
 
   function formatValue(value, isGhg = false) {
     if (isGhg) {
+      // Arrondir à 2 décimales près
       return (Number(value ?? 0) * 1000).toFixed(2).toLocaleString();
     }
 
+    // Arrondir à l'entier près
     return Math.round(Number(value ?? 0)).toLocaleString();
   }
 </script>

@@ -17,6 +17,7 @@ let isChartRegistered = false;
 export default defineNuxtPlugin(() => {
     if (isChartRegistered) return;
 
+    // Charger les composants utilisés
     Chart.register(
         LineController,
         LineElement,
