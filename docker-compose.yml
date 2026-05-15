@@ -12,9 +12,6 @@ services:
       - backend
     environment:
       - NUXT_BACKEND_API_BASE=http://backend:5000
-    networks:
-      - default
-      - proxy_network
     restart: unless-stopped
 
   db_sync:
