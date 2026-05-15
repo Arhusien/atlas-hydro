@@ -1,3 +1,5 @@
+import Zoom from "chartjs-plugin-zoom";
+import "chartjs-adapter-date-fns";
 import {
     Chart,
     LineController,
@@ -8,9 +10,7 @@ import {
     CategoryScale,
     Tooltip,
     Filler,
-
 } from "chart.js";
-import "chartjs-adapter-date-fns";
 
 let isChartRegistered = false;
 
@@ -27,6 +27,7 @@ export default defineNuxtPlugin(() => {
         CategoryScale,
         Tooltip,
         Filler,
+        Zoom,
     );
 
     Chart.defaults.font.family = "'Inter', sans-serif";
