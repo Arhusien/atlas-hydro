@@ -25,8 +25,7 @@ URL_ELECTRICITE_HQ = "https://donnees.solutions.hydroquebec.com/donnees-ouvertes
 URL_GES_HQ = "https://donnees.hydroquebec.com/api/explore/v2.1/catalog/datasets/facteurges/records?limit=100"
 
 FUSEAU_HORAIRE = "UTC"
-PERSISTANCE_RELEVES_JOURS = 7
-ATTENTE_REQUETE_SECONDES = 10
-PAUSE_ENTRE_REQUETES_SECONDES = 3
+TIMEOUT_REQUETE_SECONDES = 10
+COOLDOWN_REQUETE_SECONDES = 3
 
 DISTANCE_ASSOCIATION_CENTRALE_KM = 5

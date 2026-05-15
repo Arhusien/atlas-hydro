@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-import constantes
+import constants
 from enums import JeuDonnees
 
 JEUX_DONNEES = [
@@ -11,7 +11,7 @@ JEUX_DONNEES = [
     JeuDonnees.HYDROMETRIQUES,
 ]
 
-FUSEAU_HORAIRE = ZoneInfo(constantes.FUSEAU_HORAIRE)
+FUSEAU_HORAIRE = ZoneInfo(constants.FUSEAU_HORAIRE)
 
 
 def _convertir_date(date_brute: str) -> datetime | None:
@@ -29,7 +29,7 @@ def _convertir_date(date_brute: str) -> datetime | None:
         return None
 
     # Pour chaque format de date possible
-    for format_date in constantes.FORMATS_DATE:
+    for format_date in constants.FORMATS_DATE:
         # Essayer de convertir (puis retourner) la date dans le format de l'itération
         # Si la conversion échoue, passer à l'itération suivante
         try:
@@ -100,20 +100,20 @@ def extraire_releves() -> dict[str, list[dict]]:
     releves_extraits = {}
 
     session = requests.Session()
-    session.headers.update(constantes.HEADERS)
+    session.headers.update(constants.HEADERS)
 
     for jeu_donnees in JEUX_DONNEES:
         releves_jeu_donnees = []
         try:
             url_jeu_donnees = (
-                constantes.URL_SONDES_HQ
+                constants.URL_SONDES_HQ
                 if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES
-                else constantes.URL_CENTRALES_HQ
+                else constants.URL_CENTRALES_HQ
             )
 
             reponse = session.get(
                 url_jeu_donnees,
-                timeout=constantes.ATTENTE_REQUETE_SECONDES,
+                timeout=constants.TIMEOUT_REQUETE_SECONDES,
             )
             reponse.encoding = "UTF-8"
             reponse.raise_for_status()

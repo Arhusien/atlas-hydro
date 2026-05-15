@@ -4,9 +4,9 @@ from zoneinfo import ZoneInfo
 
 import requests
 
-import constantes
+import constants
 
-FUSEAU_HORAIRE = ZoneInfo(constantes.FUSEAU_HORAIRE)
+FUSEAU_HORAIRE = ZoneInfo(constants.FUSEAU_HORAIRE)
 
 nom_region_cle = {
     "new_york": "NewYork",
@@ -69,9 +69,9 @@ def obtenir_donnees_electricite() -> dict:
     """
 
     reponse = requests.get(
-        constantes.URL_ELECTRICITE_HQ,
-        headers=constantes.HEADERS,
-        timeout=constantes.ATTENTE_REQUETE_SECONDES,
+        constants.URL_ELECTRICITE_HQ,
+        headers=constants.HEADERS,
+        timeout=constants.TIMEOUT_REQUETE_SECONDES,
     )
     reponse.encoding = "UTF-8"
     reponse.raise_for_status()
@@ -115,9 +115,9 @@ def obtenir_emissions_ges() -> dict:
     """
 
     reponse = requests.get(
-        constantes.URL_GES_HQ,
-        headers=constantes.HEADERS,
-        timeout=constantes.ATTENTE_REQUETE_SECONDES,
+        constants.URL_GES_HQ,
+        headers=constants.HEADERS,
+        timeout=constants.TIMEOUT_REQUETE_SECONDES,
     )
     reponse.encoding = "UTF-8"
     reponse.raise_for_status()
