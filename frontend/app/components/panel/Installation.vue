@@ -349,6 +349,7 @@
   watch(open, async (newValue) => {
     emit("update:modelValue", newValue);
 
+    // Si le panneau est ouvert
     if (newValue === true) {
       const installationId = props.defaultData?.objectid,
             installationType = props.defaultData?.type?.toLowerCase();
@@ -364,6 +365,7 @@
         await loadInstallation(installationId);
       }
 
+      // Mettre à jour les paramètres de l'URL d'après l'installation sélectionnée
       router.replace({
         query: {
           ...route.query,
@@ -373,10 +375,12 @@
         },
       });
     }
+    // Si le panneau est fermé
     else {
       isPending.value = false;
       activeTab.value = "0";
 
+      // Réinitialiser les paramètres de l'URL
       router.replace({
         query: {
           ...route.query,
@@ -422,8 +426,10 @@
 
   const groupedReleves = computed(() => {
     return Object.fromEntries(
+      // Définir un ensemble d'objets pour chaque groupe de relevés
       Object.entries(relevesByDataType.value)
         .map(([type_releves, releves]) => {
+          // Inverser l'ordre des relevés
           const chartReleves = [...releves].reverse(),
                 firstReleve = releves[0];
 
@@ -453,6 +459,7 @@
       return installationCache.get(id);
     }
 
+    // Récupérer les données de l'installation
     const response = await $fetch(`/api/installations/${id}`),
           installationData = markRaw(response.data);
 
@@ -480,6 +487,7 @@
   }
 
   function openDetailedChart(type_releves, releves) {
+    // Ouvrir le graphique détaillé
     detailedChartType.value = type_releves;
     detailedChartPoints.value = releves;
 

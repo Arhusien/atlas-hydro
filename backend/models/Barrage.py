@@ -1,4 +1,3 @@
-from db import db
 from enums import TypeInstallation
 
 from .Installation import Installation

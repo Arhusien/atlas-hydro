@@ -10,7 +10,7 @@
     <div class="flex flex-col items-center justify-center gap-2.5 absolute bottom-4 left-4 z-1000">
       <ControlLayers
         v-if="activeMapView === 'installations'"
-        v-model="layerStates"
+        v-model="installationLayerStates"
       />
       <ControlCenter
         @center="centerOnQuebec(map.leafletObject)"
@@ -47,6 +47,7 @@
         name="OpenStreetMap"
         no-wrap
       />
+      <!-- Régions -->
       <LGeoJson
         ref="regionLayers"
         :geojson="geojsonRegions"
@@ -54,13 +55,14 @@
         :options-style="regionDefaultStyle"
         :visible="activeMapView === 'territoires'"
       />
+      <!-- Installations -->
       <LGeoJson
         v-for="([layerName, features]) in Object.entries(geojsonInstallations)"
         ref="installationLayers"
         :key="layerName"
         :geojson="features"
         :options="installationsLayerOptions"
-        :visible="layerStates[layerName] && activeMapView === 'installations'"
+        :visible="installationLayerStates[layerName] && activeMapView === 'installations'"
       />
     </LMap>
   </div>
@@ -113,6 +115,7 @@
   const activeMarker = ref(null),
         activeRegionLayer = ref(null);
 
+  // Carte affichée
   const activeMapView = computed({
     get() {
       return availableViews.includes(route.query.map) ? route.query.map : "installations";
@@ -126,7 +129,8 @@
     },
   });
 
-  const layerStates = ref({
+  // États des couches de la carte installations
+  const installationLayerStates = ref({
     centrale: true,
     barrage: true,
     sonde: true,
@@ -136,6 +140,7 @@
         regionLayers = ref(null),
         installationLayers = ref(null);
 
+  // Récupérer les cartes GeoJSON
   const [
     installationsResponse,
     regionsResponse,
@@ -154,12 +159,14 @@
   }
 
   watch(() => props.installationOpen, (newValue) => {
+    // Réinitialiser le marqueur actif lors de la fermeture du panneau d'installation
     if (newValue === false) {
       resetActiveMarker();
     }
   });
 
   watch(() => props.regionOpen, (newValue) => {
+    // Réinitialiser la région active lors de la fermeture du panneau de région
     if (newValue === false) {
       if (activeRegionLayer.value) {
         setRegionInactive(activeRegionLayer.value);
@@ -168,7 +175,7 @@
     }
   });
 
-  // Empêcher la réactivité du GeoJSON et ainsi éviter des problèmes de performance
+  // Empêcher la réactivité du GeoJSON pour éviter des problèmes de performance
   const geojsonInstallations = markRaw(installationsResponse.data),
         geojsonRegions = markRaw(regionsResponse.data);
 
@@ -188,6 +195,7 @@
         zIndexOffset: markerZIndex,
       });
 
+      // Ouvir le panneau d'installation au clic sur le marqueur
       marker.on("click", () => {
         openInstallation(marker, feature);
       });
@@ -198,6 +206,7 @@
 
   const regionsLayerOptions = {
     onEachFeature: function (feature, layer) {
+      // Pour chaque région, écouter les événements d'interaction
       layer.on({
         mouseover: async (event) => {
           setRegionActive(event.target);
@@ -213,6 +222,7 @@
             }
           });
         },
+        // Ouvrir le panneau région au clic sur la région
         click: (event) => {
           openRegion(feature, event.target);
         },
@@ -233,6 +243,7 @@
   }
 
   function openRegion(feature, layer) {
+    // Si une autre région est active et qu'elle diffère de celle affichée, la réinitialiser
     if (activeRegionLayer.value && activeRegionLayer.value?._leaflet_id !== layer._leaflet_id) {
       setRegionInactive(activeRegionLayer.value);
     }
@@ -261,18 +272,23 @@
   };
 
   function onAppReady() {
+    // Si l'URL contient des paramètres d'installation
     if (activeMapView.value === "installations" && (queryInstallationId && queryInstallationType)) {
+      // Si le type de l'installation n'existe pas dans les données de la carte, ignorer
       if (!geojsonInstallations[queryInstallationType]) return;
 
+      // Trouver l'indice de la couche correspondante au type de l'installation
       const geojsonIndex = Object.keys(geojsonInstallations).findIndex(key => key === queryInstallationType);
 
       const layers = installationLayers.value[geojsonIndex]?.leafletObject;
       if (!layers) return;
 
+      // Chercher le marqueur correspondant à l'installation
       const selectedFeature = geojsonInstallations[queryInstallationType].features.find((feature) => {
         return feature.properties.objectid === queryInstallationId;
       });
 
+      // S'il existe, ouvrir le panneau d'installation correspondant
       if (selectedFeature) {
         layers.eachLayer((layer) => {
           if (layer.feature.properties.objectid === queryInstallationId) {
@@ -282,11 +298,14 @@
       }
     }
 
+    // Si l'URL contient un paramètre de région
     if (activeMapView.value === "territoires" && queryRegionId) {
       const layers = regionLayers.value?.leafletObject;
       if (!layers) return;
 
+      // Parcourir les régions pour trouver celle correspondante au nom de la région
       layers.eachLayer((layer) => {
+        // Si elle existe, ouvrir le panneau de région correspondant
         if (layer.feature.properties.region === queryRegionId) {
           openRegion(layer.feature, layer);
         }
@@ -299,13 +318,15 @@
   }
 
   onMounted(async () => {
+    // Récupérer et définir les états des couches de la carte installations
     const storedLayerStates = localStorage.getItem("layerStates");
     if (storedLayerStates) {
-      layerStates.value = JSON.parse(storedLayerStates);
+      installationLayerStates.value = JSON.parse(storedLayerStates);
     }
   });
 
-  watch(layerStates, (newValue) => {
+  // Sauvegarder les états des couches de la carte installations lors d'un changement
+  watch(installationLayerStates, (newValue) => {
     localStorage.setItem("layerStates", JSON.stringify(newValue));
   }, {
     deep: true,

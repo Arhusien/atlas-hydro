@@ -3,13 +3,13 @@ from zoneinfo import ZoneInfo
 
 from flask import Flask
 
-import constantes
+import constants
 from db import db
 from enums import TypeDonnee, TypeReleve, TypeValeur
 from models import Releve
 from utils import convertir_valeur, simplifier_texte
 
-FUSEAU_HORAIRE = ZoneInfo(constantes.FUSEAU_HORAIRE)
+FUSEAU_HORAIRE = ZoneInfo(constants.FUSEAU_HORAIRE)
 
 
 def _determiner_type_donnee(donnee: str, type_releve: TypeReleve) -> TypeDonnee:

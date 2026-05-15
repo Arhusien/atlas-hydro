@@ -8,7 +8,7 @@ from spacy.lang.fr.stop_words import STOP_WORDS
 from spacy.language import Language
 from spacy.tokens import Doc
 
-import constantes
+import constants
 from db import db
 from enums import TypeInstallation
 from models import Barrage, Centrale, Installation, Sonde
@@ -73,19 +73,19 @@ def synchroniser_installations(app: Flask) -> dict[str, int | float]:
     debut_execution = time.perf_counter()
 
     session = requests.Session()
-    session.headers.update({**constantes.HEADERS})
+    session.headers.update({**constants.HEADERS})
 
     try:
         reponse_centrales = session.get(
-            constantes.URL_CENTRALES_HQ,
-            timeout=constantes.ATTENTE_REQUETE_SECONDES,
+            constants.URL_CENTRALES_HQ,
+            timeout=constants.TIMEOUT_REQUETE_SECONDES,
         )
         reponse_centrales.encoding = "UTF-8"
         reponse_centrales.raise_for_status()
 
         reponse_sondes = session.get(
-            constantes.URL_SONDES_HQ,
-            timeout=constantes.ATTENTE_REQUETE_SECONDES,
+            constants.URL_SONDES_HQ,
+            timeout=constants.TIMEOUT_REQUETE_SECONDES,
         )
         reponse_sondes.encoding = "UTF-8"
         reponse_sondes.raise_for_status()
@@ -186,7 +186,7 @@ def associer_sondes_ouvrages(app: Flask) -> int:
         lst_ouvrages = sorted(lst_ouvrages, key=lambda o: o.type.value)
 
         associations_creees = 0
-        distance = geodesic(kilometers=constantes.DISTANCE_ASSOCIATION_CENTRALE_KM)
+        distance = geodesic(kilometers=constants.DISTANCE_ASSOCIATION_CENTRALE_KM)
 
         for ouvrage in lst_ouvrages:
             if (ouvrage.y is None) or (ouvrage.x is None):
