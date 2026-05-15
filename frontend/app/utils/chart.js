@@ -44,6 +44,31 @@ export function buildChartOptions(releves, timezone, stats, isDetailedChart = fa
                     afterLabel: ctx => isDetailedChart ? _createTooltipAfterLabel(ctx, releves, stats) : undefined,
                 },
             },
+            zoom: isDetailedChart
+                ? {
+                    limits: {
+                        x: {
+                            min: "original",
+                            max: "original",
+                        },
+                    },
+                    pan: {
+                        enabled: true,
+                        mode: "x",
+                        threshold: 8,
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                            // modifierKey: "ctrl",
+                        },
+                        pinch: {
+                            enabled: true,
+                        },
+                        mode: "x",
+                    },
+                }
+                : undefined,
         },
         scales: {
             x: {

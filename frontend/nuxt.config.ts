@@ -87,7 +87,12 @@ export default defineNuxtConfig({
             rollupOptions: {
                 output: {
                     manualChunks: {
-                        chartjs: ["chart.js", "vue-chartjs", "chartjs-adapter-date-fns"],
+                        chartjs: [
+                            "chart.js",
+                            "vue-chartjs",
+                            "chartjs-adapter-date-fns",
+                            "chartjs-plugin-zoom",
+                        ],
                     },
                 },
             },
