@@ -64,12 +64,12 @@ def traiter_releves(
             if reconstruire_table:
                 db.session.query(Releve).delete()
 
-            for donees_releve in lst_releves:
-                id_installation = donees_releve.get("id")
+            for donnees_releve in lst_releves:
+                id_installation = donnees_releve.get("id")
                 if not id_installation:
                     continue
 
-                valeur = donees_releve.get("valeur")
+                valeur = donnees_releve.get("valeur")
                 if not valeur:
                     continue
 
@@ -78,13 +78,13 @@ def traiter_releves(
                 if valeur is None:
                     continue
 
-                date = donees_releve.get("date")
+                date = donnees_releve.get("date")
                 if not date:
                     continue
 
                 date = datetime.fromisoformat(date)
 
-                nom_donnee = donees_releve.get("nom_donnee")
+                nom_donnee = donnees_releve.get("nom_donnee")
                 if not nom_donnee:
                     continue
 
@@ -93,8 +93,8 @@ def traiter_releves(
                     "date": date,
                     "valeur": valeur,
                     "type_releve": type_releves,
-                    "type_valeur": TypeValeur(donees_releve.get("type_valeur")),
-                    "unite_valeur": donees_releve.get("unite_valeur"),
+                    "type_valeur": TypeValeur(donnees_releve.get("type_valeur")),
+                    "unite_valeur": donnees_releve.get("unite_valeur"),
                     "nom_donnee": nom_donnee,
                     "type_donnee": _determiner_type_donnee(nom_donnee, type_releve=type_releves),
                 }

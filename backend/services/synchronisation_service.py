@@ -28,7 +28,7 @@ tal = spacy.load("fr_core_news_sm")
 
 def _traiter_nom_installation(modele_tal: Language, nom: str) -> str:
     """
-    Traite le nom d'une installation à l'aide d'un modèle de traitement automatique des langages.
+    Traite le nom d'une installation à l'aide d'un modèle de traitement automatique des langues.
 
     Parameters:
         modele_tal (Language): Un modèle de traitement Spacy.
@@ -116,7 +116,7 @@ def synchroniser_installations(app: Flask) -> dict[str, int | float]:
                     for donnee in donnees_installation.get("Composition", [])
                 ):
                     type_installation = TypeInstallation.CENTRALE
-                # S'il ne s'agit pas d'une centrale et que l'identifiant de l'installation est présent
+                # S'il ne s'agit pas d'une centrale et que l'installation est présente
                 # dans la liste des barrages et centrales, il s'agit alors d'un barrage
                 elif id_installation.startswith("3-"):
                     type_installation = TypeInstallation.BARRAGE
