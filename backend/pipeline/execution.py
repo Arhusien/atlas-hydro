@@ -21,19 +21,23 @@ def executer_pipeline(app: Flask):
 
     donnees_extraites = extraire_releves()
 
+    est_premiere_iteration = True
     for jeu_donnees, donnees in donnees_extraites.items():
         jeu_donnees = JeuDonnees(jeu_donnees)
+        type_releves = (
+            TypeReleve.HYDROMETEOROLOGIQUE
+            if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES
+            else TypeReleve.HYDROMETRIQUE
+        )
 
-        match jeu_donnees:
-            case JeuDonnees.HYDROMETEOROLOGIQUES:
-                traiter_releves(
-                    app,
-                    lst_releves=donnees,
-                    type_releves=TypeReleve.HYDROMETEOROLOGIQUE,
-                    reconstruire_table=True,
-                )
-            case JeuDonnees.HYDROMETRIQUES:
-                traiter_releves(app, lst_releves=donnees, type_releves=TypeReleve.HYDROMETRIQUE)
+        traiter_releves(
+            app,
+            lst_releves=donnees,
+            type_releves=type_releves,
+            reconstruire_table=est_premiere_iteration,
+        )
+
+        est_premiere_iteration = False
 
     print("Pipeline ETL exécutée. Exécution à suivre dans 1 heure.")
 
