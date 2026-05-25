@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from zoneinfo import ZoneInfo
 
 import requests
@@ -14,7 +15,7 @@ JEUX_DONNEES = [
 FUSEAU_HORAIRE = ZoneInfo(constants.FUSEAU_HORAIRE)
 
 
-def _convertir_date(date_brute: str) -> datetime | None:
+def _convertir_date(date_brute: str) -> Optional[datetime]:
     """
     Convertit une date brute en objet datetime.
 
@@ -51,8 +52,6 @@ def _formatter_donnees_extraites(
     Parameters:
         donnees_extraites (dict): Les données extraites du jeu.
         jeu_donnees (JeuDonnees): Le jeu de données extrait.
-        date_minimale (datetime): La date minimale de conservation des données.
-        date_maximale (datetime): La date maximale de conservation des données.
 
     Returns:
         (list[dict]): Une liste de relevés.
@@ -60,6 +59,7 @@ def _formatter_donnees_extraites(
 
     lst_releves: list[dict] = []
 
+    # Définir la clé racine du dictionnaire du jeu de données
     cle_installations = "Station" if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES else "Site"
 
     for installation in donnees_extraites.get(cle_installations, []):
@@ -67,10 +67,14 @@ def _formatter_donnees_extraites(
         if not id_installation:
             continue
 
-        for composition in installation.get("Composition", []):
-            donnees_releve = composition.get("Donnees", {})
+        # Chaque élément de Composition correspond à une donnée spécifique d'une installation
+        for donnee in installation.get("Composition", []):
+            # Récupérer tous les relevés de cette donnée
+            donnees_releves = donnee.get("Donnees", {})
 
-            for date_brute, valeur in donnees_releve.items():
+            # Parcourir le dictionnaire des relevés
+            # (où la clé est la date du relevé)
+            for date_brute, valeur in donnees_releves.items():
                 date = _convertir_date(date_brute)
                 if date is None:
                     continue
@@ -79,9 +83,9 @@ def _formatter_donnees_extraites(
                     {
                         "id": id_installation,
                         "date": date.isoformat(),
-                        "type_valeur": composition.get("type_mesure"),
-                        "unite_valeur": composition.get("nom_unite_mesure"),
-                        "nom_donnee": composition.get("type_point_donnee"),
+                        "type_valeur": donnee.get("type_mesure"),
+                        "unite_valeur": donnee.get("nom_unite_mesure"),
+                        "nom_donnee": donnee.get("type_point_donnee"),
                         "valeur": valeur,
                     }
                 )
@@ -99,21 +103,21 @@ def extraire_releves() -> dict[str, list[dict]]:
 
     releves_extraits = {}
 
+    # Créer et mettre à jour une session pour envoyer les requêtes
     session = requests.Session()
     session.headers.update(constants.HEADERS)
 
     for jeu_donnees in JEUX_DONNEES:
         releves_jeu_donnees = []
+
         try:
             url_jeu_donnees = (
-                constants.URL_SONDES_HQ
-                if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES
-                else constants.URL_CENTRALES_HQ
+                constants.URL_SONDES_HQ if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES else constants.URL_OUVRAGES_HQ
             )
 
             reponse = session.get(
                 url_jeu_donnees,
-                timeout=constants.TIMEOUT_REQUETE_SECONDES,
+                timeout=constants.TIMEOUT_REQUETE_SECONDES,  # Le temps d'attente de la réponse avant l'échec
             )
             reponse.encoding = "UTF-8"
             reponse.raise_for_status()
@@ -127,7 +131,7 @@ def extraire_releves() -> dict[str, list[dict]]:
 
         except requests.exceptions.RequestException:
             print(f"Échec de la récupération des relevés du jeu {jeu_donnees.value}.")
-            # Arrêter l'extraction des relevés pour ce jeu
+            # Passer au jeu de données suivant
             continue
 
         print(f"{len(releves_jeu_donnees)} relevés extraits du jeu {jeu_donnees.value}.")

@@ -16,17 +16,17 @@ def generer_geojson_installations() -> dict:
 
     points_installations_par_types = {}
     for installation in lst_installations:
-        type_nom = installation.type.value
+        type_installation = installation.type.value
 
-        if type_nom not in points_installations_par_types:
-            points_installations_par_types[type_nom] = {
+        if type_installation not in points_installations_par_types:
+            points_installations_par_types[type_installation] = {
                 "type": "FeatureCollection",
                 "features": [],
             }
 
         donnees_installation = installation.serialiser()
 
-        points_installations_par_types[type_nom]["features"].append(
+        points_installations_par_types[type_installation]["features"].append(
             {
                 "type": "Feature",
                 "id": donnees_installation["id"],
@@ -54,7 +54,7 @@ def generer_geojson_installations() -> dict:
     return points_installations_par_types
 
 
-def generer_geojons_regions() -> dict:
+def generer_geojson_regions() -> dict:
     """
     Récupère les régions dans lesquelles opère Hydro-Québec et génère un objet GeoJSON.
 
@@ -70,16 +70,19 @@ def generer_geojons_regions() -> dict:
     new_york = regions_us[regions_us["name"] == "New York"].copy()
     new_york["region"] = "NewYork"
 
-    # Liste des états de la Nouvelle-Angleterre
-    etats_na = [
-        "Maine",
-        "New Hampshire",
-        "Vermont",
-        "Massachusetts",
-        "Rhode Island",
-        "Connecticut",
-    ]
-    nouvelle_angleterre = regions_us[regions_us["name"].isin(etats_na)].copy()
+    nouvelle_angleterre = regions_us[
+        regions_us["name"].isin(
+            # Liste des états de la Nouvelle-Angleterre
+            [
+                "Maine",
+                "New Hampshire",
+                "Vermont",
+                "Massachusetts",
+                "Rhode Island",
+                "Connecticut",
+            ]
+        )
+    ].copy()
     nouvelle_angleterre["region"] = "NewEngland"
 
     # Fusionner les frontières des états de la Nouvelle-Angleterre
@@ -91,6 +94,7 @@ def generer_geojons_regions() -> dict:
 
     provinces_ca = regions_ca[
         regions_ca["name"].isin(
+            # Liste des provinces en relation avec Hydro-Québec
             [
                 "Quebec",
                 "Ontario",
@@ -103,7 +107,7 @@ def generer_geojons_regions() -> dict:
     provinces_ca = provinces_ca.rename(columns={"name": "region"})
     provinces_ca["region"] = provinces_ca["region"].str.replace(" ", "")
 
-    # Combiner les données en un seul objet
+    # Combiner les données en un seul objet GeoDataFrame
     donnees_regions = pd.concat(
         [
             new_york[["region", "geometry"]],
@@ -112,6 +116,7 @@ def generer_geojons_regions() -> dict:
         ]
     )
 
+    # Convertir en dictionnaire GeoJSON
     regions = gpd.GeoDataFrame(donnees_regions, geometry="geometry").to_geo_dict()
 
     return regions

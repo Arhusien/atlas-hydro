@@ -26,7 +26,7 @@ with app.app_context():
     # et que la base de données est vide
     if ("synchroniser_installations" not in sys.argv) and (Installation.query.count() == 0):
         raise RuntimeError(
-            "Base de données vide. Exécutez 'python -m flask --app app.py synchroniser_installations' pour l'initialiser."
+            "Base de données vide. Exécutez 'python -m flask --app app.py synchroniser_installations' pour l'initialiser."  # noqa: E501
         )
 
 
@@ -44,6 +44,7 @@ def synchroniser_installations_commande():
     )
 
 
+# Définir la commande "executer_pipeline" à utiliser avec le module flask
 @app.cli.command("executer_pipeline")
 def executer_pipeline_commande():
     executer_pipeline(app)

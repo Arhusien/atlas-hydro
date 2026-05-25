@@ -22,6 +22,13 @@ class Releve(db.Model):
     valeur = db.Column(db.Float)
 
     def serialiser(self) -> dict:
+        """
+        Transforme les données du relevé en objet JSON.
+
+        Returns:
+            (dict): Les données du relevé en objet JSON.
+        """
+
         return {
             "id": str(self.id),
             "installation_id": self.installation_id,

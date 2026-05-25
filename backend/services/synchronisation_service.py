@@ -14,6 +14,7 @@ from enums import TypeInstallation
 from models import Barrage, Centrale, Installation, Sonde
 from utils import simplifier_texte
 
+# Associer des noms à leurs synonymes
 noms_syonymes = {
     "Grande-2": "Robert-Bourassa",
     "Hart-Jaune Supérieur": "Petit Lac Manicouagan",
@@ -51,6 +52,7 @@ def _traiter_nom_installation(modele_tal: Language, nom: str) -> str:
 
     mots_traites = []
     for token in doc:
+        # Retirer les mots vides et la ponctuation des noms
         if not (token.is_stop or token.is_punct):
             mots_traites.append(token.text)
 
@@ -72,13 +74,14 @@ def synchroniser_installations(app: Flask) -> dict[str, int | float]:
 
     debut_execution = time.perf_counter()
 
+    # Créer et mettre à jour une session pour envoyer les requêtes
     session = requests.Session()
     session.headers.update({**constants.HEADERS})
 
     try:
         reponse_centrales = session.get(
-            constants.URL_CENTRALES_HQ,
-            timeout=constants.TIMEOUT_REQUETE_SECONDES,
+            constants.URL_OUVRAGES_HQ,
+            timeout=constants.TIMEOUT_REQUETE_SECONDES,  # Le temps d'attente de la réponse avant l'échec
         )
         reponse_centrales.encoding = "UTF-8"
         reponse_centrales.raise_for_status()
@@ -153,6 +156,7 @@ def synchroniser_installations(app: Flask) -> dict[str, int | float]:
             db.session.commit()
 
         except Exception:
+            # Annuler les modifications faites durant l'exécution de la boucle
             db.session.rollback()
             raise
 
@@ -178,30 +182,33 @@ def associer_sondes_ouvrages(app: Flask) -> int:
     """
 
     with app.app_context():
+        # Récupérer la liste des ouvrages en base de données
         lst_ouvrages: list[Centrale | Barrage] = Installation.query.filter(
             Installation.type.in_([TypeInstallation.BARRAGE, TypeInstallation.CENTRALE])
         ).all()
 
-        # Trier la liste de manière à ce que les barrages soient placés devant les centrales
+        # Trier de manière à ce que les barrages soient placés devant les centrales
+        # afin qu'une sonde soit associée en priorité à un barrage
         lst_ouvrages = sorted(lst_ouvrages, key=lambda o: o.type.value)
 
         associations_creees = 0
         distance = geodesic(kilometers=constants.DISTANCE_ASSOCIATION_CENTRALE_KM)
 
         for ouvrage in lst_ouvrages:
+            # Si l'ouvrage n'a pas de coordonnées
             if (ouvrage.y is None) or (ouvrage.x is None):
                 continue
 
-            point_centrale = (ouvrage.y, ouvrage.x)
+            point_ouvrage = (ouvrage.y, ouvrage.x)
 
             # Calculer les 4 sommets du carré de la zone de proximité
-            nord = distance.destination(point=point_centrale, bearing=0).latitude
-            sud = distance.destination(point=point_centrale, bearing=180).latitude
-            est = distance.destination(point=point_centrale, bearing=90).longitude
-            ouest = distance.destination(point=point_centrale, bearing=270).longitude
+            nord = distance.destination(point=point_ouvrage, bearing=0).latitude
+            sud = distance.destination(point=point_ouvrage, bearing=180).latitude
+            est = distance.destination(point=point_ouvrage, bearing=90).longitude
+            ouest = distance.destination(point=point_ouvrage, bearing=270).longitude
 
             sondes_a_proximite: list[Sonde] = Sonde.query.filter(
-                Sonde.ouvrage_id.is_(None),
+                Sonde.ouvrage_id.is_(None),  # La sonde n'est pas déjà associée à un ouvrage
                 Sonde.y >= sud,  # Plus grand (ou égal) que 5 km au sud de la centrale
                 Sonde.y <= nord,  # Plus petit (ou égal) que 5 km au nord de la centrale
                 Sonde.x >= ouest,  # Plus grand (ou égal) que 5 km a l'ouest de la centrale
@@ -209,7 +216,7 @@ def associer_sondes_ouvrages(app: Flask) -> int:
             ).all()
 
             for sonde in sondes_a_proximite:
-                # Associer seulement si le nom de l'ouvrage est contenu dans le nom de la sonde
+                # Associer la sonde seulement si le nom de l'ouvrage est contenu dans son nom
                 if _traiter_nom_installation(tal, ouvrage.nom) in _traiter_nom_installation(tal, sonde.nom):
                     sonde.ouvrage_id = ouvrage.id
                     associations_creees += 1
