@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 
 from snowflake import SnowflakeGenerator
 
+# Définir le point de référence temporel des identifiants
 epoch = datetime(2026, 1, 1, tzinfo=timezone.utc).timestamp()
 epoch = int(epoch * 1000)
 
@@ -26,7 +27,7 @@ def generer_snowflake() -> int:
         # Récupérer la milliseconde actuelle
         ms_actuelle = time.time_ns() // 1000000
 
-        # Boucler jusqu'à cette milliseconde soit dépassée (Busy Waiting)
+        # Boucler jusqu'à ce que cette milliseconde soit dépassée
         while (time.time_ns() // 1000000) <= ms_actuelle:
             pass
 

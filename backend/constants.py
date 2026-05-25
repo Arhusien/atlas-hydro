@@ -13,7 +13,7 @@ FORMATS_DATE = [
     "%Y/%m/%d %H:%M:%S",
 ]
 
-URL_CENTRALES_HQ = (
+URL_OUVRAGES_HQ = (
     "https://www.hydroquebec.com/data/documents-donnees/donnees-ouvertes/json/Donnees_VUE_CENTRALES_ET_OUVRAGES.json"
 )
 URL_SONDES_HQ = (

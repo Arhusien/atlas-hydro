@@ -19,7 +19,7 @@ if __name__ == "__main__":
         # Arrêter le bloquage du processus
         est_arrete.set()
 
-    # Quitter le processus si Docker en envoie l'évènement
+    # Quitter le processus si le terminal en envoie l'évènement
     signal.signal(signal.SIGTERM, gerer_arret)
     signal.signal(signal.SIGINT, gerer_arret)
 

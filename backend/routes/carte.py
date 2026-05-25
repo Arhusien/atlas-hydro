@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 from extentions import cache
-from services.carte_service import generer_geojons_regions, generer_geojson_installations
+from services.carte_service import generer_geojson_installations, generer_geojson_regions
 from utils import repondre_succes
 
 bp_carte = Blueprint(
@@ -25,6 +25,6 @@ def afficher_geojson_installations():
 @bp_carte.route("/regions", methods=["GET"])
 @cache.cached(timeout=TEMPS_CACHE_SECONDES_REGIONS)
 def afficher_geojson_regions():
-    geojson_regions = generer_geojons_regions()
+    geojson_regions = generer_geojson_regions()
 
     return repondre_succes(geojson_regions, code_statut=200)

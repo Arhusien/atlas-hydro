@@ -15,7 +15,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ECHO = False
 
-    # Valable seulement en développement
+    # Variables valables seulement en développement
     CACHE_TYPE = os.getenv("CACHE_TYPE", "SimpleCache")
     CACHE_REDIS_URL = os.getenv("CACHE_REDIS_URL")
 

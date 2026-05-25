@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from zoneinfo import ZoneInfo
 
 from flask import Flask
@@ -27,7 +27,7 @@ def _determiner_type_donnee(donnee: str, type_releve: TypeReleve) -> TypeDonnee:
     if not donnee:
         return TypeDonnee.INCONNU
 
-    # Filtrer la liste des types de données pour n'y inclure que ceux du type du relevé
+    # Filtrer la liste des types de donnée pour n'y inclure que ceux du type du relevé
     types_donnees_releve = list(filter(lambda t: t.type_releve == type_releve, TypeDonnee))
 
     for type_donnee in types_donnees_releve:
@@ -60,16 +60,16 @@ def traiter_releves(
 
     with app.app_context():
         try:
-            # Si le traitement est fait sur la première portion de données
             if reconstruire_table:
+                # Supprimer tous les relevés pour simuler une reconstruction de la table
                 db.session.query(Releve).delete()
 
-            for donnees_releve in lst_releves:
-                id_installation = donnees_releve.get("id")
+            for releve in lst_releves:
+                id_installation = releve.get("id")
                 if not id_installation:
                     continue
 
-                valeur = donnees_releve.get("valeur")
+                valeur = releve.get("valeur")
                 if not valeur:
                     continue
 
@@ -78,34 +78,35 @@ def traiter_releves(
                 if valeur is None:
                     continue
 
-                date = donnees_releve.get("date")
+                date = releve.get("date")
                 if not date:
                     continue
 
                 date = datetime.fromisoformat(date)
 
-                nom_donnee = donnees_releve.get("nom_donnee")
+                nom_donnee = releve.get("nom_donnee")
                 if not nom_donnee:
                     continue
 
-                releve = {
+                nouveau_releve = {
                     "installation_id": id_installation,
                     "date": date,
                     "valeur": valeur,
                     "type_releve": type_releves,
-                    "type_valeur": TypeValeur(donnees_releve.get("type_valeur")),
-                    "unite_valeur": donnees_releve.get("unite_valeur"),
+                    "type_valeur": TypeValeur(releve.get("type_valeur")),
+                    "unite_valeur": releve.get("unite_valeur"),
                     "nom_donnee": nom_donnee,
                     "type_donnee": _determiner_type_donnee(nom_donnee, type_releve=type_releves),
                 }
 
-                db.session.add(Releve(**releve))
+                db.session.add(Releve(**nouveau_releve))
 
                 nb_releves_crees += 1
 
             db.session.commit()
 
         except Exception:
+            # Annuler les modifications faites durant l'exécution de la boucle
             db.session.rollback()
             raise
 

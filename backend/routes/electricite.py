@@ -18,7 +18,7 @@ TEMPS_CACHE_SECONDES = 60 * 15  # 15 minutes
 def afficher_donnees_electricite():
     donnees_electricite = obtenir_donnees_electricite()
     facteurs_ges = obtenir_emissions_ges()
-    if not donnees_electricite:
+    if not (donnees_electricite and facteurs_ges):
         return repondre_erreur("Les données reçues d'Hydro-Québec ne peuvent pas être traitées.", code_statut=502)
 
     return repondre_succes(

@@ -36,7 +36,7 @@ class TypeDonnee(Enum):
 
     @property
     def type_releve(self):
-        # Les types possibles des données des relevés hydrométriques
+        # Les types de donnée possibles des relevés hydrométriques
         types_donnees_releves_hydrometriques = {
             TypeDonnee.DEBIT_TURBINE,
             TypeDonnee.DEBIT_DEVERSE,
@@ -49,6 +49,7 @@ class TypeDonnee(Enum):
         elif self in types_donnees_releves_hydrometriques:
             return TypeReleve.HYDROMETRIQUE
 
+        # Tout autre type de donnée provient d'un relevé hydrométéorologique
         return TypeReleve.HYDROMETEOROLOGIQUE
 
     @classmethod

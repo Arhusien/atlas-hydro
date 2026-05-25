@@ -19,30 +19,34 @@ def executer_pipeline(app: Flask):
 
     print("Exécution de la pipeline ETL.")
 
-    donnees_extraites = extraire_releves()
+    try:
+        donnees_extraites = extraire_releves()
 
-    est_premiere_iteration = True
-    for jeu_donnees, donnees in donnees_extraites.items():
-        jeu_donnees = JeuDonnees(jeu_donnees)
-        type_releves = (
-            TypeReleve.HYDROMETEOROLOGIQUE
-            if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES
-            else TypeReleve.HYDROMETRIQUE
-        )
+        est_premiere_iteration = True
+        for jeu_donnees, donnees in donnees_extraites.items():
+            jeu_donnees = JeuDonnees(jeu_donnees)
+            type_releves = (
+                TypeReleve.HYDROMETEOROLOGIQUE
+                if jeu_donnees == JeuDonnees.HYDROMETEOROLOGIQUES
+                else TypeReleve.HYDROMETRIQUE
+            )
 
-        traiter_releves(
-            app,
-            lst_releves=donnees,
-            type_releves=type_releves,
-            reconstruire_table=est_premiere_iteration,
-        )
+            traiter_releves(
+                app,
+                lst_releves=donnees,
+                type_releves=type_releves,
+                reconstruire_table=est_premiere_iteration,  # Reconstruire la table sur la première itération seulement
+            )
 
-        est_premiere_iteration = False
+            est_premiere_iteration = False
 
-    print("Pipeline ETL exécutée. Exécution à suivre dans 1 heure.")
+        print("Pipeline ETL exécutée. Exécution à suivre dans 1 heure.")
+
+    except Exception:
+        print("La pipeline ETL a rencontré une erreur. Exécution à suivre dans 1 heure.")
 
 
-def demarrer_cron_pipeline(app: Flask):
+def demarrer_cron_pipeline(app: Flask) -> BackgroundScheduler:
     """
     Démarre la cron job de la pipeline ETL.
 
@@ -64,7 +68,7 @@ def demarrer_cron_pipeline(app: Flask):
         hour="*",
         args=[app],
         id="job_pipeline_etl",
-        replace_existing=True,
+        replace_existing=True,  # Éviter les doublons
     )
 
     print("La pipeline ETL s'exécutera automatiquement toutes les heures à la 10ème minute.")
